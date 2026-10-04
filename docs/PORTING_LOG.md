@@ -111,3 +111,18 @@ Follow-ups (cosmetic, not blocking):
   never in the build process.
 - **X** Stack mutexes (D5): any statically-initialised pthread mutex on a thread stack fails;
   audit as met.
+
+## Stage B: PCRE2 and 64-bit long (D11, D12)
+
+- **D** vms-pcre2 gains a clang (LP64) build variant (D11), commit "Clang (LP64) build
+  variant" in that repo; its patch 0003 replaces VAX C `#include descrip` forms clang rejects.
+  Its tests under clang found the next item.
+- **L** The C RTL's `long` interfaces are 32-bit even for clang's 64-bit `long` (D12):
+  `overlay/vms/include/vms_lp64.h`, force-included. Found on the way: the C RTL rejects
+  positional printf arguments combined with `ll` or `j`.
+- **F** ODS-5 has no sparse files: the header test's `fseek()` to 5 GB on a new file allocated
+  and zero-filled the blocks, twice (a timed-out `vms.sh` run kept going on VMS), and took the
+  work disk from 15.9M to 3.2M free blocks before both processes were stopped and the files
+  deleted. Test changed to a small offset; CLAUDE.md notes both pitfalls.
+- **T** The first server build round (started before the header) was stopped, since every
+  object must be rebuilt with it; its log was locked and unreadable while it ran.

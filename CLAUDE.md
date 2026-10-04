@@ -60,6 +60,11 @@ tools/vms.sh <node> dcl '<cmd>' ...   # run DCL; also run/batch/put/get
 
 ## Pitfalls found in this port
 
+- **A `vms.sh` timeout does not stop the job on VMS**: it keeps running. Give long jobs a
+  big `VMS_TIMEOUT`, and check `show system` before re-running a test that timed out.
+- **ODS-5 has no sparse files**: seeking past the end and writing (or `fseek` on a stdio
+  stream) allocates and zero-fills real blocks. A test that seeked to 5 GB nearly filled
+  the work disk. Never probe large offsets on a new file.
 - **MMS tracks neither headers nor compile flags.** After a patch touches a header, or after
   changing `clang_common.rsp`, run `tools/build.sh x86 client CLEAN` before `ALL` (a header
   change once left the old objects in place and the test still failed).

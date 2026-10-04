@@ -164,8 +164,10 @@ def main():
     # Other clang options from clang_common.rsp (not -D, -O, -g) for every
     # replayed compile: vms_replay.com reads FLAGS.TXT.
     top = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    # (not -include: its path is relative to the source tree, not the replay
+    # directory, and no check depends on it)
     flags = [l.strip() for l in open(os.path.join(top, 'overlay', 'vms', 'config', 'clang_common.rsp'))
-             if l.strip() and not l.startswith('#') and not re.match(r'-(D|O|g)', l.strip())]
+             if l.strip() and not l.startswith('#') and not re.match(r'-(D|O|g|include)', l.strip())]
     with open(os.path.join(out, 'flags.txt'), 'w') as f:
         f.write(' '.join(flags) + '\n')
     with open(os.path.join(out, 'manifest.txt'), 'w') as f:

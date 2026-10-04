@@ -4,7 +4,7 @@
 #   1. fetch + verify the upstream tarball (fetch.sh)
 #   2. extract it (without the PRUNE directories in upstream.conf), apply
 #      patches/series, lay overlay/ over the top
-#   3. for each configuration in CONFIGS (default: client): host_configure.sh
+#   3. for each configuration in CONFIGS (default: client server): host_configure.sh
 #      (CMake on this host with the OpenVMS toolchain file and the replayed
 #      check answers, cmake/os/OpenVMSCache.cmake), build the generated
 #      sources there with the native generators, copy them into vmsgen/, and
@@ -48,7 +48,7 @@ cp -a "$top/overlay/." "$stage/"
 printf 'VERSION=%s\nKIT_VERSION=%s-vms%s\n' "$UPSTREAM_VERSION" "$UPSTREAM_VERSION" \
     "$VMS_PATCH_LEVEL" > "$stage/vms/version.env"
 
-for cfg in ${CONFIGS:-client}; do
+for cfg in ${CONFIGS:-client server}; do
     "$top/tools/host_configure.sh" "$cfg"
     bdir=$top/cache/cmake-$cfg
     # Generated sources (error-message headers, ...) via the native tools.

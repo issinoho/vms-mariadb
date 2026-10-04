@@ -21,3 +21,7 @@
 # It applies to C names; C++ calls into libc++ link and run unchanged
 # (tested; docs/PORTING_LOG.md, Stage A round 4).
 -names2=shortened
+# 64-bit 'long' in the C RTL interfaces (D12): strtol & co. and the printf and
+# scanf families; see the header.  Relative to the top of the tree, where the
+# build runs.
+-include vms/include/vms_lp64.h
