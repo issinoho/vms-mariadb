@@ -42,10 +42,31 @@ from it, and why) before starting work. Work phase by phase; stop and ask at eac
 ## Commands
 
 ```sh
-tools/recon.sh <node>                 # Phase 0 environment capture -> docs/env-<node>.txt
-tools/probe.sh <node> [CLANG|CC]      # Phase 0 probes -> docs/probes-<node>-<cc>.txt
+tools/sysroot.sh x86                  # once: VSI SSL3 headers -> cache/vms-sysroot (host CMake needs them)
+tools/prepare.sh                      # fetch+verify, extract, patches, overlay, host CMake, vmsgen/, MMS
+tools/replay.sh x86 client            # answer new CMake checks on the node; then prepare.sh again,
+                                      #   until replay_gen.py reports 0 checks (REPLAY_ALL=1 redoes all)
+tools/build.sh x86 client [target] [KEEP_GOING]   # push + @[.VMS]BUILD CLIENT on the node
+tools/recon.sh <node>; tools/probe.sh <node> [CLANG|CC]   # Phase 0 environment and probes
 tools/vms.sh <node> dcl '<cmd>' ...   # run DCL; also run/batch/put/get
 ```
+
+- `overlay/vms/config/<config>.options` (CMake options) and `<config>.targets` (what to build)
+  define a configuration; `clang_common.rsp` holds our clang flags.
+- `overlay/vms/config/answers.txt` and `overlay/cmake/os/OpenVMSCache.cmake` are generated
+  (replay_answers.py); hand-set answers go in `manual.txt`, each with a reason.
+- After changing a check's inputs (clang flags, headers), replay everything: `REPLAY_ALL=1`
+  with `VMS_NO_ANSWERS=1 tools/host_configure.sh <config>` first (see tools/replay.sh).
+
+## Pitfalls found in this port
+
+- VSI's clang does not define `__GNUC__`; `clang_common.rsp` does (D4, PORTING_LOG).
+- clang finds a response file only by a plain name or an absolute UNIX path; `build.com`
+  passes the tree's path to MMS as `ROOT`.
+- The CRTL header library ignores directories: `<linux/mman.h>` "exists". Never trust a header
+  check with a directory in it; see `manual.txt`.
+- CMake ships `Platform/OpenVMS.cmake` itself; it sets no `VMS` variable, so
+  `cmake/os/OpenVMS.cmake` does.
 
 ## Commits
 

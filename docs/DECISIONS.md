@@ -78,7 +78,7 @@ Alternative: 10.11 LTS (also C++11, supported to Feb 2028) - no advantage over 1
 
 ## D4. Compiler: clang (VSI C++ V10.1-3U1, clang 10.0.1) for all C and C++ on x86-64
 
-**Status:** proposed.
+**Status:** approved by the user (2026-10-04).
 
 - clang on x86-64 is **LP64**: `long` 8, pointers 8, `size_t` 8 (C and C++). There is no
   option for a 32-bit `long` (`-pointer-size=` changes pointers only).
@@ -101,7 +101,7 @@ Alternative: 10.11 LTS (also C++11, supported to Feb 2028) - no advantage over 1
 
 ## D5. Thread-local storage: shim `thread_local` with pthread keys
 
-**Status:** proposed.
+**Status:** approved by the user (2026-10-04).
 
 - VSI C++ 10.1 rejects `thread_local`, `__thread` and `_Thread_local`: "OpenVMS does not
   currently support thread_local/__thread/_Thread_local declaration specifiers". The
@@ -122,7 +122,7 @@ Alternative: 10.11 LTS (also C++11, supported to Feb 2028) - no advantage over 1
 
 ## D6. File-system semantics: CRTL feature logicals + datadir with version limit 1
 
-**Status:** proposed; the descriptor-coherence problem below is open.
+**Status:** approved by the user (2026-10-04); the descriptor-coherence problem below is open.
 
 Findings (identical on IA64 with VSI C and x86-64 with clang; see `docs/PHASE0.md`):
 - MariaDB's file names (`#sql-…`, `t@002d1.frm`, `x#P#p0.ibd`, `a.b.c`, names with spaces,
@@ -158,13 +158,62 @@ Findings (identical on IA64 with VSI C and x86-64 with clang; see `docs/PHASE0.m
 
 ## D7. Networking: TCP only at first
 
-**Status:** proposed.
+**Status:** approved by the user (2026-10-04).
 
 Sockets behave as vio needs: non-blocking `connect`/`accept`, `poll()` on listening and
 connecting sockets, `MSG_DONTWAIT`, `TCP_NODELAY`, `SO_KEEPALIVE`, `SO_RCVTIMEO`,
 `getaddrinfo`, IPv6 dual stack, `socketpair`. `AF_UNIX` sockets can be created but `bind` to
 a relative path fails ("no logical name match"); the Unix-socket listener is left off
 (`--socket` unused) until that is understood.
+
+## D8. Configure answers: replay CMake's own checks on the node
+
+**Status:** implemented in Phase 1 (follows from D1).
+
+`tools/host_configure.sh` runs CMake on the host with `vms/cmake/toolchain-openvms.cmake`
+(`CMAKE_SYSTEM_NAME OpenVMS`: a cross-configure, so no host libraries are found and CMake's
+own `Platform/OpenVMS.cmake` applies). MariaDB then loads `cmake/os/OpenVMS.cmake` (overlay),
+which includes `cmake/os/OpenVMSCache.cmake`, the same mechanism as upstream's
+`cmake/os/WindowsCache.cmake`. The cache is generated:
+
+1. `--debug-trycompile` keeps the source of every check CMake runs;
+   `CMakeFiles/CMakeConfigureLog.yaml` names its variable and compile command.
+2. `tools/replay_gen.py` turns each check into a self-contained C/C++ file;
+   `tools/vms_replay.com` compiles, links and runs it with clang on the node
+   (`tools/replay.sh`). Header-less `CheckFunctionExists` checks are replayed as
+   "declared by a CRTL header and links" (see D1), type sizes are printed by a wrapper,
+   GCC flag checks and `CheckLibraryExists` are answered "no" by policy.
+3. `tools/replay_answers.py` merges results into `vms/config/answers.txt` (generated) and
+   writes `cmake/os/OpenVMSCache.cmake` from it plus `vms/config/manual.txt` (hand-set,
+   each with a reason: `realpath`, headers the CRTL finds by ignoring the directory part).
+4. Configure again; new answers can open new code paths, so repeat until no check is left
+   (client: 294 checks, then 7 more, then none).
+
+MariaDB's cross-compile support needs its build-time generators from a native build
+(`IMPORT_EXECUTABLES`); host_configure.sh builds them once under `cache/native-<version>`.
+Their output (`mysqld_error.h`, ...) is platform-independent and goes to `vmsgen/`.
+
+`tools/gen_mms.py` writes `vms/build/<config>/DESCRIP.MMS` from CMake's File API: one rule
+per object, compile flags in per-target clang response files (only `-D` and `-std` from
+CMake; our flags from `vms/config/clang_common.rsp`), `.OLB` per library, options files for
+images. `vms/build.com` runs it with MMS.
+
+## D9. TLS library: open
+
+**Status:** open; to be decided by the user before Stage A's TLS pass.
+
+MariaDB 11.4 cannot be configured without a TLS library (`WITH_SSL` is bundled wolfSSL or
+system OpenSSL; even the client tools hash through it). The configure uses VSI SSL3's
+headers for now. `probes/ssl3_abi.c` (clang code calling SSL3's 64-bit-pointer images):
+SHA-256 via EVP, error codes, `BIO_ctrl` all work, but **SSL3 was built with a 32-bit
+`long`**: `SSL_CTX_set_timeout(3000000000)` reads back as -1294967296, and SSL3's headers tell
+clang `BN_ULONG` is 8 bytes while `BN_get_word(2^32)` returns 0. Options:
+- (a) use SSL3 and audit every `long`-typed OpenSSL call MariaDB makes (values above 2^31,
+  structs with `long` members, `BN_*`);
+- (b) build OpenSSL 3 with clang ourselves (a vms-openssl sibling), LP64 throughout;
+- (c) bundled wolfSSL (built with clang) for the server and mysys_ssl; but Connector/C
+  cannot use wolfSSL on non-Windows (it wants GnuTLS or OpenSSL), so the client side would
+  still need (a) or (b).
 
 ## Open items
 
