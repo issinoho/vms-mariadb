@@ -8,13 +8,16 @@ method: every build starts from MariaDB's **signed release tarball**, and this r
 holds only our changes (`patches/`, `overlay/`) and the tooling that applies them and drives
 the build on the VMS nodes.
 
-**Status: Phase 0 (reconnaissance).** Nothing builds yet. The original plan is in
+**Status: Stage A done (2026-10-04).** Connector/C and the command-line clients (`mariadb`,
+`mariadb-dump`, `-admin`, `-check`, `-import`, `-show`, `-slap`, `my_print_defaults`,
+`perror`) build natively and pass the client tests against a remote MariaDB 11.8 server,
+over TLS 1.3 through VSI's SSL3 kit. The server (Stage B) is next. The original plan is in
 [MARIADB_OPENVMS_PLAN.md](MARIADB_OPENVMS_PLAN.md); where we depart from it, and why, is in
 [docs/DECISIONS.md](docs/DECISIONS.md).
 
 | Stage | Deliverable | Status |
 |---|---|---|
-| A | Connector/C + `mariadb` client (no server) | not started |
+| A | Connector/C + `mariadb` client (no server) | done: 15/15 client tests, TLS, interactive |
 | B | `mariadbd` with Aria/MyISAM/MEMORY | not started |
 | C | InnoDB, durability-tested | not started |
 | D | PCSI kit, docs, upstream patches | not started |

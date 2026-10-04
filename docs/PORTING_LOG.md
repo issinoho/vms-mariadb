@@ -81,3 +81,20 @@ Must be audited for the server (InnoDB, tpool use `std::mutex`): DECISIONS D5.
 
 The client uses TLS by default against the 11.8.6 server: `Ssl_cipher` = `TLS_AES_256_GCM_SHA384`
 (TLS 1.3 through VSI SSL3, decision D9).
+
+## Stage A exit (2026-10-04)
+
+Interactive session on the x86-64 node, run by the user from a terminal: the password prompt
+does not echo (patch 0011), `\s` reports `SSL: Cipher in use is TLS_AES_256_GCM_SHA384, cert
+is OK`, statements round-trip, Ctrl/Z exits with "Bye". With `tools/clienttest.sh` 15/15 in
+batch, the plan's Stage A exit criterion is met; tagged `stage-a`.
+
+Follow-ups (cosmetic, not blocking):
+- Client character set defaults to `latin1`; on Linux it comes from the locale (usually
+  `utf8mb4`). Pick a VMS default.
+- `my_progname` is the full VMS file spec (`x86vms$dka300:[...]mariadb.exe;1`) in `--version`,
+  `\s` and messages; strip it to `mariadb`.
+- Default option files are the Unix ones (`/etc/my.cnf`, `~/.my.cnf`); a VMS layout
+  (e.g. `MARIADB$ROOT:[ETC]MY.CNF`, `SYS$LOGIN:`) belongs with packaging.
+- No input history or tab completion in the interactive client.
+- MMS has no header dependencies (a header change needs CLEAN); clang's `-MMS` depfiles could fix it.
