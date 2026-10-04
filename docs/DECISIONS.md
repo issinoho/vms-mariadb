@@ -290,9 +290,11 @@ handled in the layer:
 - `O_TRUNC` on an existing file would create a new version: truncation goes through the
   master instead.
 
-## D11. PCRE2 for the server: open
+## D11. PCRE2 for the server: a clang build from vms-pcre2
 
-**Status:** open; needed before `mariadbd` links.
+**Status:** approved by the user (2026-10-04): option (a). vms-pcre2 now has a clang (LP64)
+build variant (`BUILD ALL "" CLANG`, install tree `[.INSTALL_X86_64_CLANG]`, commit
+"Clang (LP64) build variant"); `PCRE2$ROOT` points there (nodes.conf column 8).
 
 The server needs PCRE2 (REGEXP). MariaDB's `WITH_PCRE=bundled` downloads PCRE2 10.47 from
 GitHub at build time (MD5 only) and builds it with PCRE2's own CMake, which the generated MMS
