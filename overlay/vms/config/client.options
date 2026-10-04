@@ -1,0 +1,15 @@
+# CMake options for Stage A: Connector/C and the command-line clients, no server.
+-DWITHOUT_SERVER=ON
+-DWITH_UNIT_TESTS=OFF
+-DWITH_ZLIB=bundled
+-DWITH_PCRE=bundled
+# 11.4 cannot be built without a TLS library.  Configure against VSI SSL3's
+# headers (copied into the host sysroot); whether it is linked as is, see
+# DECISIONS D9.  The library paths are placeholders: MMS links the images.
+-DWITH_SSL=system
+-DOPENSSL_INCLUDE_DIR=@SYSROOT@/include
+-DOPENSSL_SSL_LIBRARY=@SYSROOT@/lib/libssl.so
+-DOPENSSL_CRYPTO_LIBRARY=@SYSROOT@/lib/libcrypto.so
+-DWITH_WSREP=OFF
+-DWITH_EMBEDDED_SERVER=OFF
+-DCMAKE_BUILD_TYPE=RelWithDebInfo

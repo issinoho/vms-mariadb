@@ -1,0 +1,3 @@
+# Targets built for Stage A (client): libraries first, in link order.
+strings
+dbug

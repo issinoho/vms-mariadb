@@ -1,0 +1,12 @@
+# clang options for every MariaDB compile on OpenVMS x86-64 (gen_mms.py puts
+# these first in each response file, before CMake's -D/-I/-std; replay_gen.py
+# applies the -D ones to every replayed check, so answers and build agree).
+-O2
+-g
+# VSI's clang does not predefine __GNUC__ (upstream clang does, as 4.2.1, and
+# -fgnuc-version is ignored).  MariaDB keys GCC/clang features on it
+# (__builtin_bswap*, attributes, my_atomic.h): ~250 uses in 70 files.  The CRTL
+# and libc++ headers behave the same with it (tested with the Phase 0 probes).
+-D__GNUC__=4
+-D__GNUC_MINOR__=2
+-D__GNUC_PATCHLEVEL__=1
