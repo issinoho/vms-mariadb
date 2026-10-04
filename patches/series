@@ -12,3 +12,5 @@
 0012-mysys-tty-password-vms.patch
 0013-vms-exit-status-severity.patch
 0014-mysys-shared-file-descriptor-vms.patch
+0015-stacktrace-no-addr2line-fork-vms.patch
+0016-stacktrace-write-core-raise-vms.patch

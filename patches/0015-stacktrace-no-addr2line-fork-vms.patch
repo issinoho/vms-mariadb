@@ -1,0 +1,18 @@
+Subject: my_stacktrace.h: no addr2line resolver on OpenVMS
+
+MY_ADDR_RESOLVE_FORK resolves stack addresses by fork()ing addr2line.
+OpenVMS has neither fork() nor addr2line (my_addr_resolve.c: implicit
+declaration of fork). Leave it undefined there, as on Windows.
+
+--- a/include/my_stacktrace.h	2026-10-04 21:42:57.120778883 +0100
++++ b/include/my_stacktrace.h	2026-10-04 21:42:57.159831266 +0100
+@@ -59,7 +59,8 @@
+ # define my_setup_stacktrace()
+ #endif /* ! (defined(HAVE_STACKTRACE) || defined(HAVE_BACKTRACE)) */
+ 
+-#ifndef _WIN32
++/* OpenVMS has neither fork() nor addr2line. */
++#if !defined(_WIN32) && !defined(__VMS)
+ #define MY_ADDR_RESOLVE_FORK
+ #endif
+ 

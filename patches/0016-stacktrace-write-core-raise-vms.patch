@@ -1,0 +1,20 @@
+Subject: mysys/stacktrace.c: my_write_core() uses raise() on OpenVMS
+
+pthread_kill() is not declared by the OpenVMS pthread headers (implicit
+declaration, then an undefined symbol). raise() sends the signal to the
+calling thread, which is what my_write_core() wants.
+
+--- a/mysys/stacktrace.c	2026-10-04 21:42:57.285920961 +0100
++++ b/mysys/stacktrace.c	2026-10-04 21:42:57.351214377 +0100
+@@ -421,7 +421,11 @@
+   */
+   __gcov_dump();
+ #endif
++#ifdef __VMS
++  raise(sig);          /* no pthread_kill() in the OpenVMS pthread library */
++#else
+   pthread_kill(pthread_self(), sig);
++#endif
+ #if defined(P_MYID) && !defined(SCO)
+   /* On Solaris, the above kill is not enough */
+   sigsend(P_PID,P_MYID,sig);
