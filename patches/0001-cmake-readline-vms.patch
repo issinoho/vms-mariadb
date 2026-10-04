@@ -1,0 +1,27 @@
+Subject: cmake: no readline or curses on OpenVMS
+
+OpenVMS has no curses/terminfo and no readline or libedit.  Skip the
+search, as on Windows; client/mysql.cc reads lines itself on VMS.
+
+--- a/cmake/readline.cmake	2026-10-04 12:16:14.562475059 +0100
++++ b/cmake/readline.cmake	2026-10-04 12:16:14.583641355 +0100
+@@ -182,7 +182,9 @@
+ 
+ 
+ MACRO (MYSQL_CHECK_READLINE)
+-  IF (NOT WIN32)
++  # OpenVMS has neither curses/terminfo nor readline; like Windows, the
++  # client reads lines itself there (the terminal driver does line editing).
++  IF (NOT WIN32 AND NOT VMS)
+     MYSQL_CHECK_MULTIBYTE()
+     SET(WITH_READLINE OFF CACHE BOOL "Use bundled readline")
+     FIND_CURSES()
+@@ -222,7 +224,7 @@
+     HAVE_HIST_ENTRY)
+     SET(CMAKE_REQUIRED_LIBRARIES)
+     SET(CMAKE_REQUIRED_INCLUDES)
+-  ENDIF(NOT WIN32)
++  ENDIF(NOT WIN32 AND NOT VMS)
+   CHECK_INCLUDE_FILES ("curses.h;term.h" HAVE_TERM_H)
+ ENDMACRO()
+ 

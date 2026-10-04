@@ -2,3 +2,4 @@ cache/
 staging/
 out/
 tools/nodes.conf
+__pycache__/
