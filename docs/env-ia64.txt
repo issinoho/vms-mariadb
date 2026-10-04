@@ -1,0 +1,195 @@
+
+=== system
+version   V8.4-2L3
+arch      IA64
+hw_name   HP rx2660  (1.59GHz/6.0MB)
+node      <redacted>
+cpus      1
+memsize   524240 pages of 8192 bytes
+pgflquota 512000  wsextent 1089536
+bytlm     127040  fillm 150  prclm 10  tqlm 100
+maxprocesscnt 840  channelcnt 512
+%DCL-W-IVKEYW, unrecognized keyword - check validity and spelling
+ \ACPPTYPE\
+free blocks 50357296 of 71132960
+
+=== products
+------------------------------------ ----------- --------- ------------------------------------ ------------------------------------
+PRODUCT                              KIT TYPE    STATE     MAINTENANCE                          REFERENCED BY
+------------------------------------ ----------- --------- ------------------------------------ ------------------------------------
+ISSINOHO I64VMS GAWK V5.4-1E1        Full LP     Installed
+ISSINOHO I64VMS GREP V3.12-3         Full LP     Installed
+ISSINOHO I64VMS PCRE2 V10.49-1       Full LP     Installed
+ISSINOHO I64VMS SED V4.10-1          Full LP     Installed
+ISSINOHO I64VMS VMSCURL V8.22-0E1    Full LP     Installed
+ISSINOHO I64VMS WGET V1.25-0E1       Full LP     Installed
+ISSINOHO I64VMS ZLIB V1.3-2E1        Full LP     Installed
+SCI VMS DFU V3.5-1175                Full LP     Installed
+VMSPORTS I64VMS PERL534 V5.34-1      Full LP     Installed
+VSI I64VMS AVAIL_MAN_BASE V8.4-2L3   Full LP     Installed                                      VSI I64VMS OPENVMS V8.4-2L3
+VSI I64VMS C V7.4-1                  Full LP     Installed
+VSI I64VMS CDSA V2.4-322A            Full LP     Installed                                      VSI I64VMS OPENVMS V8.4-2L3
+VSI I64VMS CMS V4.8-13               Full LP     Installed
+VSI I64VMS CURL V8.13-0              Full LP     Installed
+VSI I64VMS CXX V7.4-6                Full LP     Installed
+VSI I64VMS DECNET_PHASE_IV V8.4-2L3  Full LP     Installed                                      VSI I64VMS OPENVMS V8.4-2L3
+VSI I64VMS DECSET V13.0-3            Full LP     Installed
+VSI I64VMS DTM V4.5-7                Full LP     Installed
+VSI I64VMS DWMOTIF V1.7-E            Full LP     Installed                                      VSI I64VMS OPENVMS V8.4-2L3
+VSI I64VMS DWMOTIF_SUPPORT V8.4-2L3  Full LP     Installed                                      VSI I64VMS VMS V8.4-2L3
+VSI I64VMS ENVMGR V1.9-6             Full LP     Installed                                      VSI I64VMS CMS V4.8-13
+                                                                                                VSI I64VMS MMS V4.0-5
+                                                                                                VSI I64VMS SCA V5.2-3
+VSI I64VMS GIT V2.44-1C              Full LP     Installed
+VSI I64VMS GNV V3.0-2                Full LP     Installed
+VSI I64VMS HPBINARYCHECKER V1.2-A    Full LP     Installed                                      VSI I64VMS OPENVMS V8.4-2L3
+VSI I64VMS KERBEROS V3.2-260         Full LP     Installed                                      VSI I64VMS OPENVMS V8.4-2L3
+VSI I64VMS LSE V5.3-3                Full LP     Installed
+VSI I64VMS MMS V4.0-5                Full LP     Installed
+VSI I64VMS OPENJDK80 V8.0-502A       Full LP     Installed
+VSI I64VMS OPENSSH V9.9-2C           Full LP     Installed
+VSI I64VMS OPENVMS V8.4-2L3          Platform    Installed
+VSI I64VMS PCA V5.1-2                Full LP     Installed
+VSI I64VMS PYTHON V3.10-10           Full LP     Installed
+VSI I64VMS SCA V5.2-3                Full LP     Installed
+VSI I64VMS SSL V1.4-503              Full LP     Installed                                      VSI I64VMS OPENVMS V8.4-2L3
+VSI I64VMS SSL1 V1.0-2UA             Full LP     Installed                                      VSI I64VMS HPBINARYCHECKER V1.2-A
+                                                                                                VSI I64VMS OPENVMS V8.4-2L3
+VSI I64VMS SSL111 V1.1-1W            Full LP     Installed                                      VSI I64VMS OPENVMS V8.4-2L3
+VSI I64VMS SSL3 V3.0-22              Full LP     Installed                                      ISSINOHO I64VMS VMSCURL V8.22-0E1
+                                                                                                ISSINOHO I64VMS WGET V1.25-0E1
+                                                                                                VSI I64VMS TCPIP V6.0-31
+VSI I64VMS SSL31 V3.1-4              Full LP     Installed
+VSI I64VMS TCPIP V6.0-31             Full LP     Installed                                      VSI I64VMS OPENVMS V8.4-2L3
+VSI I64VMS TDC_RT V2.3-1220          Full LP     Installed                                      VSI I64VMS OPENVMS V8.4-2L3
+VSI I64VMS VMS V8.4-2L3              Oper System Installed VSI I64VMS VMS842L3I_AUDITUTIL V1.0  VSI I64VMS CDSA V2.4-322A
+                                                           VSI I64VMS VMS842L3I_AUTOGEN V3.0    VSI I64VMS DWMOTIF V1.7-E
+                                                           VSI I64VMS VMS842L3I_BACKUP V2.0     VSI I64VMS KERBEROS V3.2-260
+                                                           VSI I64VMS VMS842L3I_CLUCONFIG V2.0  VSI I64VMS OPENVMS V8.4-2L3
+                                                           VSI I64VMS VMS842L3I_COPYFTP V1.0    VSI I64VMS TCPIP V6.0-31
+                                                           VSI I64VMS VMS842L3I_DCL V4.0
+                                                           VSI I64VMS VMS842L3I_DPML V2.0
+                                                           VSI I64VMS VMS842L3I_F11X V4.0
+                                                           VSI I64VMS VMS842L3I_FDL V1.0
+                                                           VSI I64VMS VMS842L3I_FIBRESCSI V6.0
+                                                           VSI I64VMS VMS842L3I_FILESYS V1.0
+                                                           VSI I64VMS VMS842L3I_IO_UPDATE V1.0
+                                                           VSI I64VMS VMS842L3I_LAN V8.0
+                                                           VSI I64VMS VMS842L3I_LDAP V5.0
+                                                           VSI I64VMS VMS842L3I_LMF V2.0
+                                                           VSI I64VMS VMS842L3I_MIME V1.0
+                                                           VSI I64VMS VMS842L3I_MISC V1.0
+                                                           VSI I64VMS VMS842L3I_PTHREAD V1.0
+                                                           VSI I64VMS VMS842L3I_RMS V6.2
+                                                           VSI I64VMS VMS842L3I_RTL V10.0
+                                                           VSI I64VMS VMS842L3I_SHUTDOWN V2.0
+                                                           VSI I64VMS VMS842L3I_SORT V2.1
+                                                           VSI I64VMS VMS842L3I_SYS V4.0
+                                                           VSI I64VMS VMS842L3I_UTILITY V2.0
+VSI I64VMS VSP E1.0-3                Full LP     Installed
+VSI I64VMS WBEMCIM V3.0-E180108      Full LP     Installed                                      VSI I64VMS OPENVMS V8.4-2L3
+VSI I64VMS WBEMPROVIDERS V2.2-5D     Full LP     Installed                                      VSI I64VMS OPENVMS V8.4-2L3
+------------------------------------ ----------- --------- ------------------------------------ ------------------------------------
+44 items found
+ 
+VMSINSTAL history file DISK$I64_V83_S2:[VMS$COMMON.][SYSUPD]VMSINSTAL.HISTORY;1 contains additional information
+
+=== cc/version
+VSI C V7.4-001 on OpenVMS IA64 V8.4-2L3
+
+=== cxx/version
+VSI C++ V7.4-006 on OpenVMS IA64 V8.4-2L3
+
+=== clang
+no SYS$SYSTEM:CLANG.EXE
+
+=== cxx setup procedure
+
+
+=== librarian / linker
+%DCL-W-IVQUAL, unrecognized qualifier - check validity, spelling, and placement
+ \VERSION\
+
+=== mms / mmk
+%MMS-I-IDENT, MMS V4.0-5 © 2024 VMS Software, Inc. and Hewlett-Packard Development, LP
+mmk: 
+
+=== tools on DCL$PATH and elsewhere
+   "DCL$PATH" = "DKA800:[TOOLS]" (LNM$SYSTEM_TABLE)
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-IVVERB, unrecognized command verb - check validity and spelling
+ \PERL\
+
+=== python
+%DCL-W-IVVERB, unrecognized command verb - check validity and spelling
+ \PYTHON\
+
+=== git
+%DCL-W-IVVERB, unrecognized command verb - check validity and spelling
+ \GIT\
+
+=== OpenSSL kits
+
+(LNM$PROCESS_TABLE)
+
+(LNM$JOB_89AEA840)
+
+(LNM$GROUP_000200)
+
+(LNM$SYSTEM_TABLE)
+
+  "SSL3$CERT" = "SSL3$ROOT:[DEMOCA.CERTS]"
+  "SSL3$CERTS" = "SSL3$ROOT:[DEMOCA.CERTS]"
+  "SSL3$COM" = "SSL3$ROOT:[COM]"
+  "SSL3$CONF" = "SSL3$ROOT:[DEMOCA.CONF]"
+  "SSL3$CRL" = "SSL3$ROOT:[DEMOCA.CRL]"
+  "SSL3$EXAMPLES" = "SYS$COMMON:[SYSHLP.EXAMPLES.SSL3]"
+  "SSL3$EXE" = "SSL3$ROOT:[IA64_EXE]"
+  "SSL3$INCLUDE" = "SSL3$ROOT:[INCLUDE]"
+  "SSL3$KEY" = "SSL3$ROOT:[DEMOCA.CERTS]"
+  "SSL3$KEYS" = "SSL3$ROOT:[DEMOCA.CERTS]"
+  "SSL3$LIB" = "SSL3$ROOT:[LIB]"
+  "SSL3$MODULES" = "SSL3$ROOT:[MODULES]"
+  "SSL3$PRIVATE" = "SSL3$ROOT:[DEMOCA.PRIVATE]"
+  "SSL3$ROOT" = "SYS$SYSDEVICE:[VMS$COMMON.SSL3.]"
+
+(LNM$SYSCLUSTER_TABLE)
+
+(DECW$LOGICAL_NAMES)
+   "SSL$INCLUDE" = "SSL$ROOT:[INCLUDE]" (LNM$SYSTEM_TABLE)
+
+=== zlib / pcre2 install trees in the work directory
+USER$ROOT:[IAIN.vms_grep]zlib-1_3_2.DIR;1
+                              7
+USER$ROOT:[IAIN.vms_grep]pcre2-10_49.DIR;1
+                              1
+
+=== decc$ logicals
+
+(LNM$PROCESS_TABLE)
+
+(LNM$JOB_89AEA840)
+
+(LNM$GROUP_000200)
+
+(LNM$SYSTEM_TABLE)
+
+  "DECC$CRTLMAP" = "SYS$SHARE:DECC$SHR"
+  "DECC$SHR_AV" = "DECC$SHR"
+
+(LNM$SYSCLUSTER_TABLE)
+
+(DECW$LOGICAL_NAMES)
+
+=== process parse style
+TRADITIONAL
+
+=== batch queues
+Batch queue SYS$BATCH, idle, on MYI64::
+RECON-DONE

@@ -1,0 +1,176 @@
+# Decisions
+
+Each entry: the decision, the evidence, the alternatives. **Status** is *proposed* until the
+user approves it. Raw evidence: `docs/env-<node>.txt` (recon) and `docs/probes-<node>-<cc>.txt`
+(probes); `docs/PHASE0.md` summarises the probe results.
+
+## D0. Repository method: release tarball + patches + overlay (as the sibling ports)
+
+**Status:** approved by the user (2026-10-04).
+
+The plan (§3) suggests forking `MariaDB/server` and working on a `10.6-vms` branch. The sibling
+ports (vms-grep, vms-curl, vms-zlib, ...) instead pin a **signed release tarball** in
+`upstream.conf`, keep only our deltas in `patches/` (quilt series, one fix per patch) and
+`overlay/` (new files only), and regenerate `staging/` with `tools/prepare.sh`.
+
+- For: same tooling and habits as the other ports; rebasing to a new 11.4.x release is
+  "bump `upstream.conf`, see which patches reject"; every change is reviewable and
+  upstreamable as a separate patch.
+- Against: MariaDB is ~1 GB unpacked (221 MB tarball) and ~430 compile units for the client
+  alone, so the patch series will be longer than in the other ports. A fork would give
+  `git rebase`, but we would lose the uniform workflow.
+- The tarball is signed: `mariadb-11.4.13.tar.gz.asc` verifies against the MariaDB Signing Key
+  `177F 4010 FE56 CA33 3630 0305 F165 6F24 C74C D1D8` (`keys/mariadb-signing-key.asc`).
+  It ships the generated parser (`sql/yy_mariadb.cc`, `yy_oracle.cc`), so no bison is needed.
+- The plan's `PORTING_LOG.md` and `DECISIONS.md` are kept (in `docs/`); its
+  `vms/scripts/{sync,build,fetch-log}.sh` become the sibling `tools/` scripts
+  (`vms.sh`, `push.sh`, `build.sh`).
+
+## D1. How to run CMake: cross-configure on Linux, build with MMS on VMS (plan option B)
+
+**Status:** approved by the user (2026-10-04).
+
+Evidence:
+- **No CMake on either node** (no product, nothing on `DCL$PATH`, nothing under
+  `SYS$COMMON:[000000...]`). Only GNV `make` (3.x era) and MMS V4.0-5; MMK on IA64 only.
+- **CMake's own probes would give wrong answers here anyway.** `CHECK_FUNCTION_EXISTS` links
+  `char f(void); main(){return f();}` without a header. With clang that fails for ordinary
+  CRTL functions (`strdup`, `strerror`, `strtoull`, `vsnprintf`, `stpcpy`, ...) because the
+  `DECC$` name mapping only happens through the CRTL headers. VSI C also accepts
+  `<linux/mman.h>` and `<netinet/in6.h>`, so `CHECK_INCLUDE_FILES` is unreliable too.
+- A Linux reference configure works (`cmake 4.2.3`, `-DWITHOUT_SERVER=ON`): 430 compile units
+  (mysys 125, libmariadb 82, strings 50, ...), `config.h` with 333 `#define`s.
+
+Approach: run CMake on the host for the target configuration, take the per-target source
+lists, include paths and defines from CMake's File API / `compile_commands.json`, generate
+`DESCRIP.MMS` files (as `vms-grep/tools/gen_mms.py` does), and generate `config.h` /
+`my_config.h` from MariaDB's `config.h.cmake` with answers from header-aware probes run by
+clang on the node (the vms-grep "compile server" idea), each override commented.
+
+Alternatives: (A) native CMake — none exists; (C) build CMake on VMS — large detour (C++17,
+libuv, curl...), and its probes would still need overriding as shown above.
+
+## D2. MariaDB version: 11.4 LTS instead of 10.6
+
+**Status:** approved by the user (2026-10-04). Changes the plan's §1.
+
+- 10.6's community support ended in **July 2026**; porting it now ships an EOL server.
+- C++ level by branch (from each branch's top-level `CMakeLists.txt`):
+  10.6, 10.11 and **11.4: C++11** (`-std=gnu++11`, C `gnu99`); **11.8 and 12.x/13.x: C++17**.
+- 11.4 is the newest LTS that is still C++11 (supported to 2029). Current release
+  **11.4.13** (pinned in `upstream.conf`).
+- C++17 on VSI C++ 10.1 is not ruled out (`std::optional`, `string_view`, structured
+  bindings, `<charconv>` integer conversions compile), but `<variant>` breaks when a STARLET
+  header's `#define __union union` has been seen first, and `std::shared_mutex` aborts at run
+  time (see D5). Revisit 11.8 once 11.4 works.
+
+Alternative: 10.11 LTS (also C++11, supported to Feb 2028) - no advantage over 11.4.
+
+## D3. Targets: server on x86-64 only; IA64 at most for Connector/C, later
+
+**Status:** approved by the user (2026-10-04). Note the user's other ports all ship IA64 + x86-64.
+
+- IA64 VSI C++ V7.4-006 is the classic EDG compiler: no C++11 (`static_assert` rejected,
+  vms-grep `docs/vms-environment.md`). MariaDB 11.4's server, `mariadb` client and mysys
+  (C++ parts) cannot be built there.
+- `libmariadb` (Connector/C, 82 C files) is C99 and *might* build with VSI C 7.4 on IA64,
+  giving IA64 a native client library for C programs. Deferred until Stage A works on x86.
+
+## D4. Compiler: clang (VSI C++ V10.1-3U1, clang 10.0.1) for all C and C++ on x86-64
+
+**Status:** proposed.
+
+- clang on x86-64 is **LP64**: `long` 8, pointers 8, `size_t` 8 (C and C++). There is no
+  option for a 32-bit `long` (`-pointer-size=` changes pointers only).
+- VSI C V7.7 on x86-64 is **ILP32** by default: `long` 4, pointers 4, `size_t` 4.
+- So C and C++ objects from the two compilers don't share a data layout for anything with a
+  `long` or a pointer in it. MariaDB's C parts (mysys, strings, libmariadb) share structs with
+  its C++ parts, so **everything is compiled with clang**. Bonus: clang has the `__atomic_*`
+  and `__sync_*` builtins `my_atomic.h` uses (VSI C has neither), and C11 (`__STDC_VERSION__`
+  201112). It has no `<stdatomic.h>`, which MariaDB doesn't need.
+- Consequence for dependencies: the vms-zlib and vms-pcre2 trees are VSI C objects and
+  `zlib`'s `uLong`/`z_stream` layout differs; use MariaDB's **bundled zlib and PCRE2** compiled
+  with clang (`WITH_ZLIB=bundled`, `WITH_PCRE=bundled`), or rebuild the sibling libraries with
+  clang into a separate install tree. VSI's SSL3 (OpenSSL 3.0) images are VSI C builds too:
+  calls returning `long`/`unsigned long` (`ERR_get_error`, `SSL_CTX_ctrl`, `BIO_ctrl`) need
+  checking before TLS is enabled. **[VERIFY]** in Stage A's TLS pass.
+- Command-line case: the CRTL lower-cases clang's argv (`-D_LARGEFILE` arrived as
+  `-d_largefile`) unless `DECC$ARGV_PARSE_STYLE` is enabled with `/PARSE_STYLE=EXTENDED`.
+- Diagnostics go to SYS$ERROR, which `@x.com/OUTPUT=` does not capture:
+  `define sys$error sys$output` in build procedures.
+
+## D5. Thread-local storage: shim `thread_local` with pthread keys
+
+**Status:** proposed.
+
+- VSI C++ 10.1 rejects `thread_local`, `__thread` and `_Thread_local`: "OpenVMS does not
+  currently support thread_local/__thread/_Thread_local declaration specifiers". The
+  `-femulated-tls` option hits the same check.
+- Uses in the parts we build (11.4.13): `sql/mysqld.cc` (`THR_THD`, the current THD),
+  `sql/mdl.cc` (2), `sql/my_json_writer.{h,cc}`, `sql/threadpool_common.cc`,
+  `tpool/tpool_generic.cc`, `tpool/wait_notification.cc`, `storage/innobase/log/log0sync.cc`,
+  `libmariadb/plugins/auth/ed25519.c`, `libmariadb/plugins/auth/parsec.c`.
+- Plan: a small header in `overlay/` providing `vms_tls<T>` (lazy per-thread object behind a
+  `pthread_key_t`, destroyed by the key destructor), and one patch per file switching to it
+  under `#ifdef __VMS`. For C (`__thread` in the two auth plugins), use pthread keys directly.
+  Hot path: `current_thd` goes through `pthread_getspecific`; measure later.
+- Memory: under clang, `malloc` returns 64-bit addresses (16 x 256 MB allocated, highest
+  0x1_9200_6010), so large buffers are possible despite libc++'s "32-bit allocator" warning
+  about aligned `operator new`.
+- `std::shared_timed_mutex` aborts ("mutex lock failed: invalid argument") with libc++ 10 on
+  VMS; MariaDB 11.4's core does not use `shared_mutex`, so no action now.
+
+## D6. File-system semantics: CRTL feature logicals + datadir with version limit 1
+
+**Status:** proposed; the descriptor-coherence problem below is open.
+
+Findings (identical on IA64 with VSI C and x86-64 with clang; see `docs/PHASE0.md`):
+- MariaDB's file names (`#sql-…`, `t@002d1.frm`, `x#P#p0.ibd`, `a.b.c`, names with spaces,
+  mixed case) **fail without `DECC$EFS_CHARSET`** and all work with it; `readdir` reports
+  them exactly (case and dots preserved, no `;version`) with
+  `DECC$EFS_CASE_PRESERVE`, `DECC$FILENAME_UNIX_REPORT`, `DECC$FILENAME_UNIX_NO_VERSION`,
+  `DECC$READDIR_DROPDOTNOTYPE`.
+- A second `O_RDWR` open of a file fails ("file currently locked by another user") unless
+  `DECC$FILE_SHARING` is enabled; `unlink` of an open file needs
+  `DECC$ALLOW_REMOVE_OPEN_FILES`.
+- **`st_size` is stale on an open file:** after `pwrite`s, `fstat`/`stat` report 0 (the RMS
+  end-of-file is only written back by `fsync` or `close`), while `lseek(fd, 0, SEEK_END)` is
+  right. Every engine asks for file sizes (`my_fstat`, `os_file_get_size`, Aria/MyISAM
+  `mysql_file_seek(..., MY_SEEK_END)`), so mysys must use `lseek(SEEK_END)` on VMS.
+  (`r_io2`, every variant, both nodes.)
+- **Writes are not coherent across two descriptors of the same file:** with
+  `DECC$FILE_SHARING` (or `"shr=get,put,upd"`), a `pwrite` through one descriptor was not seen
+  by `pread` through the other, not even after `fsync` of the writer, in either direction.
+  The CRTL buffers per descriptor. MyISAM opens its data file once per table instance, so this
+  is a correctness problem, not a performance one. No `open()` RMS option tried so far
+  (`ctx=stm`, `rfm=udf`, `shr=...`) fixes it. **Must be solved before Stage B**; options: find
+  a CRTL/RMS setting that disables the buffering, route mysys I/O through one shared
+  descriptor per file, or do mysys file I/O with `SYS$QIO`/RMS block I/O directly.
+- **File versions:** `open(O_TRUNC)` and `rename()` onto an existing name create a new
+  version and keep the old one, so the next `unlink` "reveals" stale data. In a directory
+  created with `/VERSION_LIMIT=1` this does not happen (`r_io2`: name gone after one unlink).
+  Plan: datadir and tmpdir created `/VERSION_LIMIT=1`, and `my_mkdir` doing the same for
+  database directories.
+- `realpath()` is declared and links but returns `ENOSYS` at run time on both nodes; `open()` on a directory fails (so `fsync` of a directory,
+  used by InnoDB and the DDL log, needs a no-op path); no `O_DIRECT`; `O_DSYNC`/`O_SYNC` exist.
+- The feature logicals will be set inside the images via `LIB$INITIALIZE` (as the sibling
+  ports do), not system-wide.
+
+## D7. Networking: TCP only at first
+
+**Status:** proposed.
+
+Sockets behave as vio needs: non-blocking `connect`/`accept`, `poll()` on listening and
+connecting sockets, `MSG_DONTWAIT`, `TCP_NODELAY`, `SO_KEEPALIVE`, `SO_RCVTIMEO`,
+`getaddrinfo`, IPv6 dual stack, `socketpair`. `AF_UNIX` sockets can be created but `bind` to
+a relative path fails ("no logical name match"); the Unix-socket listener is left off
+(`--socket` unused) until that is understood.
+
+## Open items
+
+- Disk space (resolved 2026-10-04): the x86-64 work disk was the system disk with ~2 GB free.
+  The port now works in `DISK$SYSDUMP:[IAIN.VMS_MARIADB]` (16 GB volume, 7.85 GB free), which
+  the user converted to ODS-5 with high-water marking off; IA64 uses
+  `USER$ROOT:[IAIN.VMS_MARIADB]` (ODS-5, 25 GB free). Work directories must be ODS-5.
+- `time_t` is 32-bit with both compilers (Y2038); note for TIMESTAMP handling.
+- Prior-art 5.5-era VMS patches: not looked for yet.

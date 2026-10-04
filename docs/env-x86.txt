@@ -1,0 +1,207 @@
+
+=== system
+version   E9.2-4  
+arch      x86_64
+hw_name   QEMU Standard PC (Q35 + ICH9, 2009)
+node      <redacted>
+cpus      2
+memsize   930264 pages of 8192 bytes
+pgflquota 10000000  wsextent 1361920
+bytlm     498784  fillm 150  prclm 10  tqlm 100
+maxprocesscnt 916  channelcnt 32768
+%DCL-W-IVKEYW, unrecognized keyword - check validity and spelling
+ \ACPPTYPE\
+free blocks 4048656 of 45000000
+
+=== products
+------------------------------------ ----------- --------- ------------------------------------ ------------------------------------
+PRODUCT                              KIT TYPE    STATE     MAINTENANCE                          REFERENCED BY
+------------------------------------ ----------- --------- ------------------------------------ ------------------------------------
+ISSINOHO X86VMS GAWK V5.4-1E1        Full LP     Installed
+ISSINOHO X86VMS GREP V3.12-3         Full LP     Installed
+ISSINOHO X86VMS PCRE2 V10.49-1       Full LP     Installed
+ISSINOHO X86VMS SED V4.10-1          Full LP     Installed
+ISSINOHO X86VMS VMSCURL V8.22-0E1    Full LP     Installed
+ISSINOHO X86VMS WGET V1.25-0E2       Full LP     Installed
+ISSINOHO X86VMS ZLIB V1.3-2E1        Full LP     Installed
+MIMER X86VMS MIMER1108E V11.0-8E     Full LP     Installed
+SCI VMS DFU V3.5-100                 Full LP     Installed
+VMSPORTS X86VMS PERL534 T5.34-1      Full LP     Installed
+VSI X86VMS ANT V1.10-14A             Full LP     Installed
+VSI X86VMS APACHEWS V2.4-62          Full LP     Installed
+VSI X86VMS AVAIL_MAN_BASE E9.2-4     Full LP     Installed                                      VSI X86VMS OPENVMS E9.2-4
+VSI X86VMS BASIC V1.11-1             Full LP     Installed
+VSI X86VMS BLISS V1.15-148           Full LP     Installed
+VSI X86VMS C V7.7-3                  Full LP     Installed
+VSI X86VMS CIVETWEB V1.17-0          Full LP     Installed
+VSI X86VMS CMS V4.8-14               Full LP     Installed
+VSI X86VMS COBOL V3.4-3              Full LP     Installed
+VSI X86VMS CURL V8.13-0              Full LP     Installed
+VSI X86VMS CXX V10.1-3U1             Full LP     Installed
+VSI X86VMS DCPS V2.8-2               Full LP     Installed
+VSI X86VMS DECNET_PHASE_IV E9.2-4    Full LP     Installed                                      VSI X86VMS OPENVMS E9.2-4
+VSI X86VMS DECSET V13.0-3            Full LP     Installed
+VSI X86VMS DTM V4.5-7                Full LP     Installed
+VSI X86VMS DWMOTIF V1.8-2            Full LP     Installed                                      VSI X86VMS OPENVMS E9.2-4
+VSI X86VMS DWMOTIF_SUPPORT E9.2-4    Full LP     Installed                                      VSI X86VMS VMS E9.2-4
+VSI X86VMS ENVMGR V1.9-6             Full LP     Installed                                      VSI X86VMS CMS V4.8-14
+                                                                                                VSI X86VMS MMS V4.0-5
+                                                                                                VSI X86VMS SCA V5.2-3
+VSI X86VMS FORTRAN V8.7-1            Full LP     Installed
+VSI X86VMS GIT V2.44-1C              Full LP     Installed
+VSI X86VMS GNUPLOT V5.0-2            Full LP     Installed
+VSI X86VMS GNV V3.0-2F               Full LP     Installed
+VSI X86VMS KERBEROS V3.3-5A          Full LP     Installed                                      VSI X86VMS OPENVMS E9.2-4
+VSI X86VMS LIBPQ V13.4-0B            Full LP     Installed
+VSI X86VMS LSE V5.3-3                Full LP     Installed
+VSI X86VMS LUA V5.3-5H               Full LP     Installed
+VSI X86VMS MMS V4.0-5                Full LP     Installed
+VSI X86VMS OBT A1.0-0                Full LP     Installed
+VSI X86VMS OPENJDK17 X17.0-17A       Full LP     Installed
+VSI X86VMS OPENJDK80 V8.0-482A       Full LP     Installed
+VSI X86VMS OPENLDAP V2.6-6B          Full LP     Installed                                      VSI X86VMS OPENVMS E9.2-4
+VSI X86VMS OPENSSH V9.9-2C           Full LP     Installed                                      VSI X86VMS OPENVMS E9.2-4
+VSI X86VMS OPENVMS E9.2-4            Platform    Installed
+VSI X86VMS PERL542 V5.42-0           Full LP     Installed                                      VSI X86VMS OPENVMS E9.2-4
+VSI X86VMS PHP A8.0-0BUILD001        Full LP     Installed
+VSI X86VMS PYTHON A3.10-0RELEASE008  Full LP     Installed
+VSI X86VMS PYTHWHLS A1.1-6FIX07      Full LP     Installed
+VSI X86VMS SCA V5.2-3                Full LP     Installed
+VSI X86VMS SQLRELAY X1.9-3D          Full LP     Installed
+VSI X86VMS SSL3 V3.0-21              Full LP     Installed                                      ISSINOHO X86VMS VMSCURL V8.22-0E1
+                                                                                                ISSINOHO X86VMS WGET V1.25-0E2
+                                                                                                VSI X86VMS OPENVMS E9.2-4
+                                                                                                VSI X86VMS TCPIP V6.0-31
+VSI X86VMS SSL31 V3.1-4              Full LP     Installed
+VSI X86VMS TCPIP V6.0-31             Full LP     Installed                                      VSI X86VMS OPENVMS E9.2-4
+VSI X86VMS VMS E9.2-4                Oper System Installed                                      VSI X86VMS DWMOTIF V1.8-2
+                                                                                                VSI X86VMS KERBEROS V3.3-5A
+                                                                                                VSI X86VMS OPENVMS E9.2-4
+                                                                                                VSI X86VMS TCPIP V6.0-31
+VSI X86VMS VMSI18N V9.2              Full LP     Installed
+VSI X86VMS VMSSPI V9.0-28            Full LP     Installed
+VSI X86VMS VSP E1.0-3                Full LP     Installed
+VSI X86VMS WEBUI V4.2-0              Full LP     Installed
+VSI X86VMS X86ASM A10.1-3_250403     Full LP     Installed
+WEB VMS FIND V1.6                    Full LP     Installed
+------------------------------------ ----------- --------- ------------------------------------ ------------------------------------
+59 items found
+ 
+VMSINSTAL history file DISK$X86SYS:[VMS$COMMON.][SYSUPD]VMSINSTAL.HISTORY;1 contains additional information
+
+=== cc/version
+VSI C x86-64 V7.7-003 (GEM 50Z9T) on OpenVMS x86_64 E9.2-4  
+
+=== cxx/version
+VSI C++ V10.1-3U1
+clang version 10.0.1 (git@bitbucket.org:vms_software/llvm-10.0.1.git 7c0c038e6a818b5f8f00bb25b95ea589bac2a8cf)
+Build date: 11-12-2025
+Target: x86_64-OpenVMS
+Thread model: posix
+InstalledDir: X86VMS$DKA0:[SYS0.SYSCOMMON.][SYSEXE]
+
+=== clang
+VSI C++ V10.1-3U1
+clang version 10.0.1 (git@bitbucket.org:vms_software/llvm-10.0.1.git 7c0c038e6a818b5f8f00bb25b95ea589bac2a8cf)
+Build date: 11-12-2025
+Target: x86_64-OpenVMS
+Thread model: posix
+InstalledDir: x86vms$dka0:[sys0.syscommon.][sysexe]
+
+=== cxx setup procedure
+SYS$COMMON:[SYSHLP.EXAMPLES]CXX$SETUP.COM;1
+
+=== librarian / linker
+%DCL-W-IVQUAL, unrecognized qualifier - check validity, spelling, and placement
+ \VERSION\
+
+=== mms / mmk
+%MMS-I-IDENT, MMS V4.0-5 © 2024 VMS Software, Inc. and Hewlett-Packard Development, LP
+mmk: 
+
+=== tools on DCL$PATH and elsewhere
+   "DCL$PATH" = "DISK$TOOLS:[TOOLS]" (LNM$SYSTEM_TABLE)
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-UNDSYM, undefined symbol - check validity and spelling
+%DCL-W-IVVERB, unrecognized command verb - check validity and spelling
+ \PERL\
+
+=== python
+%DCL-W-IVVERB, unrecognized command verb - check validity and spelling
+ \PYTHON\
+
+=== git
+%DCL-W-IVVERB, unrecognized command verb - check validity and spelling
+ \GIT\
+
+=== OpenSSL kits
+
+(LNM$PROCESS_TABLE)
+
+(LNM$JOB_8256D880)
+
+(LNM$GROUP_000200)
+
+(LNM$SYSTEM_TABLE)
+
+  "SSL3$CERT" = "SSL3$ROOT:[DEMOCA.CERTS]"
+  "SSL3$CERTS" = "SSL3$ROOT:[DEMOCA.CERTS]"
+  "SSL3$COM" = "SSL3$ROOT:[COM]"
+  "SSL3$CONF" = "SSL3$ROOT:[DEMOCA.CONF]"
+  "SSL3$CRL" = "SSL3$ROOT:[DEMOCA.CRL]"
+  "SSL3$EXAMPLES" = "SYS$COMMON:[SYSHLP.EXAMPLES.SSL3]"
+  "SSL3$EXE" = "SSL3$ROOT:[X86_64_EXE]"
+  "SSL3$INCLUDE" = "SSL3$ROOT:[INCLUDE]"
+  "SSL3$KEY" = "SSL3$ROOT:[DEMOCA.CERTS]"
+  "SSL3$KEYS" = "SSL3$ROOT:[DEMOCA.CERTS]"
+  "SSL3$LIB" = "SSL3$ROOT:[LIB]"
+  "SSL3$MODULES" = "SSL3$ROOT:[MODULES]"
+  "SSL3$PRIVATE" = "SSL3$ROOT:[DEMOCA.PRIVATE]"
+  "SSL3$ROOT" = "SYS$SYSDEVICE:[VMS$COMMON.SSL3.]"
+
+(LNM$SYSCLUSTER_TABLE)
+
+(DECW$LOGICAL_NAMES)
+%SHOW-S-NOTRAN, no translation for logical name SSL$INCLUDE
+
+=== zlib / pcre2 install trees in the work directory
+USER$ROOT:[iain.vms_grep]zlib-1_3_2.DIR;1
+                              7
+USER$ROOT:[iain.vms_grep]pcre2-10_49.DIR;1
+                              1
+
+=== decc$ logicals
+
+(LNM$PROCESS_TABLE)
+
+(LNM$JOB_8256D880)
+
+(LNM$GROUP_000200)
+
+(LNM$SYSTEM_TABLE)
+
+  "DECC$CRTLMAP" = "SYS$SHARE:DECC$SHR"
+
+(LNM$SYSCLUSTER_TABLE)
+
+(DECW$LOGICAL_NAMES)
+
+=== process parse style
+TRADITIONAL
+
+=== batch queues
+Generic batch queue SYS$BATCH
+
+Batch queue X86VMS_BATCH, available, on X86VMS::
+
+  Entry  Jobname         Username             Status
+  -----  -------         --------             ------
+    353  apacheboot      IAIN                 Executing
+    348  sshlogs         IAIN                 Holding until  4-OCT-2026 10:02:01.27
+    350  ntpmonitor      IAIN                 Holding until  4-OCT-2026 10:04:21.25
+RECON-DONE

@@ -1,0 +1,716 @@
+PROBE compiler CC: cc/names=(as_is,shortened)/float=ieee/define=(_LARGEFILE,_USE_STD_STAT)/nolist/object=probe_tmp.obj
+RESULT h_alloca_h cc=1 link=-
+RESULT h_arpa_inet_h cc=1 link=-
+RESULT h_asm_termbits_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_bfd_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_crypt_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_dirent_h cc=1 link=-
+RESULT h_dlfcn_h cc=1 link=-
+RESULT h_execinfo_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_fcntl_h cc=1 link=-
+RESULT h_fenv_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_float_h cc=1 link=-
+RESULT h_fnmatch_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_fpu_control_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_grp_h cc=1 link=-
+RESULT h_ia64intrin_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_ieeefp_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_inttypes_h cc=1 link=-
+RESULT h_langinfo_h cc=1 link=-
+RESULT h_limits_h cc=1 link=-
+RESULT h_link_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_linux_mman_h cc=1 link=-
+RESULT h_linux_unistd_h cc=1 link=-
+RESULT h_locale_h cc=1 link=-
+RESULT h_malloc_h cc=1 link=-
+RESULT h_memory_h cc=1 link=-
+RESULT h_ndir_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_netinet_in6_h cc=1 link=-
+RESULT h_netinet_in_h cc=1 link=-
+RESULT h_paths_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_poll_h cc=1 link=-
+RESULT h_pwd_h cc=1 link=-
+RESULT h_sched_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_select_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_stdarg_h cc=1 link=-
+RESULT h_stddef_h cc=1 link=-
+RESULT h_stdint_h cc=1 link=-
+RESULT h_stdlib_h cc=1 link=-
+RESULT h_strings_h cc=1 link=-
+RESULT h_string_h cc=1 link=-
+RESULT h_synch_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_sysent_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_sys_file_h cc=1 link=-
+RESULT h_sys_fpu_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_sys_ioctl_h cc=1 link=-
+RESULT h_sys_mman_h cc=1 link=-
+RESULT h_sys_ndir_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_sys_param_h cc=1 link=-
+RESULT h_sys_poll_h cc=1 link=-
+RESULT h_sys_prctl_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_sys_ptem_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_sys_pte_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_sys_resource_h cc=1 link=-
+RESULT h_sys_select_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_sys_socket_h cc=1 link=-
+RESULT h_sys_sockio_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_sys_statvfs_h cc=1 link=-
+RESULT h_sys_stat_h cc=1 link=-
+RESULT h_sys_stream_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_sys_syscall_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_sys_times_h cc=1 link=-
+RESULT h_sys_time_h cc=1 link=-
+RESULT h_sys_types_h cc=1 link=-
+RESULT h_sys_utime_h cc=1 link=-
+RESULT h_sys_utsname_h cc=1 link=-
+RESULT h_sys_vadvise_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_sys_wait_h cc=1 link=-
+RESULT h_termbits_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_termcap_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_termios_h cc=1 link=-
+RESULT h_termio_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_time_h cc=1 link=-
+RESULT h_unistd_h cc=1 link=-
+RESULT h_utime_h cc=1 link=-
+RESULT h_valgrind_memcheck_h cc=4 link=- %CC-F-NOINCLFILEF
+RESULT h_varargs_h cc=1 link=-
+RESULT h_wchar_h cc=1 link=-
+RESULT h_wctype_h cc=1 link=-
+RESULT f_accept4 cc=1 link=1
+RESULT f_access cc=1 link=1
+RESULT f_alarm cc=1 link=1
+RESULT f_aligned_alloc cc=1 link=1
+RESULT f_backtrace cc=1 link=0
+RESULT f_backtrace_symbols cc=1 link=0
+RESULT f_backtrace_symbols_fd cc=1 link=0
+RESULT f_bfill cc=1 link=0
+RESULT f_clock_gettime cc=1 link=1
+RESULT f_clock_nanosleep cc=1 link=0
+RESULT f_compress cc=1 link=0
+RESULT f_crypt cc=1 link=1
+RESULT f_cuserid cc=1 link=1
+RESULT f_dladdr cc=1 link=0
+RESULT f_dlerror cc=1 link=1
+RESULT f_dlopen cc=1 link=1
+RESULT f_dlsym cc=1 link=1
+RESULT f_dup2 cc=1 link=1
+RESULT f_epoll_create cc=1 link=0
+RESULT f_execv cc=1 link=1
+RESULT f_fchmod cc=1 link=1
+RESULT f_fcntl cc=1 link=1
+RESULT f_fdatasync cc=1 link=0
+RESULT f_fedisableexcept cc=1 link=0
+RESULT f_fesetround cc=0 link=0 %CC-W-NOTINCRTL
+RESULT f_flock cc=1 link=0
+RESULT f_fork cc=1 link=0
+RESULT f_fseeko cc=1 link=1
+RESULT f_fstatvfs cc=1 link=1
+RESULT f_fsync cc=1 link=1
+RESULT f_ftime cc=1 link=1
+RESULT f_ftruncate cc=1 link=1
+RESULT f_getaddrinfo cc=1 link=1
+RESULT f_getcwd cc=1 link=1
+RESULT f_gethostbyaddr_r cc=1 link=0
+RESULT f_gethostname cc=1 link=1
+RESULT f_gethrtime cc=1 link=0
+RESULT f_getifaddrs cc=1 link=1
+RESULT f_getline cc=1 link=0
+RESULT f_getnameinfo cc=1 link=1
+RESULT f_getpagesize cc=1 link=1
+RESULT f_getpass cc=1 link=0
+RESULT f_getpassphrase cc=1 link=0
+RESULT f_getpid cc=1 link=1
+RESULT f_getppid cc=1 link=1
+RESULT f_getpwnam cc=1 link=1
+RESULT f_getpwuid cc=1 link=1
+RESULT f_getrlimit cc=1 link=0
+RESULT f_getrusage cc=1 link=1
+RESULT f_gettimeofday cc=1 link=1
+RESULT f_getwd cc=1 link=0
+RESULT f_gmtime_r cc=1 link=1
+RESULT f_index cc=1 link=1
+RESULT f_inet_ntop cc=1 link=1
+RESULT f_inet_pton cc=1 link=1
+RESULT f_initgroups cc=1 link=0
+RESULT f_io_uring_setup cc=1 link=0
+RESULT f_kill cc=1 link=1
+RESULT f_kqueue cc=1 link=0
+RESULT f_ldiv cc=1 link=1
+RESULT f_localtime_r cc=1 link=1
+RESULT f_lockf cc=1 link=0
+RESULT f_lstat cc=1 link=1
+RESULT f_madvise cc=1 link=0
+RESULT f_mallinfo cc=1 link=0
+RESULT f_mallinfo2 cc=1 link=0
+RESULT f_malloc_zone_statistics cc=1 link=0
+RESULT f_memalign cc=1 link=0
+RESULT f_memcpy cc=3 link=1 %CC-I-INTRINSICDECL
+RESULT f_memmove cc=3 link=1 %CC-I-INTRINSICDECL
+RESULT f_mkdtemp cc=1 link=0
+RESULT f_mkostemp cc=1 link=1
+RESULT f_mkstemp cc=1 link=1
+RESULT f_mlock cc=1 link=0
+RESULT f_mlockall cc=1 link=0
+RESULT f_mmap cc=1 link=1
+RESULT f_mmap64 cc=1 link=0
+RESULT f_mprotect cc=1 link=1
+RESULT f_mremap cc=1 link=0
+RESULT f_nanosleep cc=1 link=1
+RESULT f_nl_langinfo cc=1 link=1
+RESULT f_pclose cc=1 link=1
+RESULT f_perror cc=1 link=1
+RESULT f_pipe cc=1 link=1
+RESULT f_poll cc=1 link=1
+RESULT f_popen cc=1 link=1
+RESULT f_posix_fallocate cc=1 link=0
+RESULT f_posix_madvise cc=1 link=0
+RESULT f_posix_memalign cc=1 link=1
+RESULT f_posix_spawn cc=1 link=0
+RESULT f_ppoll cc=1 link=0
+RESULT f_pread cc=1 link=1
+RESULT f_printstack cc=1 link=0
+RESULT f_pthread_attr_create cc=1 link=0
+RESULT f_pthread_attr_getguardsize cc=1 link=1
+RESULT f_pthread_attr_getstacksize cc=1 link=1
+RESULT f_pthread_attr_setguardsize cc=1 link=1
+RESULT f_pthread_attr_setscope cc=1 link=1
+RESULT f_pthread_attr_setstacksize cc=1 link=1
+RESULT f_pthread_condattr_create cc=1 link=0
+RESULT f_pthread_condattr_setclock cc=1 link=0
+RESULT f_pthread_getaffinity_np cc=1 link=0
+RESULT f_pthread_getattr_np cc=1 link=0
+RESULT f_pthread_key_delete cc=1 link=1
+RESULT f_pthread_mutex_timedlock cc=1 link=0
+RESULT f_pthread_rwlock_rdlock cc=1 link=1
+RESULT f_pthread_rwlock_timedrdlock cc=1 link=0
+RESULT f_pthread_setname_np cc=1 link=1
+RESULT f_pthread_sigmask cc=1 link=1
+RESULT f_pthread_yield_np cc=1 link=1
+RESULT f_putenv cc=1 link=1
+RESULT f_pwrite cc=1 link=1
+RESULT f_raise cc=1 link=1
+RESULT f_readlink cc=1 link=1
+RESULT f_readv cc=1 link=1
+RESULT f_read_real_time cc=1 link=0
+RESULT f_realpath cc=1 link=1
+RESULT f_recvmsg cc=1 link=1
+RESULT f_rename cc=1 link=1
+RESULT f_rwlock_init cc=1 link=0
+RESULT f_sched_getcpu cc=1 link=0
+RESULT f_sched_yield cc=1 link=0
+RESULT f_sendmsg cc=1 link=1
+RESULT f_setenv cc=1 link=1
+RESULT f_setitimer cc=1 link=1
+RESULT f_setlocale cc=1 link=1
+RESULT f_sigaction cc=1 link=1
+RESULT f_sigaltstack cc=1 link=0
+RESULT f_sigprocmask cc=1 link=1
+RESULT f_sigset cc=1 link=0
+RESULT f_sigthreadmask cc=1 link=0
+RESULT f_sigwait cc=1 link=1
+RESULT f_sigwaitinfo cc=1 link=1
+RESULT f_sleep cc=1 link=1
+RESULT f_socketpair cc=1 link=1
+RESULT f_statvfs cc=1 link=1
+RESULT f_stpcpy cc=1 link=1
+RESULT f_strcasecmp cc=1 link=1
+RESULT f_strcoll cc=1 link=1
+RESULT f_strdup cc=1 link=1
+RESULT f_strerror cc=1 link=1
+RESULT f_strndup cc=1 link=1
+RESULT f_strnlen cc=1 link=1
+RESULT f_strpbrk cc=1 link=1
+RESULT f_strsignal cc=1 link=0
+RESULT f_strtok_r cc=1 link=1
+RESULT f_strtoll cc=1 link=1
+RESULT f_strtoul cc=1 link=1
+RESULT f_strtoull cc=1 link=1
+RESULT f_sysconf cc=1 link=1
+RESULT f_tell cc=1 link=0
+RESULT f_thr_yield cc=1 link=0
+RESULT f_time cc=1 link=1
+RESULT f_timer_create cc=1 link=0
+RESULT f_times cc=1 link=1
+RESULT f_uname cc=1 link=1
+RESULT f_vasprintf cc=1 link=1
+RESULT f_vfork cc=1 link=0
+RESULT f_vsnprintf cc=1 link=1
+RESULT f_writev cc=1 link=1
+RESULT f__malloc64 cc=1 link=1
+RESULT g_accept4 cc=2 link=- %CC-E-UNDECLARED
+RESULT g_access cc=1 link=1
+RESULT g_alarm cc=1 link=1
+RESULT g_aligned_alloc cc=1 link=1
+RESULT g_backtrace cc=2 link=- %CC-E-UNDECLARED
+RESULT g_backtrace_symbols cc=2 link=- %CC-E-UNDECLARED
+RESULT g_backtrace_symbols_fd cc=2 link=- %CC-E-UNDECLARED
+RESULT g_bfill cc=2 link=- %CC-E-UNDECLARED
+RESULT g_clock_gettime cc=1 link=1
+RESULT g_clock_nanosleep cc=2 link=- %CC-E-UNDECLARED
+RESULT g_compress cc=2 link=- %CC-E-UNDECLARED
+RESULT g_crypt cc=1 link=1
+RESULT g_cuserid cc=1 link=1
+RESULT g_dladdr cc=2 link=- %CC-E-UNDECLARED
+RESULT g_dlerror cc=2 link=- %CC-E-UNDECLARED
+RESULT g_dlopen cc=2 link=- %CC-E-UNDECLARED
+RESULT g_dlsym cc=2 link=- %CC-E-UNDECLARED
+RESULT g_dup2 cc=1 link=1
+RESULT g_epoll_create cc=2 link=- %CC-E-UNDECLARED
+RESULT g_execv cc=1 link=1
+RESULT g_fchmod cc=1 link=1
+RESULT g_fcntl cc=1 link=1
+RESULT g_fdatasync cc=2 link=- %CC-E-UNDECLARED
+RESULT g_fedisableexcept cc=2 link=- %CC-E-UNDECLARED
+RESULT g_fesetround cc=2 link=- %CC-E-UNDECLARED
+RESULT g_flock cc=2 link=- %CC-E-UNDECLARED
+RESULT g_fork cc=2 link=- %CC-E-UNDECLARED
+RESULT g_fseeko cc=1 link=1
+RESULT g_fstatvfs cc=1 link=1
+RESULT g_fsync cc=1 link=1
+RESULT g_ftime cc=1 link=1
+RESULT g_ftruncate cc=1 link=1
+RESULT g_getaddrinfo cc=1 link=1
+RESULT g_getcwd cc=1 link=1
+RESULT g_gethostbyaddr_r cc=2 link=- %CC-E-UNDECLARED
+RESULT g_gethostname cc=1 link=1
+RESULT g_gethrtime cc=2 link=- %CC-E-UNDECLARED
+RESULT g_getifaddrs cc=2 link=- %CC-E-UNDECLARED
+RESULT g_getline cc=2 link=- %CC-E-UNDECLARED
+RESULT g_getnameinfo cc=1 link=1
+RESULT g_getpagesize cc=1 link=1
+RESULT g_getpass cc=2 link=- %CC-E-UNDECLARED
+RESULT g_getpassphrase cc=2 link=- %CC-E-UNDECLARED
+RESULT g_getpid cc=1 link=1
+RESULT g_getppid cc=1 link=1
+RESULT g_getpwnam cc=1 link=1
+RESULT g_getpwuid cc=1 link=1
+RESULT g_getrlimit cc=2 link=- %CC-E-UNDECLARED
+RESULT g_getrusage cc=1 link=1
+RESULT g_gettimeofday cc=1 link=1
+RESULT g_getwd cc=2 link=- %CC-E-UNDECLARED
+RESULT g_gmtime_r cc=1 link=1
+RESULT g_index cc=1 link=1
+RESULT g_inet_ntop cc=1 link=1
+RESULT g_inet_pton cc=1 link=1
+RESULT g_initgroups cc=2 link=- %CC-E-UNDECLARED
+RESULT g_io_uring_setup cc=2 link=- %CC-E-UNDECLARED
+RESULT g_kill cc=1 link=1
+RESULT g_kqueue cc=2 link=- %CC-E-UNDECLARED
+RESULT g_ldiv cc=1 link=1
+RESULT g_localtime_r cc=1 link=1
+RESULT g_lockf cc=2 link=- %CC-E-UNDECLARED
+RESULT g_lstat cc=1 link=1
+RESULT g_madvise cc=2 link=- %CC-E-UNDECLARED
+RESULT g_mallinfo cc=2 link=- %CC-E-UNDECLARED
+RESULT g_mallinfo2 cc=2 link=- %CC-E-UNDECLARED
+RESULT g_malloc_zone_statistics cc=2 link=- %CC-E-UNDECLARED
+RESULT g_memalign cc=2 link=- %CC-E-UNDECLARED
+RESULT g_memcpy cc=1 link=1
+RESULT g_memmove cc=1 link=1
+RESULT g_mkdtemp cc=2 link=- %CC-E-UNDECLARED
+RESULT g_mkostemp cc=1 link=1
+RESULT g_mkstemp cc=1 link=1
+RESULT g_mlock cc=2 link=- %CC-E-UNDECLARED
+RESULT g_mlockall cc=2 link=- %CC-E-UNDECLARED
+RESULT g_mmap cc=1 link=1
+RESULT g_mmap64 cc=2 link=- %CC-E-UNDECLARED
+RESULT g_mprotect cc=1 link=1
+RESULT g_mremap cc=2 link=- %CC-E-UNDECLARED
+RESULT g_nanosleep cc=1 link=1
+RESULT g_nl_langinfo cc=1 link=1
+RESULT g_pclose cc=1 link=1
+RESULT g_perror cc=1 link=1
+RESULT g_pipe cc=1 link=1
+RESULT g_poll cc=1 link=1
+RESULT g_popen cc=1 link=1
+RESULT g_posix_fallocate cc=2 link=- %CC-E-UNDECLARED
+RESULT g_posix_madvise cc=2 link=- %CC-E-UNDECLARED
+RESULT g_posix_memalign cc=1 link=1
+RESULT g_posix_spawn cc=2 link=- %CC-E-UNDECLARED
+RESULT g_ppoll cc=2 link=- %CC-E-UNDECLARED
+RESULT g_pread cc=1 link=1
+RESULT g_printstack cc=2 link=- %CC-E-UNDECLARED
+RESULT g_pthread_attr_create cc=2 link=- %CC-E-UNDECLARED
+RESULT g_pthread_attr_getguardsize cc=1 link=1
+RESULT g_pthread_attr_getstacksize cc=1 link=1
+RESULT g_pthread_attr_setguardsize cc=1 link=1
+RESULT g_pthread_attr_setscope cc=1 link=1
+RESULT g_pthread_attr_setstacksize cc=1 link=1
+RESULT g_pthread_condattr_create cc=2 link=- %CC-E-UNDECLARED
+RESULT g_pthread_condattr_setclock cc=2 link=- %CC-E-UNDECLARED
+RESULT g_pthread_getaffinity_np cc=2 link=- %CC-E-UNDECLARED
+RESULT g_pthread_getattr_np cc=2 link=- %CC-E-UNDECLARED
+RESULT g_pthread_key_delete cc=1 link=1
+RESULT g_pthread_mutex_timedlock cc=2 link=- %CC-E-UNDECLARED
+RESULT g_pthread_rwlock_rdlock cc=1 link=1
+RESULT g_pthread_rwlock_timedrdlock cc=2 link=- %CC-E-UNDECLARED
+RESULT g_pthread_setname_np cc=1 link=1
+RESULT g_pthread_sigmask cc=2 link=- %CC-E-UNDECLARED
+RESULT g_pthread_yield_np cc=1 link=1
+RESULT g_putenv cc=1 link=1
+RESULT g_pwrite cc=1 link=1
+RESULT g_raise cc=1 link=1
+RESULT g_readlink cc=1 link=1
+RESULT g_readv cc=1 link=1
+RESULT g_read_real_time cc=2 link=- %CC-E-UNDECLARED
+RESULT g_realpath cc=1 link=1
+RESULT g_recvmsg cc=1 link=1
+RESULT g_rename cc=1 link=1
+RESULT g_rwlock_init cc=2 link=- %CC-E-UNDECLARED
+RESULT g_sched_getcpu cc=2 link=- %CC-E-UNDECLARED
+RESULT g_sched_yield cc=1 link=1
+RESULT g_sendmsg cc=1 link=1
+RESULT g_setenv cc=1 link=1
+RESULT g_setitimer cc=1 link=1
+RESULT g_setlocale cc=1 link=1
+RESULT g_sigaction cc=1 link=1
+RESULT g_sigaltstack cc=2 link=- %CC-E-UNDECLARED
+RESULT g_sigprocmask cc=1 link=1
+RESULT g_sigset cc=2 link=- %CC-E-UNDECLARED
+RESULT g_sigthreadmask cc=2 link=- %CC-E-UNDECLARED
+RESULT g_sigwait cc=1 link=1
+RESULT g_sigwaitinfo cc=1 link=1
+RESULT g_sleep cc=1 link=1
+RESULT g_socketpair cc=1 link=1
+RESULT g_statvfs cc=1 link=1
+RESULT g_stpcpy cc=1 link=1
+RESULT g_strcasecmp cc=1 link=1
+RESULT g_strcoll cc=1 link=1
+RESULT g_strdup cc=1 link=1
+RESULT g_strerror cc=1 link=1
+RESULT g_strndup cc=1 link=1
+RESULT g_strnlen cc=1 link=1
+RESULT g_strpbrk cc=1 link=1
+RESULT g_strsignal cc=2 link=- %CC-E-UNDECLARED
+RESULT g_strtok_r cc=1 link=1
+RESULT g_strtoll cc=1 link=1
+RESULT g_strtoul cc=1 link=1
+RESULT g_strtoull cc=1 link=1
+RESULT g_sysconf cc=1 link=1
+RESULT g_tell cc=2 link=- %CC-E-UNDECLARED
+RESULT g_thr_yield cc=2 link=- %CC-E-UNDECLARED
+RESULT g_time cc=1 link=1
+RESULT g_timer_create cc=2 link=- %CC-E-UNDECLARED
+RESULT g_times cc=1 link=1
+RESULT g_uname cc=1 link=1
+RESULT g_vasprintf cc=1 link=1
+RESULT g_vfork cc=2 link=- %CC-E-UNDECLARED
+RESULT g_vsnprintf cc=1 link=1
+RESULT g_writev cc=1 link=1
+RESULT g__malloc64 cc=2 link=- %CC-E-UNDECLARED
+--- r_io (CRTL defaults)
+IO O_DIRECT defined                   NO  
+IO O_DSYNC defined                    yes 
+IO O_SYNC defined                     yes 
+IO O_CLOEXEC defined                  yes 
+IO F_SETLK defined                    yes 
+IO F_FULLFSYNC defined                NO  
+IO open O_CREAT                       yes 
+IO pwrite at 0                        yes 
+IO pwrite at 64K (gap)                yes 
+IO fstat size after gap write         NO  st_size=0 (expect 69632)
+IO pread inside gap reads zeros       yes 
+IO pread at 64K                       yes 
+IO pwrite 1 byte mid-block            yes 
+IO odd-length append size             NO  st_size=0 (expect 70632)
+IO second O_RDWR open of same file    NO  errno=65535 (file currently locked by another user)
+IO fsync                              yes 
+IO ftruncate shrink                   yes 
+IO ftruncate grow                     yes 
+IO fcntl F_SETLK write lock           yes 
+IO fcntl F_SETLK unlock               yes 
+IO lseek past EOF + write             NO  
+IO O_APPEND write                     yes 
+IO rename over existing file          yes 
+IO rename source gone                 yes 
+IO unlink open file                   NO  errno=65535 (file currently locked by another user)
+IO unlinked file gone                 NO  
+IO O_TRUNC reuses file (no 2nd version) NO  unlink left an older version
+IO ioprobe/t1.frm                     yes 
+IO ioprobe/t1.MAI                     yes 
+IO ioprobe/t1.MAD                     yes 
+IO ioprobe/db.opt                     yes 
+IO ioprobe/ib_logfile0                yes 
+IO ioprobe/ibdata1                    yes 
+IO ioprobe/aria_log.00000001          yes 
+IO ioprobe/#sql-1a2b_3.frm            NO  errno=2 (no such file or directory)
+IO ioprobe/#sql-backup-1a2b-3.MAI     NO  errno=2 (no such file or directory)
+IO ioprobe/t@002d1.frm                NO  errno=2 (no such file or directory)
+IO ioprobe/MixedCase.frm              yes 
+IO ioprobe/a.b.c.d                    NO  errno=2 (no such file or directory)
+IO ioprobe/ddl_recovery.log           yes 
+IO ioprobe/x#P#p0.ibd                 NO  errno=2 (no such file or directory)
+IO ioprobe/.hidden                    yes 
+IO ioprobe/mysql-bin.000001           yes 
+IO ioprobe/sp ace.frm                 NO  errno=2 (no such file or directory)
+IO readdir: [.hidden] [aria_log.00000001] [data.bin] [db.opt] [ddl_recovery.log] [ibdata1.] [ib_logfile0.] [mixedcase.frm] [mysql-bin.000001] [t1.frm] [t1.mad] [t1.mai]
+IO realpath ioprobe/t1.frm -> errno=76 (function not implemented )
+IO getcwd -> DISK$SYSDUMP:[IAIN.VMS_MARIADB.MARIADB_PROBE]
+IO mkdir name with a dot              NO  errno=2 (no such file or directory)
+IO rmdir name with a dot              NO  errno=2 (no such file or directory)
+IO open() a directory                 NO  errno=2 (no such file or directory)
+R_IO DONE
+--- r_io (feature logicals)
+IO O_DIRECT defined                   NO  
+IO O_DSYNC defined                    yes 
+IO O_SYNC defined                     yes 
+IO O_CLOEXEC defined                  yes 
+IO F_SETLK defined                    yes 
+IO F_FULLFSYNC defined                NO  
+IO open O_CREAT                       yes 
+IO pwrite at 0                        yes 
+IO pwrite at 64K (gap)                yes 
+IO fstat size after gap write         NO  st_size=0 (expect 69632)
+IO pread inside gap reads zeros       yes 
+IO pread at 64K                       yes 
+IO pwrite 1 byte mid-block            yes 
+IO odd-length append size             NO  st_size=0 (expect 70632)
+IO second O_RDWR open of same file    yes 
+IO write via fd2 visible via fd1      NO  
+IO fsync                              yes 
+IO ftruncate shrink                   yes 
+IO ftruncate grow                     yes 
+IO fcntl F_SETLK write lock           yes 
+IO fcntl F_SETLK unlock               yes 
+IO lseek past EOF + write             NO  
+IO O_APPEND write                     yes 
+IO rename over existing file          yes 
+IO rename source gone                 yes 
+IO unlink open file                   yes 
+IO unlinked file gone                 NO  
+IO O_TRUNC reuses file (no 2nd version) NO  unlink left an older version
+IO ioprobe/t1.frm                     yes 
+IO ioprobe/t1.MAI                     yes 
+IO ioprobe/t1.MAD                     yes 
+IO ioprobe/db.opt                     yes 
+IO ioprobe/ib_logfile0                yes 
+IO ioprobe/ibdata1                    yes 
+IO ioprobe/aria_log.00000001          yes 
+IO ioprobe/#sql-1a2b_3.frm            yes 
+IO ioprobe/#sql-backup-1a2b-3.MAI     yes 
+IO ioprobe/t@002d1.frm                yes 
+IO ioprobe/MixedCase.frm              yes 
+IO ioprobe/a.b.c.d                    yes 
+IO ioprobe/ddl_recovery.log           yes 
+IO ioprobe/x#P#p0.ibd                 yes 
+IO ioprobe/.hidden                    yes 
+IO ioprobe/mysql-bin.000001           yes 
+IO ioprobe/sp ace.frm                 yes 
+IO readdir: [#sql-1a2b_3.frm] [#sql-backup-1a2b-3.MAI] [.hidden] [a.b.c.d] [aria_log.00000001] [data.bin] [db.opt] [ddl_recovery.log] [ibdata1] [ib_logfile0] [MixedCase.frm] [mysql-bin.000001] [sp ace.frm] [t1.frm] [t1.MAD] [t1.MAI] [t@002d1.frm] [x#P#p0.ibd]
+IO realpath ioprobe/t1.frm -> errno=76 (function not implemented )
+IO getcwd -> /DISK$SYSDUMP/IAIN/VMS_MARIADB/MARIADB_PROBE
+IO mkdir name with a dot              yes 
+IO rmdir name with a dot              yes 
+IO open() a directory                 NO  errno=2 (no such file or directory)
+R_IO DONE
+--- r_io2 (CRTL defaults)
+IO2 default  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 default  after fsync:       fstat=16384 stat=16384
+IO2 default  second open failed errno=65535 (file currently locked by another user)
+IO2 default  lseek(100000)=100000 write=1 errno=0
+IO2 default  after seek+write:  fstat=16384
+IO2 default  after close:       stat=100001 (expect 100001)
+IO2 default  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 ctx_stm  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 ctx_stm  after fsync:       fstat=16384 stat=16384
+IO2 ctx_stm  second open failed errno=65535 (file currently locked by another user)
+IO2 ctx_stm  lseek(100000)=100000 write=1 errno=0
+IO2 ctx_stm  after seek+write:  fstat=16384
+IO2 ctx_stm  after close:       stat=100001 (expect 100001)
+IO2 ctx_stm  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 rfm_udf  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 rfm_udf  after fsync:       fstat=16384 stat=16384
+IO2 rfm_udf  second open failed errno=65535 (file currently locked by another user)
+IO2 rfm_udf  lseek(100000)=100000 write=1 errno=0
+IO2 rfm_udf  after seek+write:  fstat=16384
+IO2 rfm_udf  after close:       stat=100001 (expect 100001)
+IO2 rfm_udf  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 rfm_fix  open failed errno=65535 (invalid maximum record size)
+IO2 shr_all  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 shr_all  after fsync:       fstat=16384 stat=16384
+IO2 shr_all  fd2 sees size:     fstat=16384
+IO2 shr_all  fd2 pwrite -> fd1 pread before fsync: A
+IO2 shr_all  fd2 pwrite -> fd1 pread after fsync(fd2): A
+IO2 shr_all  fd1 pwrite -> fd2 pread (no fsync): A
+IO2 shr_all  fd2 extends to 20K: fd1 fstat=16384 fd2 fstat=16384
+IO2 shr_all  after close(fd2):  fd1 fstat=20480 stat=20480
+IO2 shr_all  lseek(100000)=100000 write=1 errno=0
+IO2 shr_all  after seek+write:  fstat=20480
+IO2 shr_all  after close:       stat=100001 (expect 100001)
+IO2 shr_all  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 realpath(.) -> function not implemented 
+R_IO2 DONE
+--- r_io2 (feature logicals)
+IO2 default  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 default  after fsync:       fstat=16384 stat=16384
+IO2 default  fd2 sees size:     fstat=16384
+IO2 default  fd2 pwrite -> fd1 pread before fsync: A
+IO2 default  fd2 pwrite -> fd1 pread after fsync(fd2): A
+IO2 default  fd1 pwrite -> fd2 pread (no fsync): A
+IO2 default  fd2 extends to 20K: fd1 fstat=16384 fd2 fstat=16384
+IO2 default  after close(fd2):  fd1 fstat=20480 stat=20480
+IO2 default  lseek(100000)=100000 write=1 errno=0
+IO2 default  after seek+write:  fstat=20480
+IO2 default  after close:       stat=100001 (expect 100001)
+IO2 default  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 ctx_stm  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 ctx_stm  after fsync:       fstat=16384 stat=16384
+IO2 ctx_stm  fd2 sees size:     fstat=16384
+IO2 ctx_stm  fd2 pwrite -> fd1 pread before fsync: A
+IO2 ctx_stm  fd2 pwrite -> fd1 pread after fsync(fd2): A
+IO2 ctx_stm  fd1 pwrite -> fd2 pread (no fsync): A
+IO2 ctx_stm  fd2 extends to 20K: fd1 fstat=16384 fd2 fstat=16384
+IO2 ctx_stm  after close(fd2):  fd1 fstat=20480 stat=20480
+IO2 ctx_stm  lseek(100000)=100000 write=1 errno=0
+IO2 ctx_stm  after seek+write:  fstat=20480
+IO2 ctx_stm  after close:       stat=100001 (expect 100001)
+IO2 ctx_stm  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 rfm_udf  open failed errno=65535 (operation invalid for file organization or device)
+IO2 rfm_fix  open failed errno=65535 (invalid maximum record size)
+IO2 shr_all  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 shr_all  after fsync:       fstat=16384 stat=16384
+IO2 shr_all  fd2 sees size:     fstat=16384
+IO2 shr_all  fd2 pwrite -> fd1 pread before fsync: A
+IO2 shr_all  fd2 pwrite -> fd1 pread after fsync(fd2): A
+IO2 shr_all  fd1 pwrite -> fd2 pread (no fsync): A
+IO2 shr_all  fd2 extends to 20K: fd1 fstat=16384 fd2 fstat=16384
+IO2 shr_all  after close(fd2):  fd1 fstat=20480 stat=20480
+IO2 shr_all  lseek(100000)=100000 write=1 errno=0
+IO2 shr_all  after seek+write:  fstat=20480
+IO2 shr_all  after close:       stat=100001 (expect 100001)
+IO2 shr_all  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 realpath(.) -> function not implemented 
+R_IO2 DONE
+--- r_net (CRTL defaults)
+NET SO_REUSEADDR                       yes 
+NET bind 127.0.0.1:0                   yes 
+NET fcntl O_NONBLOCK on socket         yes 
+NET non-blocking accept -> EWOULDBLOCK yes errno=35 (I/O stream empty)
+NET non-blocking connect               yes errno=36 (operation in progress)
+NET poll() on listening socket         yes 
+NET accept after poll                  yes 
+NET poll() POLLOUT on connecting socket yes 
+NET TCP_NODELAY                        yes 
+NET SO_KEEPALIVE                       yes 
+NET SO_RCVTIMEO                        yes 
+NET send/recv                          yes 
+NET MSG_DONTWAIT on empty socket       yes errno=35 (I/O stream empty)
+NET recv after peer close returns 0    yes 
+NET getaddrinfo localhost              yes 
+NET getaddrinfo passive                yes 
+NET AF_INET6 socket                    yes 
+NET IPV6_V6ONLY=0 (dual stack)         yes 
+NET AF_UNIX socket                     yes 
+NET AF_UNIX bind                       NO  errno=65535 (no logical name match)
+NET socketpair                         yes 
+R_NET DONE
+--- r_net (feature logicals)
+NET SO_REUSEADDR                       yes 
+NET bind 127.0.0.1:0                   yes 
+NET fcntl O_NONBLOCK on socket         yes 
+NET non-blocking accept -> EWOULDBLOCK yes errno=35 (I/O stream empty)
+NET non-blocking connect               yes errno=36 (operation in progress)
+NET poll() on listening socket         yes 
+NET accept after poll                  yes 
+NET poll() POLLOUT on connecting socket yes 
+NET TCP_NODELAY                        yes 
+NET SO_KEEPALIVE                       yes 
+NET SO_RCVTIMEO                        yes 
+NET send/recv                          yes 
+NET MSG_DONTWAIT on empty socket       yes errno=35 (I/O stream empty)
+NET recv after peer close returns 0    yes 
+NET getaddrinfo localhost              yes 
+NET getaddrinfo passive                yes 
+NET AF_INET6 socket                    yes 
+NET IPV6_V6ONLY=0 (dual stack)         yes 
+NET AF_UNIX socket                     yes 
+NET AF_UNIX bind                       NO  errno=65535 (no logical name match)
+NET socketpair                         yes 
+R_NET DONE
+
+    struct rlimit rl;
+..................^
+%CC-E-INCOMPNOLINK, In this declaration, "rl" has no linkage and is of an incomplete type.
+at line number 52 in file DISK$SYSDUMP:[IAIN.VMS_MARIADB.MARIADB_PROBE]r_proc.c;2
+
+    r = getrlimit(RLIMIT_NOFILE, &rl);
+........^
+%CC-I-IMPLICITFUNC, In this statement, the identifier "getrlimit" is implicitly declared as a function.
+at line number 53 in file DISK$SYSDUMP:[IAIN.VMS_MARIADB.MARIADB_PROBE]r_proc.c;2
+
+    r = getrlimit(RLIMIT_NOFILE, &rl);
+..................^
+%CC-E-UNDECLARED, In this statement, "RLIMIT_NOFILE" is not declared.
+at line number 53 in file DISK$SYSDUMP:[IAIN.VMS_MARIADB.MARIADB_PROBE]r_proc.c;2
+
+    r = pthread_sigmask(SIG_BLOCK, &set, NULL);
+........^
+%CC-I-IMPLICITFUNC, In this statement, the identifier "pthread_sigmask" is implicitly declared as a function.
+at line number 111 in file DISK$SYSDUMP:[IAIN.VMS_MARIADB.MARIADB_PROBE]r_proc.c;2
+--- r_proc did not compile
+--- C++
+%CXX-E-ERROR, DISK$SYSDUMP:[IAIN.VMS_MARIADB.MARIADB_PROBE]cxx_threads.cpp;2:21:8: error: OpenVMS does not currently support thread_local/__thread/_Thread_local declaration specifiers
+static thread_local int tls_counter = 0;
+       ^
+%CXX-E-ENDDIAG, 1 error generated.
+RESULT cxx_threads gnu11 TLS cc=2
+RESULT cxx_threads gnu11 NO_TLS cc=1
+__cplusplus 201103
+sizeof void* 8 long 8 size_t 8 long long 8
+atomic<uint64_t> lock_free 1
+condvar wait_for ok
+atomics ok (800000)
+thread_local main 800000 (expect 0)
+cas ok
+sleep_for 50ms took 50ms
+hardware_concurrency 2
+CXX_THREADS DONE
+%CXX-E-ERROR, cxx_emutls.cpp:4:8: error: OpenVMS does not currently support thread_local/__thread/_Thread_local declaration specifiers
+static thread_local int tls_counter = 7;
+       ^
+%CXX-E-ENDDIAG, 1 error generated.
+RESULT cxx_emutls cc=2
+__cplusplus 201103
+sizeof void* 8 long 8 size_t 8 long long 8
+atomic<uint64_t> lock_free 1
+condvar wait_for ok
+atomics ok (800000)
+thread_local main 800000 (expect 0)
+cas ok
+sleep_for 50ms took 50ms
+hardware_concurrency 2
+CXX_THREADS DONE
+In file included from cxx17.cpp:2:
+In file included from SYS$COMMON:[VSICXX$LIB.INCLUDE.lib_cxx.include]variant.;1:209:
+In file included from SYS$COMMON:[VSICXX$LIB.INCLUDE.lib_cxx.include]array.;1:118:
+In file included from SYS$COMMON:[VSICXX$LIB.INCLUDE.lib_cxx.include]iterator.;1:429:
+In file included from SYS$COMMON:[VSICXX$LIB.INCLUDE.lib_cxx.include]__functional_base.;1:25:
+%CXX-W-WARN, SYS$COMMON:[VSICXX$LIB.INCLUDE.lib_cxx.include]new.;1:279:2: warning: "32-bit allocator has no aligned allocation. Alignment ignored." [-W#warnings]
+#warning "32-bit allocator has no aligned allocation. Alignment ignored."
+ ^
+%CXX-W-ENDDIAG, 1 warning generated.
+RESULT cxx17 cc=0
+terminating with uncaught exception of type std::__1::system_error: mutex lock failed: invalid argument
+%NONAME-F-NOMSG, Message number 05F78424
+%TRACE-F-TRACEBACK, symbolic stack dump follows
+image     module    routine               line      rel PC           abs PC     
+DECC$SHR  SIGNAL.C;1                     24372 00000000800BAD86 FFFF8300087C8D86
+DECC$SHR  ABORT.C;1                       3502 000000008003B8D1 FFFF8300087498D1
+LIBCXXABI                                    0 0000000080028930 000000007B610930
+LIBCXXABI                                    0 0000000080000C2F 000000007B5E8C2F
+LIBCXXABI                                    0 0000000080025969 000000007B60D969
+LIBCXXABI                                    0 000000008000113A 000000007B5E913A
+LIBCXXABI                                    0 00000000800287C3 000000007B6107C3
+                                             0 FFFF830006527D37 FFFF830006527D37
+----- Above condition handler called with exception 05F78414
+%NONAME-F-NOMSG, Message number 05F78414
+----- End of Exception message
+                                             0 FFFF83000652D6E2 FFFF83000652D6E2
+cxx17                                        0 00000000800003B7 00000000800003B7
+cxx17                                        0 00000000800003F3 00000000800003F3
+PTHREAD$RTL                                  0 000000008001F1D7 FFFF8300086C21D7
+PTHREAD$RTL                                  0 000000008000021E FFFF8300086A321E
+                                             0 FFFF83000694FCC6 FFFF83000694FCC6
+DCL                                          0 0000000080045134 000000007AD0F134
+%TRACE-I-END, end of TRACE stack dump
+PROBE-DONE
