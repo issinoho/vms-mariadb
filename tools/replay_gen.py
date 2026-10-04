@@ -161,6 +161,13 @@ def main():
         with open(os.path.join(out, 'chk_%s.%s' % (tag, ext)), 'w') as f:
             f.write(text)
         manifest.append('%s %s %s %s %s %s %s' % (tag, var, mod, kind, lang, runvar, checkvar))
+    # Other clang options from clang_common.rsp (not -D, -O, -g) for every
+    # replayed compile: vms_replay.com reads FLAGS.TXT.
+    top = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    flags = [l.strip() for l in open(os.path.join(top, 'overlay', 'vms', 'config', 'clang_common.rsp'))
+             if l.strip() and not l.startswith('#') and not re.match(r'-(D|O|g)', l.strip())]
+    with open(os.path.join(out, 'flags.txt'), 'w') as f:
+        f.write(' '.join(flags) + '\n')
     with open(os.path.join(out, 'manifest.txt'), 'w') as f:
         f.write('\n'.join(manifest) + '\n')
     with open(os.path.join(out, 'policy.txt'), 'w') as f:

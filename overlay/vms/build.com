@@ -19,7 +19,7 @@ $ cfg = f$edit(p1, "UPCASE")
 $ target = f$edit(p2, "UPCASE")
 $ if target .eqs. "" then target = "ALL"
 $ keep = ""
-$ if f$edit(p3, "UPCASE") .eqs. "KEEP_GOING" then keep = "/IGNORE=ERROR"
+$ if f$edit(p3, "UPCASE") .eqs. "KEEP_GOING" then keep = "/IGNORE=FATAL"
 $ write sys$output "BUILD: ''cfg' ''target' in ''f$environment("DEFAULT")'"
 $ if f$search("[.vms.build]''cfg'.dir") .eqs. ""
 $ then
@@ -28,7 +28,7 @@ $   goto done
 $ endif
 $ if target .eqs. "CLEAN"
 $ then
-$   if f$search("[.vmsobj...]*.*") .nes. "" then delete/nolog [.vmsobj...]*.*;*
+$   if f$search("[.vmsobj...]*.*") .nes. "" then delete/nolog/exclude=*.dir [.vmsobj...]*.*;*
 $   status = 1
 $   goto finish
 $ endif

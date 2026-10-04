@@ -17,6 +17,14 @@ $ open/write o ssl3.opt
 $ write o "sys$share:ssl3$libssl_shr/share"
 $ write o "sys$share:ssl3$libcrypto_shr/share"
 $ close o
+$! The build's other clang options (gen'd from vms/config/clang_common.rsp).
+$ flags = ""
+$ if f$search("flags.txt") .nes. ""
+$ then
+$   open/read fl flags.txt
+$   read fl flags
+$   close fl
+$ endif
 $ open/read m manifest.txt
 $loop:
 $ read/end=done m line
@@ -35,7 +43,7 @@ $ endif
 $ if f$search("replay_tmp.*") .nes. "" then delete/nolog replay_tmp.*;*
 $ define/user sys$output replay_cc.lis
 $ define/user sys$error replay_cc.lis
-$ clang 'std' -c 'src' -o replay_tmp.obj
+$ clang 'flags' 'std' -c 'src' -o replay_tmp.obj
 $ csev = $severity
 $ lsev = "-"
 $ out = ""

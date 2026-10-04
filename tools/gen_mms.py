@@ -176,8 +176,9 @@ def main():
             if missing:
                 sys.exit('gen_mms: %s links %s, not in %s.targets' % (tname, missing, cfg))
             with open(os.path.join(out, opt), 'w') as f:
-                for d in sorted({os.path.dirname(o) for o in objs}):
-                    f.write('%s*.obj\n' % vms_dir(d))
+                # The linker takes no wildcards in an options file.
+                for o in objs:
+                    f.write('%s\n' % vms_file(o))
                 for l in libs:
                     f.write('%s%s.olb/library\n' % (vms_dir('vmsobj'), l))
                 f.write('sys$share:ssl3$libssl_shr/share\nsys$share:ssl3$libcrypto_shr/share\n')
