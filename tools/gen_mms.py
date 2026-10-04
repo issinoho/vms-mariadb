@@ -210,6 +210,13 @@ def main():
     mms.insert(5, deps_line('ALL', [vms_file(o) for o in all_outputs]))
     mms.insert(6, '\t! built')
     mms.insert(7, '')
+    # Library targets and their object counts, for parallel builds
+    # (build.sh JOBS=n splits them into n MMS runs; images link afterwards).
+    with open(os.path.join(out, 'TARGETS.TXT'), 'w') as f:
+        for tname in wanted:
+            if targets[tname]['type'] != 'EXECUTABLE':
+                f.write('%s %d\n' % (vms_file('%s/%s.olb' % (objroot, tname)),
+                                      len(obj_of_target[tname])))
     with open(os.path.join(out, 'PUSHDIRS.TXT'), 'w') as f:
         f.write('\n'.join(sorted(pushdirs)) + '\n')
     # clang -o does not create directories: vms/build.com runs this first.

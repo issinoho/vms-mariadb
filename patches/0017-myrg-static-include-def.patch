@@ -1,0 +1,20 @@
+Subject: myrg_static.c: always include myrg_def.h
+
+The '#ifndef stdin' guard skips myrg_def.h whenever <stdio.h> has been seen
+first. On OpenVMS a forced-include header (vms_lp64.h) includes <stdio.h>
+before every file, so the guard broke the file ('unknown type name LIST').
+myrg_static.c is only compiled on its own, so include the header
+unconditionally.
+
+--- a/storage/myisammrg/myrg_static.c	2026-10-04 22:59:19.753196464 +0100
++++ b/storage/myisammrg/myrg_static.c	2026-10-04 22:59:19.773084451 +0100
+@@ -19,9 +19,7 @@
+   a shared library
+ */
+ 
+-#ifndef stdin
+ #include "myrg_def.h"
+-#endif
+ 
+ LIST	*myrg_open_list=0;
+ static const char *merge_insert_methods[] =

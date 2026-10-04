@@ -1,0 +1,39 @@
+Subject: tpool: thread-local pointers through pthread keys on OpenVMS
+
+VSI C++ (clang 10) rejects thread_local ('OpenVMS does not currently
+support thread_local'). Use my_thread_local<T*> from include/my_vms_tls.h
+(vms-mariadb overlay), which keeps the pointer in a pthread key's slot; the
+uses are unchanged.
+
+--- a/tpool/tpool_generic.cc	2026-10-04 23:03:02.327208554 +0100
++++ b/tpool/tpool_generic.cc	2026-10-04 23:03:02.364005661 +0100
+@@ -178,7 +178,13 @@
+ };
+ 
+ 
++#ifdef __VMS
++/* No thread_local in VSI C++: a pthread key (include/my_vms_tls.h). */
++#include <my_vms_tls.h>
++static my_thread_local<worker_data*> tls_worker_data;
++#else
+ static thread_local worker_data* tls_worker_data;
++#endif
+ 
+ class thread_pool_generic : public thread_pool
+ {
+--- a/tpool/wait_notification.cc	2026-10-04 23:03:02.344646437 +0100
++++ b/tpool/wait_notification.cc	2026-10-04 23:03:02.364180008 +0100
+@@ -2,7 +2,13 @@
+ 
+ namespace tpool
+ {
++#ifdef __VMS
++/* No thread_local in VSI C++: a pthread key (include/my_vms_tls.h). */
++#include <my_vms_tls.h>
++static my_thread_local<tpool::thread_pool*> tls_thread_pool;
++#else
+ static thread_local tpool::thread_pool* tls_thread_pool;
++#endif
+ 
+ extern "C" void set_tls_pool(tpool::thread_pool* pool)
+ {

@@ -126,3 +126,15 @@ Follow-ups (cosmetic, not blocking):
   deleted. Test changed to a small offset; CLAUDE.md notes both pitfalls.
 - **T** The first server build round (started before the header) was stopped, since every
   object must be rebuilt with it; its log was locked and unreadable while it ran.
+
+## Stage B, server round 2 (stopped; first errors from 374 compiles)
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| H | `sql_cache.h:537`: "expected identifier" in `enum {WAIT, TIMEOUT, TRY}`, then cascades in 183 files | VMS `<pthread.h>` includes STARLET's `pthread_exception.h`, which defines `TRY`, `CATCH`, `CATCH_ALL`, `FINALLY`, `ENDTRY`, `RAISE`, `RERAISE`, `THIS_CATCH` | `-D_PTHREAD_EXC_INCL_CLEAN` in `clang_common.rsp` (the header's own switch) |
+| T | `myrg_static.c`: unknown type `LIST` | its `#ifndef stdin` guard skips `myrg_def.h` once `<stdio.h>` was seen, and `vms_lp64.h` includes it first | patch 0017 |
+| X | `tpool_generic.cc`, `wait_notification.cc`: thread_local | D5 | patch 0018, `include/my_vms_tls.h` (tested: `vms/tests/tls_test.cc`) |
+| X | `mysqld.cc` (`THR_THD`), `threadpool_common.cc` | D5 | patch 0019; debug-only sites in `mdl.cc`, `my_json_writer.cc` left for a debug build |
+| L | `my_addr_resolve.c`: `fork`; `stacktrace.c`: `pthread_kill` | not on VMS | patches 0015, 0016 |
+
+Build speed: MMS is serial; `JOBS=n tools/build.sh` now runs n library groups at once.

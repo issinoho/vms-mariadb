@@ -14,3 +14,6 @@
 0014-mysys-shared-file-descriptor-vms.patch
 0015-stacktrace-no-addr2line-fork-vms.patch
 0016-stacktrace-write-core-raise-vms.patch
+0017-myrg-static-include-def.patch
+0018-tpool-thread-local-vms.patch
+0019-sql-thread-local-vms.patch

@@ -1,0 +1,48 @@
+Subject: sql: current THD and thread info through pthread keys on OpenVMS
+
+VSI C++ (clang 10) rejects thread_local. Use my_thread_local<> from
+include/my_vms_tls.h (vms-mariadb overlay) for THR_THD (mysqld.cc) and
+os_thread_info (threadpool_common.cc). The debug-only thread_locals in
+mdl.cc and my_json_writer.cc (DBUG_OFF,
+ENABLED_JSON_WRITER_CONSISTENCY_CHECKS) are not changed yet.
+
+--- a/sql/mysqld.cc	2026-10-04 23:03:02.423487171 +0100
++++ b/sql/mysqld.cc	2026-10-04 23:03:02.456868474 +0100
+@@ -793,7 +793,13 @@
+ 
+ /* Thread specific variables */
+ 
++#ifdef __VMS
++/* No thread_local in VSI C++: a pthread key (include/my_vms_tls.h). */
++#include <my_vms_tls.h>
++static my_thread_local<THD *> THR_THD;
++#else
+ static thread_local THD *THR_THD;
++#endif
+ 
+ /**
+   Get current THD object from thread local data
+--- a/sql/threadpool_common.cc	2026-10-04 23:03:02.438062256 +0100
++++ b/sql/threadpool_common.cc	2026-10-04 23:03:02.457436656 +0100
+@@ -178,11 +178,21 @@
+     DBUG_ASSERT(stack_end);
+   }
+ };
++#ifdef __VMS
++/* No thread_local in VSI C++: a pthread key (include/my_vms_tls.h). */
++#include <my_vms_tls.h>
++static my_thread_local<OS_thread_info> os_thread_info;
++#else
+ static thread_local OS_thread_info os_thread_info;
++#endif
+ 
+ static const OS_thread_info *get_os_thread_info()
+ {
++#ifdef __VMS
++  auto *res= &os_thread_info.get();
++#else
+   auto *res= &os_thread_info;
++#endif
+   if (!res->initialized())
+     res->init();
+   return res;

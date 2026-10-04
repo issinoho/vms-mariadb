@@ -25,3 +25,8 @@
 # scanf families; see the header.  Relative to the top of the tree, where the
 # build runs.
 -include vms/include/vms_lp64.h
+# VMS <pthread.h> includes STARLET's pthread_exception.h, which defines TRY,
+# CATCH, CATCH_ALL, FINALLY, ENDTRY, RAISE, RERAISE and THIS_CATCH as macros
+# (sql_cache.h: enum { WAIT, TIMEOUT, TRY }).  This keeps only the
+# PTHREAD_*_NP names.
+-D_PTHREAD_EXC_INCL_CLEAN
