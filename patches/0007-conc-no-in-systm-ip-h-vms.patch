@@ -1,0 +1,38 @@
+Subject: Connector/C: no <netinet/in_systm.h> or <netinet/ip.h> on OpenVMS
+
+The OpenVMS TCP/IP headers have neither. Nothing from in_systm.h is used;
+ip.h only provides IPTOS_THROUGHPUT, whose use in pvio_socket.c is already
+conditional on it.
+
+--- a/libmariadb/libmariadb/ma_net.c	2026-10-04 13:26:25.333275329 +0100
++++ b/libmariadb/libmariadb/ma_net.c	2026-10-04 13:26:25.363293284 +0100
+@@ -63,9 +63,13 @@
+ #undef MYSQL_SERVER			/* Win32 can't handle interrupts */
+ #endif
+ #if !defined(_WIN32) && !defined(HAVE_BROKEN_NETINET_INCLUDES) && !defined(__BEOS__)
++#ifndef __VMS
+ #include <netinet/in_systm.h>
++#endif
+ #include <netinet/in.h>
++#ifndef __VMS
+ #include <netinet/ip.h>
++#endif
+ #if !defined(alpha_linux_port)
+ #include <netinet/tcp.h>
+ #endif
+--- a/libmariadb/plugins/pvio/pvio_socket.c	2026-10-04 13:26:25.347507492 +0100
++++ b/libmariadb/plugins/pvio/pvio_socket.c	2026-10-04 13:26:25.363546586 +0100
+@@ -47,9 +47,13 @@
+ #ifdef HAVE_FCNTL_H
+ #include <fcntl.h>
+ #endif
++#ifndef __VMS
+ #include <netinet/in_systm.h>
++#endif
+ #include <netinet/in.h>
++#ifndef __VMS
+ #include <netinet/ip.h>
++#endif
+ #include <netdb.h>
+ #include <netinet/tcp.h>
+ #define IS_SOCKET_EINTR(err) ((err) == SOCKET_EINTR)

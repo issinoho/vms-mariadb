@@ -1,0 +1,45 @@
+Subject: my_global.h: give failing programs an error status on OpenVMS
+
+MariaDB programs report failure with exit(1); on OpenVMS an odd status is
+success, so a failed login left $STATUS at %X00000001 and $SEVERITY at 1,
+and DCL's ON ERROR never fired. Map non-zero exit codes to an
+error-severity status under DCL, keeping the POSIX status under a GNV
+shell, as the sibling ports do (vms-wget patch 0008, vms-curl patch 0011).
+
+--- a/include/my_global.h	2026-10-04 16:39:25.987541255 +0100
++++ b/include/my_global.h	2026-10-04 16:39:26.006786836 +0100
+@@ -288,6 +288,34 @@
+ #ifdef HAVE_STDLIB_H
+ #include <stdlib.h>
+ #endif
++#ifdef __VMS
++/*
++  OpenVMS: to DCL an odd exit status is success, so exit(1) from a failing
++  program reads as success and ON ERROR never fires.  Under DCL turn a
++  non-zero exit code into an error-severity C RTL status (facility C,
++  message inhibited, the code kept in the message number); under a Unix
++  shell (GNV: SHELL is set and is not DCL) use the POSIX exit, which the
++  shell decodes as $?.
++*/
++#include <string.h>
++#ifdef __cplusplus
++extern "C" {
++#endif
++void decc$exit(int status);
++void decc$__posix_exit(int status);
++#ifdef __cplusplus
++}
++#endif
++static inline void my_vms_exit(int status)
++{
++  const char *shell= getenv("SHELL");
++  if (shell && strcmp(shell, "DCL") != 0)
++    decc$__posix_exit(status);
++  decc$exit(status == 0 ? 1 :
++            0x10000000 | 0x35A000 | ((status & 0xFF) << 3) | 2);
++}
++#define exit(status) my_vms_exit(status)
++#endif
+ #ifdef HAVE_STDDEF_H
+ #include <stddef.h>
+ #endif

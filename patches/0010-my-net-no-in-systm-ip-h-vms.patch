@@ -1,0 +1,21 @@
+Subject: include/my_net.h: no <netinet/in_systm.h> or <netinet/ip.h> on OpenVMS
+
+As in Connector/C (patch 0007): the OpenVMS TCP/IP headers have neither,
+and nothing they declare is used.
+
+--- a/include/my_net.h	2026-10-04 13:30:55.413056167 +0100
++++ b/include/my_net.h	2026-10-04 13:30:55.432583038 +0100
+@@ -44,9 +44,13 @@
+ #endif
+ 
+ #if !defined(_WIN32)
++#ifndef __VMS /* neither is in the OpenVMS TCP/IP headers */
+ #include <netinet/in_systm.h>
++#endif
+ #include <netinet/in.h>
++#ifndef __VMS
+ #include <netinet/ip.h>
++#endif
+ #if !defined(alpha_linux_port)
+ #include <netinet/tcp.h>
+ #endif

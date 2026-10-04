@@ -10,3 +10,14 @@
 -D__GNUC__=4
 -D__GNUC_MINOR__=2
 -D__GNUC_PATCHLEVEL__=1
+# main()'s argv is an array of 32-bit pointers by default, even with 64-bit
+# pointers elsewhere, so passing &argv as char*** (load_defaults() and every
+# client program) fails to compile.  This undocumented VSI clang option (the
+# DCL CXX/POINTER_SIZE=LONG=ARGV) makes it 64-bit.
+-pointer-size=argv64
+# External names longer than 31 characters: VMS libraries built with VSI C,
+# VSI SSL3 among them, export them in shortened form (a prefix plus a CRC);
+# without this, SSL_CTX_use_certificate_chain_file and friends are undefined.
+# It applies to C names; C++ calls into libc++ link and run unchanged
+# (tested; docs/PORTING_LOG.md, Stage A round 4).
+-names2=shortened

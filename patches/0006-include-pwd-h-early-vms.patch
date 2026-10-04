@@ -1,0 +1,42 @@
+Subject: my_global.h, ma_global.h: include <pwd.h> first on OpenVMS
+
+With 64-bit pointers (clang on x86-64) the OpenVMS <pwd.h> maps struct
+passwd to struct __passwd64 by '#define passwd __passwd64'. The macro also
+renames MYSQL::passwd and the 'struct passwd *' in my_sys.h prototypes, but
+only in code that sees <pwd.h> first, so mariadb_lib.c failed with 'no
+member named __passwd64' and my_setuser.c with 'conflicting types for
+my_set_user'. Include <pwd.h> from the global headers so every file sees
+the same names.
+
+--- a/include/my_global.h	2026-10-04 13:22:07.538556846 +0100
++++ b/include/my_global.h	2026-10-04 13:22:07.577988805 +0100
+@@ -308,6 +308,12 @@
+ #endif
+ #ifdef __VMS
+ #include <stdint.h>   /* intptr_t: POSIX also has it in <unistd.h>, VMS not */
++/*
++  With 64-bit pointers the C RTL <pwd.h> does "#define passwd __passwd64",
++  which renames every identifier "passwd", struct members included.  Include
++  it before any MariaDB header so that the renaming is the same everywhere.
++*/
++#include <pwd.h>
+ #endif
+ 
+ #ifdef HAVE_FCNTL_H
+--- a/libmariadb/include/ma_global.h	2026-10-04 13:22:07.556590752 +0100
++++ b/libmariadb/include/ma_global.h	2026-10-04 13:22:07.600654238 +0100
+@@ -159,6 +159,14 @@
+ 
+ #ifdef HAVE_SYS_TYPES_H
+ #include <sys/types.h>
++#ifdef __VMS
++/*
++  With 64-bit pointers the C RTL <pwd.h> does "#define passwd __passwd64",
++  which renames every identifier "passwd", MYSQL::passwd included.  Include
++  it before any Connector/C header so that the renaming is the same everywhere.
++*/
++#include <pwd.h>
++#endif
+ #endif
+ #ifdef HAVE_FCNTL_H
+ #include <fcntl.h>

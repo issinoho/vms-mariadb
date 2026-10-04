@@ -1,1 +1,13 @@
 0001-cmake-readline-vms.patch
+0002-my-time-suseconds-t-vms.patch
+0003-my-lib-posix-path-max-vms.patch
+0004-guess-malloc-library-rtld-default.patch
+0005-my-global-stdint-vms.patch
+0006-include-pwd-h-early-vms.patch
+0007-conc-no-in-systm-ip-h-vms.patch
+0008-crc32-portable-on-vms.patch
+0009-mysql-client-line-input-vms.patch
+0010-my-net-no-in-systm-ip-h-vms.patch
+0011-conc-tty-password-vms.patch
+0012-mysys-tty-password-vms.patch
+0013-vms-exit-status-severity.patch

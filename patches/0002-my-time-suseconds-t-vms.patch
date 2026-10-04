@@ -1,0 +1,16 @@
+Subject: include/my_time.h: no suseconds_t on OpenVMS
+
+The OpenVMS C RTL has no suseconds_t (struct timeval's tv_usec is a long).
+Use long, as on Windows.
+
+--- a/include/my_time.h	2026-10-04 13:21:48.115352756 +0100
++++ b/include/my_time.h	2026-10-04 13:21:48.138928921 +0100
+@@ -243,7 +243,7 @@
+       !ltime->hour && !ltime->minute && !ltime->second)
+     ltime->neg= FALSE;
+ }
+-#ifdef _WIN32
++#if defined(_WIN32) || defined(__VMS)
+ #define suseconds_t long
+ #endif
+ static inline void my_timeval_trunc(struct timeval *tv, uint decimals)

@@ -1,3 +1,18 @@
-# Targets built for Stage A (client): libraries first, in link order.
+# Targets built for Stage A (client), libraries first, in dependency order.
 strings
 dbug
+zlib
+mysys
+mysys_ssl
+mariadb_obj
+mariadbclient
+# programs
+my_print_defaults
+perror
+mariadb
+mariadb-admin
+mariadb-check
+mariadb-dump
+mariadb-import
+mariadb-show
+mariadb-slap

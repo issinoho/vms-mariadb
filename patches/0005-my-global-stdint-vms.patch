@@ -1,0 +1,17 @@
+Subject: include/my_global.h: include <stdint.h> on OpenVMS for intptr_t
+
+mysys/mf_qsort.c and others use intptr_t without including <stdint.h>;
+POSIX systems also declare it in <unistd.h>, the OpenVMS C RTL does not.
+
+--- a/include/my_global.h	2026-10-04 13:22:07.428595074 +0100
++++ b/include/my_global.h	2026-10-04 13:22:07.476658014 +0100
+@@ -306,6 +306,9 @@
+ #ifdef HAVE_SYS_TYPES_H
+ #include <sys/types.h>
+ #endif
++#ifdef __VMS
++#include <stdint.h>   /* intptr_t: POSIX also has it in <unistd.h>, VMS not */
++#endif
+ 
+ #ifdef HAVE_FCNTL_H
+ #include <fcntl.h>

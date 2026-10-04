@@ -1,0 +1,75 @@
+Subject: client/mysql.cc: read input lines without readline on OpenVMS
+
+OpenVMS has no readline, libedit or curses (patch 0001 skips the search).
+Like on Windows, the client reads lines itself there: a small readline()
+replacement with fgets(), as the terminal driver provides line editing. No
+history or tab completion; HAVE_READLINE stays undefined, and the SIGINT
+handler does not try to redisplay a readline prompt.
+
+--- a/client/mysql.cc	2026-10-04 13:27:26.248154483 +0100
++++ b/client/mysql.cc	2026-10-04 13:27:26.278468308 +0100
+@@ -88,7 +88,7 @@
+ #endif /* defined(HAVE_CURSES_H) && defined(HAVE_TERM_H) */
+ 
+ #undef bcmp				// Fix problem with new readline
+-#if !defined(_WIN32)
++#if !defined(_WIN32) && !defined(__VMS)
+ # ifdef __APPLE__
+ #  include <editline/readline.h>
+ # else
+@@ -99,6 +99,46 @@
+ # endif
+ #define HAVE_READLINE
+ #endif
++#ifdef __VMS
++/*
++  OpenVMS has no readline or libedit.  Read a line from the terminal, whose
++  driver does the line editing.  As with readline(), the caller free()s the
++  line; NULL means end of file (Ctrl/Z).
++*/
++static char *readline(const char *prompt)
++{
++  size_t size= 256, len= 0;
++  char *buf= (char *) malloc(size);
++  if (!buf)
++    return NULL;
++  fputs(prompt, stdout);
++  fflush(stdout);
++  for (;;)
++  {
++    if (!fgets(buf + len, (int) (size - len), stdin))
++    {
++      if (len)
++        break;
++      free(buf);
++      return NULL;
++    }
++    len+= strlen(buf + len);
++    if (len && buf[len - 1] == '\n')
++    {
++      buf[--len]= 0;
++      break;
++    }
++    char *nbuf= (char *) realloc(buf, size*= 2);
++    if (!nbuf)
++    {
++      free(buf);
++      return NULL;
++    }
++    buf= nbuf;
++  }
++  return buf;
++}
++#endif
+ #define USE_POPEN
+ }
+ 
+@@ -1695,7 +1735,7 @@
+ #ifdef USE_LIBEDIT_INTERFACE
+     /* Libedit will regenerate it outside of the signal handler. */
+     sigint_received= 1;
+-#else
++#elif !defined(__VMS)
+     rl_on_new_line();           // Regenerate the prompt on a newline
+     rl_replace_line("", 0);     // Clear the previous text
+     rl_redisplay();

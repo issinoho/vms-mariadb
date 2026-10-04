@@ -1,0 +1,17 @@
+Subject: mysys/guess_malloc_library.c: needs RTLD_DEFAULT, not just dlopen()
+
+OpenVMS has dlopen() and dlsym() but no RTLD_DEFAULT pseudo-handle, so
+tcmalloc and jemalloc cannot be looked up in the running image. Report
+MALLOC_LIBRARY, as when there is no dlopen().
+
+--- a/mysys/guess_malloc_library.c	2026-10-04 13:21:48.256610025 +0100
++++ b/mysys/guess_malloc_library.c	2026-10-04 13:21:48.273714930 +0100
+@@ -28,7 +28,7 @@
+ {
+   tc_version_type tc_version_func;
+   mallctl_type mallctl_func;
+-#ifndef HAVE_DLOPEN
++#if !defined(HAVE_DLOPEN) || !defined(RTLD_DEFAULT)
+   return (char*) MALLOC_LIBRARY;
+ #else
+   static char buf[128];
