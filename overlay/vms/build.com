@@ -20,7 +20,8 @@ $ target = f$edit(p2, "UPCASE")
 $ if target .eqs. "" then target = "ALL"
 $ keep = ""
 $ if f$edit(p3, "UPCASE") .eqs. "KEEP_GOING" then keep = "/IGNORE=FATAL"
-$ write sys$output "BUILD: ''cfg' ''target' in ''f$environment("DEFAULT")'"
+$! (the target may be a long list of LIB_ names: keep the message short)
+$ write sys$output "BUILD: ''cfg' ''f$extract(0, 60, target)' in ''f$environment("DEFAULT")'"
 $ if f$search("[.vms.build]''cfg'.dir") .eqs. ""
 $ then
 $   write sys$error "BUILD: no configuration ''cfg' (run tools/prepare.sh)"

@@ -4,7 +4,7 @@
 # out/build-<node>-<config>.log.
 #
 # JOBS=n (target ALL): build the library targets in n MMS runs at once, one
-# ssh session each, split by object count (vms/build/<config>/TARGETS.TXT),
+# ssh session each, split by estimated compile cost (vms/build/<config>/TARGETS.TXT),
 # then link the images in a final ALL run.  The host does the waiting: DCL's
 # WAIT hangs in sessions started over ssh.  Logs: ...-part<k>.log.
 set -euo pipefail

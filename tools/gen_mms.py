@@ -114,6 +114,7 @@ def main():
     objroot = 'vmsobj' if cfg == 'client' else 'vmsobj_' + cfg
     all_outputs = []
     obj_of_target = {}
+    weight_of_target = {}       # compile cost estimate: C++ 3, C 1 per object
     pushdirs = {'vms', 'vmsgen'}
 
     for tname in wanted:
@@ -122,6 +123,7 @@ def main():
         tj = targets[tname]
         objs = []
         used_names = set()
+        weight = 0
         for gi, g in enumerate(tj.get('compileGroups', [])):
             flags = []
             for frag in g.get('compileCommandFragments', []):
@@ -141,6 +143,7 @@ def main():
             rsp = '%s_%d.rsp' % (tname, gi)
             with open(os.path.join(out, rsp), 'w') as f:
                 f.write(common + '\n' + '\n'.join(dict.fromkeys(flags)) + '\n')
+            weight += (3 if g['language'] == 'CXX' else 1) * len(g['sourceIndexes'])
             for si in g['sourceIndexes']:
                 src = tj['sources'][si]['path']
                 if os.path.isabs(src):
@@ -165,10 +168,16 @@ def main():
                     if o not in objs:
                         objs.append(o)
         obj_of_target[tname] = objs
+        weight_of_target[tname] = weight
         mms.append('')
         if tj['type'] in ('STATIC_LIBRARY', 'OBJECT_LIBRARY', 'MODULE_LIBRARY', 'SHARED_LIBRARY'):
             olb = '%s/%s.olb' % (objroot, tname)
             all_outputs.append(olb)
+            # A short pseudo-target per library, for parallel builds: file
+            # specs as MMS targets are long and must match the rule's case.
+            mms.append('LIB_%s : %s' % (re.sub(r'\W', '_', tname).upper(), vms_file(olb)))
+            mms.append('\t! %s up to date' % tname)
+            mms.append('')
             mms.append(deps_line(vms_file(olb), [vms_file(o) for o in objs]))
             mms.append('\tif f$search("%s") .eqs. "" then library/create/object %s' %
                        (vms_file(olb), vms_file(olb)))
@@ -210,13 +219,13 @@ def main():
     mms.insert(5, deps_line('ALL', [vms_file(o) for o in all_outputs]))
     mms.insert(6, '\t! built')
     mms.insert(7, '')
-    # Library targets and their object counts, for parallel builds
+    # Library targets and their compile cost (C++ objects count 3, C 1), for parallel builds
     # (build.sh JOBS=n splits them into n MMS runs; images link afterwards).
     with open(os.path.join(out, 'TARGETS.TXT'), 'w') as f:
         for tname in wanted:
             if targets[tname]['type'] != 'EXECUTABLE':
-                f.write('%s %d\n' % (vms_file('%s/%s.olb' % (objroot, tname)),
-                                      len(obj_of_target[tname])))
+                f.write('LIB_%s %d\n' % (re.sub(r'\W', '_', tname).upper(),
+                                        weight_of_target[tname]))
     with open(os.path.join(out, 'PUSHDIRS.TXT'), 'w') as f:
         f.write('\n'.join(sorted(pushdirs)) + '\n')
     # clang -o does not create directories: vms/build.com runs this first.
