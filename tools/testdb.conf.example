@@ -1,0 +1,6 @@
+# Copy to tools/testdb.conf (git-ignored) for tools/clienttest.sh.
+TESTDB_HOST=<server>
+TESTDB_PORT=3306
+TESTDB_USER=vmstest
+TESTDB_PASSWORD=<password>
+TESTDB_DATABASE=vmstest

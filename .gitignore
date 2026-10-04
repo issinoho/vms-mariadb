@@ -3,3 +3,4 @@ staging/
 out/
 tools/nodes.conf
 __pycache__/
+tools/testdb.conf

@@ -60,11 +60,18 @@ tools/vms.sh <node> dcl '<cmd>' ...   # run DCL; also run/batch/put/get
 
 ## Pitfalls found in this port
 
+- **MMS tracks neither headers nor compile flags.** After a patch touches a header, or after
+  changing `clang_common.rsp`, run `tools/build.sh x86 client CLEAN` before `ALL` (a header
+  change once left the old objects in place and the test still failed).
+
 - VSI's clang does not define `__GNUC__`; `clang_common.rsp` does (D4, PORTING_LOG).
 - clang finds a response file only by a plain name or an absolute UNIX path; `build.com`
   passes the tree's path to MMS as `ROOT`.
 - The CRTL header library ignores directories: `<linux/mman.h>` "exists". Never trust a header
   check with a directory in it; see `manual.txt`.
+- Waiting on background jobs: never `until ! pgrep -f '<pattern>'`; the waiting shell's own
+  command line contains the pattern, so it never ends (and `pkill -f` kills itself). Wait on
+  a marker in the job's output file, or on the job's completion notice.
 - CMake ships `Platform/OpenVMS.cmake` itself; it sets no `VMS` variable, so
   `cmake/os/OpenVMS.cmake` does.
 

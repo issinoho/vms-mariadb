@@ -118,7 +118,11 @@ Alternative: 10.11 LTS (also C++11, supported to Feb 2028) - no advantage over 1
   0x1_9200_6010), so large buffers are possible despite libc++'s "32-bit allocator" warning
   about aligned `operator new`.
 - `std::shared_timed_mutex` aborts ("mutex lock failed: invalid argument") with libc++ 10 on
-  VMS; MariaDB 11.4's core does not use `shared_mutex`, so no action now.
+  VMS. The cause (Stage A): a pthread mutex set up by `PTHREAD_MUTEX_INITIALIZER` fails with
+  EINVAL when it lives **on the stack**; static and heap ones work, as does
+  `pthread_mutex_init()`. libc++'s `std::mutex` (and `std::condition_variable`'s use of it)
+  relies on the static initializer, so automatic-storage `std::mutex` objects fail. Before
+  Stage B, audit `std::mutex`/`std::condition_variable` locals in tpool, InnoDB and sql/.
 
 ## D6. File-system semantics: CRTL feature logicals + datadir with version limit 1
 
@@ -198,9 +202,26 @@ per object, compile flags in per-target clang response files (only `-D` and `-st
 CMake; our flags from `vms/config/clang_common.rsp`), `.OLB` per library, options files for
 images. `vms/build.com` runs it with MMS.
 
-## D9. TLS library: open
+## D9. TLS library: VSI SSL3, with an audit of `long`-typed calls
 
-**Status:** open; to be decided by the user before Stage A's TLS pass.
+**Status:** approved by the user (2026-10-04): option (a). Link VSI SSL3's 64-bit-pointer
+images (`SSL3$LIBSSL_SHR`, `SSL3$LIBCRYPTO_SHR`) and audit every `long`-typed OpenSSL call
+MariaDB makes; option (b), our own clang-built OpenSSL, is the fallback if the audit finds
+problems that cannot be worked around.
+
+Audit (2026-10-04; Connector/C `secure/openssl*.c`, auth plugins, `vio/`, `mysys_ssl/`):
+- `ERR_get_error`/`ERR_peek_error` return `unsigned long`: values come from a 32-bit `long`
+  library so they fit in 32 bits; whether the caller sees them zero- or sign-extended, the
+  header macros (`ERR_GET_LIB`, `ERR_GET_REASON`, `ERR_SYSTEM_ERROR`) mask the bits they use,
+  and passing a code back (`ERR_error_string_n`) only uses the low 32 bits.
+- `long` arguments: `SSL_SESSION_set_timeout` (seconds), `X509_gmtime_adj` (0 and 10 years =
+  315360000), `X509_verify_cert_error_string`, `X509_set_version`: all far below 2^31.
+- Macros expanding to `SSL_CTX_ctrl`/`SSL_ctrl` (`SSL_CTX_sess_set_cache_size`,
+  `SSL_CTX_set_tmp_dh`, `SSL_set_tlsext_host_name`): small arguments, boolean results.
+- `BN_*` (`vio/viosslfactories.c`: `BN_bin2bn`, `BN_free`): opaque pointers only; nothing
+  reads `BN_ULONG`s.
+Result: no source changes needed. Revisit with the server (more OpenSSL use in `sql/`) and if
+TLS tests misbehave.
 
 MariaDB 11.4 cannot be configured without a TLS library (`WITH_SSL` is bundled wolfSSL or
 system OpenSSL; even the client tools hash through it). The configure uses VSI SSL3's

@@ -33,3 +33,51 @@ D dependency, U upstream bug), root cause, fix, patch. Newest last.
 - **T** `include/my_byteorder.h`: "provide byteswap intrinsics". VSI's clang does not define
   `__GNUC__` (upstream clang defines 4.2.1; `-fgnuc-version` is ignored). Defined in
   `vms/config/clang_common.rsp`, and replayed checks get the same defines.
+
+## Stage A, round 1 (`tools/build.sh x86 client ALL KEEP_GOING`: libraries, my_print_defaults, perror)
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| H | `include/my_time.h`: undeclared `suseconds_t` | not in the VMS CRTL | patch 0002 (`long`, as on Windows) |
+| H | `mysys/my_lib.c`: undeclared `_POSIX_PATH_MAX` | not in VMS `<limits.h>` | patch 0003 (256, the POSIX value) |
+| L | `mysys/guess_malloc_library.c`: undeclared `RTLD_DEFAULT` | VMS `dlsym` has no pseudo-handles | patch 0004 |
+| H | `mysys/mf_qsort.c`: undeclared `intptr_t` | POSIX puts it in `<unistd.h>` too; VMS only in `<stdint.h>` | patch 0005 |
+| H | `mariadb_lib.c`: no member `__passwd64` in `struct st_mysql`; `my_setuser.c`: conflicting types for `my_set_user` | VMS `<pwd.h>` does `#define passwd __passwd64` with 64-bit pointers, renaming `MYSQL::passwd` and `struct passwd` only after it is seen | patch 0006 (`<pwd.h>` first, from the global headers) |
+| H | `ma_net.c`, `pvio_socket.c`: `netinet/in_systm.h` not found | not in VMS TCP/IP headers | patch 0007 |
+| T | `mysys/crc32/*`: `cpuid.h`, `emmintrin.h`, `nmmintrin.h` not found | VSI C++ ships no x86 intrinsic headers | patch 0008 (portable CRC on VMS; SIMD later) |
+| T | `extra/my_print_defaults.c`: `char * __ptr32 * __ptr32` to `char **` | `main`'s `argv` is 32-bit pointers by default | `-pointer-size=argv64` in `clang_common.rsp` |
+| T | `%ILINK-F-OPENIN ... -LIB-E-NOWILD` | the linker takes no wildcards in an options file | gen_mms.py lists objects |
+
+## Stage A, rounds 2-4 (all client programs added)
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| H | `ma_net.c`, `pvio_socket.c`: `netinet/ip.h` not found | not in VMS TCP/IP headers; only `IPTOS_THROUGHPUT` is used, already `#ifdef`ed | folded into patch 0007 |
+| H | `include/my_net.h`: `netinet/in_systm.h` not found (then `ip.h`) | same as 0007, MariaDB's own copy | patch 0010 |
+| S | `client/mysql.cc` needs readline | no readline/libedit/curses on VMS | patch 0009: `fgets()` line reader, no history or completion |
+| L | link: `tcgetattr`, `tcsetattr` undefined (`libmariadb/get_password.c`) | no termios functions in the VMS CRTL | patch 0011: no-echo `$QIOW` on `SYS$COMMAND`, stdin without a terminal |
+| T | link: `SSL_CTX_use_certificate_chain_file`, `SSL_CTX_set_default_verify_paths`, `SSL_get_ex_data_X509_STORE_CTX_idx` undefined | names longer than 31 characters are exported shortened by VSI SSL3 | `-names2=shortened` in `clang_common.rsp` (C only; C++/libc++ unaffected, tested) |
+| T | `mms/ignore=(error,fatal)`: `%DCL-W-ONEVAL` | `/IGNORE` takes one level | `/IGNORE=FATAL` for KEEP_GOING |
+
+First programs run: `perror` (OS and MariaDB error codes decoded) and `my_print_defaults --help`.
+
+**Found while testing the names option:** a pthread mutex initialised with
+`PTHREAD_MUTEX_INITIALIZER` fails to lock (EINVAL) when it is on the stack; static and heap
+ones work, and so does any mutex set up with `pthread_mutex_init()`. libc++'s `std::mutex`
+uses the static initializer, so a `std::mutex` with automatic storage is unusable (this is
+also why `std::shared_mutex` aborted in Phase 0). Connector/C uses `pthread_mutex_init()`.
+Must be audited for the server (InnoDB, tpool use `std::mutex`): DECISIONS D5.
+
+## Stage A, rounds 5-8 (links clean; client tests)
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| L | link: `tcgetattr`, `tcsetattr` still undefined | `mysys/get_password.c` has its own termios code | patch 0012 (no-echo `$QIOW`, as 0011) |
+| U | failed login exits `%X00000001` (success to DCL) | `exit(1)`: an odd VMS status is success | patch 0013: `exit()` in `my_global.h` maps non-zero codes to an error-severity status under DCL (POSIX exit under GNV), as vms-wget/vms-curl; now `%X1035A00A` |
+| T | test still saw success after patch 0013 | MMS tracks no header dependencies; objects were stale | CLEAN + ALL; noted in CLAUDE.md |
+| T | `push.sh` exited silently when nothing had changed | `grep .` with no input fails under `pipefail` | `|| true` |
+| - | test: killed session inside `source` exits 0 | **upstream behaviour**: the Linux 11.4.13 client (native build) also exits 0 there, and 1 when the statements are given with `-e` | test changed to `-e` |
+| ? | once: `ERROR 2026: TLS/SSL error: connection reset by peer (54)` during the 1 MB INSERT | not reproduced: 5 TLS and 5 plain runs of the same INSERT all succeeded | watch; suspected network (the server is reached through the public address) |
+
+The client uses TLS by default against the 11.8.6 server: `Ssl_cipher` = `TLS_AES_256_GCM_SHA384`
+(TLS 1.3 through VSI SSL3, decision D9).
