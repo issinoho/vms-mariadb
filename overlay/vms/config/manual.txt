@@ -1,0 +1,15 @@
+# Hand-set CMake check answers for OpenVMS x86-64; they override answers.txt
+# (replayed checks).  Format: VAR VALUE  # why.  Each needs a reason.
+#
+# realpath() is declared and links, but returns ENOSYS at run time
+# (docs/PHASE0.md, probes/r_io.c); mysys must use its own path handling.
+HAVE_REALPATH ""  # declared but ENOSYS at run time
+#
+# The CRTL header library ignores the directory part of a header name, so
+# <linux/mman.h> finds MMAN.H, <netinet/in6.h> finds IN6.H and so on.  These
+# are not the Linux headers MariaDB means.
+HAVE_LINUX_LIMITS_H ""  # resolves to <limits.h>
+HAVE_LINUX_MMAN_H ""  # resolves to <mman.h>
+HAVE_LINUX_UNISTD_H ""  # resolves to <unistd.h>
+HAVE_NETINET_IN6_H ""  # resolves to <in6.h>, not a BSD netinet/in6.h
+HAVE_SYS_MALLOC_H ""  # resolves to <malloc.h>

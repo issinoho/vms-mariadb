@@ -1,0 +1,414 @@
+# CMake check answers for OpenVMS x86-64 (clang), replayed on a VMS node by
+# tools/replay.sh.  Generated: do not edit; put corrections in manual.txt.
+BFD_H_EXISTS ""  # replay CheckIncludeFiles C
+C_HAS_inline 1  # replay CheckCSourceCompiles C
+FIONREAD_IN_SYS_FILIO ""  # replay CheckSymbolExists C
+FIONREAD_IN_SYS_IOCTL 1  # replay CheckSymbolExists C
+GWINSZ_IN_SYS_IOCTL 1  # replay CheckSymbolExists C
+HAS_-Wall_FLAG ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAS_-Wdeclaration-after-statement_FLAG ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAS_-Wextra_FLAG ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAS_-Wformat-security_FLAG ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAS_-Wlogical-op_FLAG ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAS_-Wno-init-self_FLAG ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAS_-Wno-stringop-truncation_FLAG ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAS_-Wno-undef_FLAG ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAS_-Wno-uninitialized_FLAG ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAS_-Wno-unknown-pragmas_FLAG ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAS_-Wshift-count-overflow_FLAG ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAS_-Wunused_FLAG ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAS_-Wwrite-strings_FLAG ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAVE_ABI_CXA_DEMANGLE ""  # replay CheckCXXSourceCompiles CXX
+HAVE_ACCEPT4 ""  # replay CheckFunctionExists C
+HAVE_ACCESS 1  # replay CheckFunctionExists C
+HAVE_ALLOCA_H 1  # replay CheckIncludeFiles C
+HAVE_ARPA_INET_H 1  # replay CheckIncludeFiles C
+HAVE_ASM_TERMBITS_H ""  # replay CheckIncludeFiles C
+HAVE_ATTRIBUTE_CLEANUP 1  # replay CheckCSourceCompiles C
+HAVE_BACKTRACE ""  # replay CheckFunctionExists C
+HAVE_BACKTRACE_SYMBOLS ""  # replay CheckFunctionExists C
+HAVE_BACKTRACE_SYMBOLS_FD ""  # replay CheckFunctionExists C
+HAVE_BFILL ""  # replay CheckFunctionExists C
+HAVE_CLOCK_GETTIME 1  # replay CheckFunctionExists C
+HAVE_COMPRESS ""  # replay CheckFunctionExists C
+HAVE_CRACK_H ""  # replay CheckIncludeFiles C
+HAVE_CRYPT 1  # replay CheckFunctionExists C
+HAVE_CRYPT_H ""  # replay CheckIncludeFiles C
+HAVE_CUSERID 1  # replay CheckFunctionExists C
+HAVE_CXX_NEW 1  # replay CheckCXXSourceCompiles CXX
+HAVE_DECL_FDATASYNC ""  # replay CheckSymbolExists C
+HAVE_DECL_MADVISE ""  # replay CheckSymbolExists C
+HAVE_DIRENT_H 1  # replay CheckIncludeFiles C
+HAVE_DLADDR ""  # replay CheckFunctionExists C
+HAVE_DLERROR 1  # replay CheckFunctionExists C
+HAVE_DLFCN_H 1  # replay CheckIncludeFiles C
+HAVE_DLOPEN 1  # replay CheckFunctionExists C
+HAVE_ERR_remove_thread_state 1  # replay CheckSymbolExists C
+HAVE_EXECINFO_H ""  # replay CheckIncludeFiles C
+HAVE_EncryptAes128Ctr 1  # replay CheckSymbolExists C
+HAVE_EncryptAes128Gcm 1  # replay CheckSymbolExists C
+HAVE_FALLOC_PUNCH_HOLE_AND_KEEP_SIZE ""  # replay CheckCSourceCompiles C
+HAVE_FCHMOD 1  # replay CheckFunctionExists C
+HAVE_FCNTL 1  # replay CheckFunctionExists C
+HAVE_FCNTL_H 1  # replay CheckIncludeFiles C
+HAVE_FCNTL_NONBLOCK 1  # replay CheckSymbolExists C
+HAVE_FDATASYNC ""  # replay CheckFunctionExists C
+HAVE_FEDISABLEEXCEPT ""  # replay CheckFunctionExists C
+HAVE_FENV_H ""  # replay CheckIncludeFiles C
+HAVE_FESETROUND ""  # replay CheckFunctionExists C
+HAVE_FILE_UCONTEXT_H ""  # replay CheckIncludeFiles C
+HAVE_FLOAT_H 1  # replay CheckIncludeFiles C
+HAVE_FNMATCH_H ""  # replay CheckIncludeFiles C
+HAVE_FPU_CONTROL_H ""  # replay CheckIncludeFiles C
+HAVE_FSEEKO 1  # replay CheckFunctionExists C
+HAVE_FSYNC 1  # replay CheckFunctionExists C
+HAVE_FTIME 1  # replay CheckFunctionExists C
+HAVE_FTRUNCATE 1  # replay CheckFunctionExists C
+HAVE_GCC_C11_ATOMICS_WITHOUT_LIBATOMIC 1  # replay CheckCXXSourceCompiles CXX
+HAVE_GETCWD 1  # replay CheckFunctionExists C
+HAVE_GETGROUPLIST ""  # replay CheckFunctionExists C
+HAVE_GETHOSTBYADDR_R ""  # replay CheckFunctionExists C
+HAVE_GETHRTIME ""  # replay CheckFunctionExists C
+HAVE_GETIFADDRS ""  # replay CheckFunctionExists C
+HAVE_GETMNTENT ""  # replay CheckSymbolExists C
+HAVE_GETMNTENT_IN_SYS_MNTAB ""  # replay CheckSymbolExists C
+HAVE_GETMNTINFO ""  # replay CheckSymbolExists C
+HAVE_GETPAGESIZES ""  # replay CheckSymbolExists C
+HAVE_GETPASS ""  # replay CheckFunctionExists C
+HAVE_GETPASSPHRASE ""  # replay CheckFunctionExists C
+HAVE_GETPEERUCRED ""  # replay CheckCXXSourceCompiles CXX
+HAVE_GETPWNAM 1  # replay CheckFunctionExists C
+HAVE_GETPWUID 1  # replay CheckFunctionExists C
+HAVE_GETPWUID_POSIX_FINAL ""  # replay CheckCXXSourceCompiles CXX
+HAVE_GETRLIMIT ""  # replay CheckFunctionExists C
+HAVE_GETRUSAGE 1  # replay CheckFunctionExists C
+HAVE_GETTIMEOFDAY 1  # replay CheckFunctionExists C
+HAVE_GETWD ""  # replay CheckFunctionExists C
+HAVE_GMTIME_R 1  # replay CheckFunctionExists C
+HAVE_GRP_H 1  # replay CheckIncludeFiles C
+HAVE_IA64INTRIN_H ""  # replay CheckIncludeFiles C
+HAVE_IEEEFP_H ""  # replay CheckIncludeFiles C
+HAVE_INDEX 1  # replay CheckFunctionExists C
+HAVE_INITGROUPS ""  # replay CheckFunctionExists C
+HAVE_INTTYPES_H 1  # replay CheckIncludeFiles C
+HAVE_LANGINFO_H 1  # replay CheckIncludeFiles C
+HAVE_LDIV 1  # replay CheckFunctionExists C
+HAVE_LIBCRACK ""  # policy: no separate libraries on VMS; functions are in the CRTL
+HAVE_LIBRESSL ""  # replay try_run C
+HAVE_LIMITS_H 1  # replay CheckIncludeFiles C
+HAVE_LINK_FLAG__Wl__z_relro__z_now ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAVE_LINK_H ""  # replay CheckIncludeFiles C
+HAVE_LINUX_LIMITS_H 1  # replay CheckIncludeFiles C
+HAVE_LINUX_MMAN_H 1  # replay CheckIncludeFiles C
+HAVE_LINUX_UNISTD_H 1  # replay CheckIncludeFiles C
+HAVE_LOCALE_H 1  # replay CheckIncludeFiles C
+HAVE_LOCALTIME_R 1  # replay CheckFunctionExists C
+HAVE_LRAND48 1  # replay CheckSymbolExists C
+HAVE_LSTAT 1  # replay CheckFunctionExists C
+HAVE_MADVISE ""  # replay CheckFunctionExists C
+HAVE_MALLINFO ""  # replay CheckFunctionExists C
+HAVE_MALLINFO2 ""  # replay CheckFunctionExists C
+HAVE_MALLOC_H 1  # replay CheckIncludeFiles C
+HAVE_MALLOC_ZONE ""  # replay CheckFunctionExists C
+HAVE_MEMCPY 1  # replay CheckFunctionExists C
+HAVE_MEMMOVE 1  # replay CheckFunctionExists C
+HAVE_MEMORY_H 1  # replay CheckIncludeFiles C
+HAVE_MKOSTEMP 1  # replay CheckFunctionExists C
+HAVE_MKSTEMP 1  # replay CheckFunctionExists C
+HAVE_MLOCK ""  # replay CheckFunctionExists C
+HAVE_MLOCKALL ""  # replay CheckFunctionExists C
+HAVE_MMAP 1  # replay CheckFunctionExists C
+HAVE_MMAP64 ""  # replay CheckFunctionExists C
+HAVE_MPROTECT 1  # replay CheckFunctionExists C
+HAVE_NDIR_H ""  # replay CheckIncludeFiles C
+HAVE_NETDB_H 1  # replay CheckIncludeFiles C
+HAVE_NETINET_IN6_H 1  # replay CheckIncludeFile C
+HAVE_NETINET_IN_H 1  # replay CheckIncludeFiles C
+HAVE_NL_LANGINFO 1  # replay CheckFunctionExists C
+HAVE_OFF64_T ""  # replay CheckTypeSize C
+HAVE_PAM_APPL_H ""  # replay CheckIncludeFiles C
+HAVE_PAM_EXT_H ""  # replay CheckIncludeFiles C
+HAVE_PAM_SYSLOG ""  # replay CheckFunctionExists C
+HAVE_PATHS_H ""  # replay CheckIncludeFiles C
+HAVE_PEERCRED ""  # replay CheckCXXSourceCompiles CXX
+HAVE_PEERCRED_STRUCT ""  # replay CheckCXXSourceCompiles CXX
+HAVE_PERROR 1  # replay CheckFunctionExists C
+HAVE_POLL 1  # replay CheckFunctionExists C
+HAVE_POLL_H 1  # replay CheckIncludeFiles C
+HAVE_POSIX_FALLOCATE ""  # replay CheckFunctionExists C
+HAVE_POSIX_GETGROUPLIST ""  # replay CheckCSourceCompiles C
+HAVE_POSIX_SIGNALS 1  # replay CheckCSourceCompiles C
+HAVE_PREAD 1  # replay CheckFunctionExists C
+HAVE_PRINTSTACK ""  # replay CheckFunctionExists C
+HAVE_PTHREAD_ATTR_CREATE ""  # replay CheckFunctionExists C
+HAVE_PTHREAD_ATTR_GETGUARDSIZE 1  # replay CheckFunctionExists C
+HAVE_PTHREAD_ATTR_GETSTACKSIZE 1  # replay CheckFunctionExists C
+HAVE_PTHREAD_ATTR_SETSCOPE 1  # replay CheckFunctionExists C
+HAVE_PTHREAD_ATTR_SETSTACKSIZE 1  # replay CheckFunctionExists C
+HAVE_PTHREAD_CONDATTR_CREATE ""  # replay CheckFunctionExists C
+HAVE_PTHREAD_GETAFFINITY_NP ""  # replay CheckFunctionExists C
+HAVE_PTHREAD_GETATTR_NP ""  # replay CheckFunctionExists C
+HAVE_PTHREAD_KEY_DELETE 1  # replay CheckFunctionExists C
+HAVE_PTHREAD_ONCE_INIT 1  # replay CheckCSourceCompiles C
+HAVE_PTHREAD_RWLOCK_RDLOCK 1  # replay CheckFunctionExists C
+HAVE_PTHREAD_SIGMASK ""  # replay CheckFunctionExists C
+HAVE_PTHREAD_YIELD_NP 1  # replay CheckFunctionExists C
+HAVE_PTHREAD_YIELD_ZERO_ARG ""  # replay CheckCXXSourceCompiles CXX
+HAVE_PUTENV 1  # replay CheckFunctionExists C
+HAVE_PWD_H 1  # replay CheckIncludeFiles C
+HAVE_READDIR_R 1  # replay CheckCXXSourceCompiles CXX
+HAVE_READLINK 1  # replay CheckFunctionExists C
+HAVE_READ_REAL_TIME ""  # replay CheckFunctionExists C
+HAVE_REALPATH 1  # replay CheckFunctionExists C
+HAVE_RENAME 1  # replay CheckFunctionExists C
+HAVE_RO_AFTER_INIT 1  # replay CheckCSourceCompiles C
+HAVE_RWLOCK_INIT ""  # replay CheckFunctionExists C
+HAVE_SCHED_H 1  # replay CheckIncludeFiles C
+HAVE_SCHED_YIELD 1  # replay CheckFunctionExists C
+HAVE_SELECT 1  # replay CheckCSourceCompiles C
+HAVE_SELECT_H ""  # replay CheckIncludeFiles C
+HAVE_SETENV 1  # replay CheckFunctionExists C
+HAVE_SETLOCALE 1  # replay CheckFunctionExists C
+HAVE_SETMNTENT ""  # replay CheckSymbolExists C
+HAVE_SIGACTION 1  # replay CheckFunctionExists C
+HAVE_SIGSET ""  # replay CheckFunctionExists C
+HAVE_SIGTHREADMASK ""  # replay CheckFunctionExists C
+HAVE_SIGWAIT 1  # replay CheckFunctionExists C
+HAVE_SIGWAITINFO 1  # replay CheckFunctionExists C
+HAVE_SIZEOF_CHARP 1  # replay CheckTypeSize C
+HAVE_SIZEOF_IN6_ADDR 1  # replay CheckTypeSize C
+HAVE_SIZEOF_INT 1  # replay CheckTypeSize C
+HAVE_SIZEOF_INT16 ""  # replay CheckTypeSize C
+HAVE_SIZEOF_INT32 ""  # replay CheckTypeSize C
+HAVE_SIZEOF_INT64 ""  # replay CheckTypeSize C
+HAVE_SIZEOF_INT8 ""  # replay CheckTypeSize C
+HAVE_SIZEOF_IN_ADDR_T 1  # replay CheckTypeSize C
+HAVE_SIZEOF_LONG 1  # replay CheckTypeSize C
+HAVE_SIZEOF_LONG_LONG 1  # replay CheckTypeSize C
+HAVE_SIZEOF_MODE_T 1  # replay CheckTypeSize C
+HAVE_SIZEOF_OFF_T 1  # replay CheckTypeSize C
+HAVE_SIZEOF_SHORT 1  # replay CheckTypeSize C
+HAVE_SIZEOF_SIGHANDLER_T ""  # replay CheckTypeSize C
+HAVE_SIZEOF_SIGSET_T 1  # replay CheckTypeSize C
+HAVE_SIZEOF_SIZE_T 1  # replay CheckTypeSize C
+HAVE_SIZEOF_SOCKADDR_IN6 1  # replay CheckTypeSize C
+HAVE_SIZEOF_SOCKLEN_T ""  # replay CheckTypeSize C
+HAVE_SIZEOF_TIME_T 1  # replay CheckTypeSize C
+HAVE_SIZEOF_UCHAR 1  # replay CheckTypeSize C
+HAVE_SIZEOF_UINT 1  # replay CheckTypeSize C
+HAVE_SIZEOF_UINT16 ""  # replay CheckTypeSize C
+HAVE_SIZEOF_UINT32 ""  # replay CheckTypeSize C
+HAVE_SIZEOF_UINT64 ""  # replay CheckTypeSize C
+HAVE_SIZEOF_UINT8 ""  # replay CheckTypeSize C
+HAVE_SIZEOF_ULONG 1  # replay CheckTypeSize C
+HAVE_SIZEOF_USHORT 1  # replay CheckTypeSize C
+HAVE_SIZEOF_VOIDP 1  # replay CheckTypeSize C
+HAVE_SLEEP 1  # replay CheckFunctionExists C
+HAVE_SOCKADDR_IN6_SIN6_LEN ""  # replay CheckStructHasMember C
+HAVE_SOCKADDR_IN_SIN_LEN ""  # replay CheckStructHasMember C
+HAVE_SOCKADDR_STORAGE_SS_FAMILY 1  # replay CheckStructHasMember C
+HAVE_SOCKET_SIZE_T_AS_socklen_t 1  # replay CheckCXXSourceCompiles CXX
+HAVE_SOCKPEERCRED ""  # replay CheckCXXSourceCompiles CXX
+HAVE_SOLARIS_STYLE_GETHOST ""  # replay CheckCXXSourceCompiles CXX
+HAVE_STDARG_H 1  # replay CheckIncludeFiles C
+HAVE_STDDEF_H 1  # replay CheckIncludeFile C
+HAVE_STDINT_H 1  # replay CheckIncludeFile C
+HAVE_STDLIB_H 1  # replay CheckIncludeFiles C
+HAVE_STPCPY 1  # replay CheckFunctionExists C
+HAVE_STRCASECMP 1  # replay CheckFunctionExists C
+HAVE_STRCOLL 1  # replay CheckFunctionExists C
+HAVE_STRERROR 1  # replay CheckFunctionExists C
+HAVE_STRINGS_H 1  # replay CheckIncludeFiles C
+HAVE_STRING_H 1  # replay CheckIncludeFiles C
+HAVE_STRNDUP 1  # replay CheckFunctionExists C
+HAVE_STRNLEN 1  # replay CheckFunctionExists C
+HAVE_STRPBRK 1  # replay CheckFunctionExists C
+HAVE_STRTOK_R 1  # replay CheckFunctionExists C
+HAVE_STRTOLL 1  # replay CheckFunctionExists C
+HAVE_STRTOUL 1  # replay CheckFunctionExists C
+HAVE_STRTOULL 1  # replay CheckFunctionExists C
+HAVE_SYNCH_H ""  # replay CheckIncludeFiles C
+HAVE_SYSENT_H ""  # replay CheckIncludeFiles C
+HAVE_SYSTEMD_SD_DAEMON_H ""  # replay CheckIncludeFiles C
+HAVE_SYSTEMD_SD_LISTEN_FDS ""  # policy: no separate libraries on VMS; functions are in the CRTL
+HAVE_SYSTEMD_SD_LISTEN_FDS_WITH_NAMES ""  # policy: no separate libraries on VMS; functions are in the CRTL
+HAVE_SYSTEMD_SD_NOTIFY ""  # replay CheckFunctionExists C
+HAVE_SYSTEMD_SD_NOTIFYF ""  # replay CheckFunctionExists C
+HAVE_SYSTEM_LIBFMT ""  # replay CheckCXXSourceRuns CXX
+HAVE_SYSTEM_LIBFMT_COMPILED ""  # replay CheckCXXSourceRuns CXX
+HAVE_SYSTEM_LIBFMT_EXITCODE "FAILED_TO_RUN"  # replay CheckCXXSourceRuns CXX
+HAVE_SYS_DIR_H ""  # replay CheckIncludeFiles C
+HAVE_SYS_EVENT_H ""  # replay CheckIncludeFiles C
+HAVE_SYS_FILE_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_FPU_H ""  # replay CheckIncludeFiles C
+HAVE_SYS_IOCTL_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_MALLOC_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_MMAN_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_MNTENT_H ""  # replay CheckIncludeFiles C
+HAVE_SYS_NDIR_H ""  # replay CheckIncludeFiles C
+HAVE_SYS_PARAM_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_POLL_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_PRCTL_H ""  # replay CheckIncludeFiles C
+HAVE_SYS_PTEM_H ""  # replay CheckIncludeFiles C
+HAVE_SYS_PTE_H ""  # replay CheckIncludeFiles C
+HAVE_SYS_RESOURCE_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_SELECT_H ""  # replay CheckIncludeFiles C
+HAVE_SYS_SOCKET_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_SOCKIO_H ""  # replay CheckIncludeFiles C
+HAVE_SYS_STATVFS_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_STAT_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_STREAM_H ""  # replay CheckIncludeFiles C
+HAVE_SYS_SYSCALL_H ""  # replay CheckIncludeFiles C
+HAVE_SYS_TIMES_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_TIME_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_TYPES_H 1  # replay CheckIncludeFile C
+HAVE_SYS_UN_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_UTIME_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_UTSNAME_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_VADVISE_H ""  # replay CheckIncludeFiles C
+HAVE_SYS_WAIT_H 1  # replay CheckIncludeFiles C
+HAVE_TCGETATTR ""  # replay CheckSymbolExists C
+HAVE_TELL ""  # replay CheckFunctionExists C
+HAVE_TERMBITS_H ""  # replay CheckIncludeFiles C
+HAVE_TERMCAP_H ""  # replay CheckIncludeFiles C
+HAVE_TERMIOS_H 1  # replay CheckIncludeFiles C
+HAVE_TERMIO_H ""  # replay CheckIncludeFiles C
+HAVE_TERM_H ""  # replay CheckIncludeFiles C
+HAVE_THR_YIELD ""  # replay CheckFunctionExists C
+HAVE_TIME 1  # replay CheckFunctionExists C
+HAVE_TIMES 1  # replay CheckFunctionExists C
+HAVE_TIMESPEC_TS_SEC ""  # replay CheckCSourceCompiles C
+HAVE_TIME_H 1  # replay CheckIncludeFiles C
+HAVE_TZNAME 1  # replay CheckSymbolExists C
+HAVE_UCONTEXT_H ""  # replay CheckFunctionExists C
+HAVE_UNISTD_H 1  # replay CheckIncludeFiles C
+HAVE_UNPCBID ""  # replay CheckCXXSourceCompiles CXX
+HAVE_UTIME_H 1  # replay CheckIncludeFiles C
+HAVE_VALGRIND_MEMCHECK_H ""  # replay CheckIncludeFiles C
+HAVE_VARARGS_H ""  # replay CheckIncludeFiles C
+HAVE_VASPRINTF 1  # replay CheckFunctionExists C
+HAVE_VFORK 1  # replay CheckCSourceCompiles C
+HAVE_VISIBILITY_HIDDEN ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+HAVE_VSNPRINTF 1  # replay CheckFunctionExists C
+HAVE_WCHAR_H 1  # replay CheckIncludeFiles C
+HAVE_WCTYPE_H 1  # replay CheckIncludeFiles C
+HAVE_WEAK_SYMBOL 1  # replay CheckCSourceCompiles C
+HAVE_XUCRED ""  # replay CheckCXXSourceCompiles CXX
+HAVE___infinity_IN_LIBC ""  # replay CheckFunctionExists C
+HAVE___infinity_IN_m ""  # policy: no separate libraries on VMS; functions are in the CRTL
+HAVE_backtrace_symbols_fd_IN_LIBC ""  # replay CheckFunctionExists C
+HAVE_backtrace_symbols_fd_IN_execinfo ""  # policy: no separate libraries on VMS; functions are in the CRTL
+HAVE_bind_IN_LIBC 1  # replay CheckFunctionExists C
+HAVE_clock_gettime_IN_LIBC 1  # replay CheckFunctionExists C
+HAVE_crypt_IN_LIBC 1  # replay CheckFunctionExists C
+HAVE_crypt_IN_crypt ""  # policy: no separate libraries on VMS; functions are in the CRTL
+HAVE_des 1  # replay CheckSymbolExists C
+HAVE_floor_IN_LIBC 1  # replay CheckFunctionExists C
+HAVE_floor_IN_m ""  # policy: no separate libraries on VMS; functions are in the CRTL
+HAVE_gethostbyname_r_IN_LIBC 1  # replay CheckFunctionExists C
+HAVE_hkdf 1  # replay CheckSymbolExists C
+HAVE_sched_yield_IN_LIBC 1  # replay CheckFunctionExists C
+HAVE_setsockopt_IN_LIBC 1  # replay CheckFunctionExists C
+INCLUDE_SIGNAL 1  # replay CheckIncludeFiles C
+IS_floor_LIBC_FUNC 1  # replay CheckFunctionExists C
+IS_gethostbyname_r_LIBC_FUNC 1  # replay CheckFunctionExists C
+IS_pthread_getspecific_LIBC_FUNC 1  # replay CheckFunctionExists C
+IS_setsockopt_LIBC_FUNC 1  # replay CheckFunctionExists C
+LIBRESSL_RESULT "FAILED_TO_RUN"  # replay try_run C
+LIBRESSL_RESULT__TRYRUN_OUTPUT ""  # replay try_run C
+OFF64_T ""  # replay CheckTypeSize C
+QSORT_TYPE_IS_VOID 1  # replay CheckCSourceCompiles C
+SIGNAL_RETURN_TYPE_IS_VOID 1  # replay CheckCSourceCompiles C
+SIZEOF_CHARP 8  # replay CheckTypeSize C
+SIZEOF_IN6_ADDR 16  # replay CheckTypeSize C
+SIZEOF_INT 4  # replay CheckTypeSize C
+SIZEOF_INT16 ""  # replay CheckTypeSize C
+SIZEOF_INT32 ""  # replay CheckTypeSize C
+SIZEOF_INT64 ""  # replay CheckTypeSize C
+SIZEOF_INT8 ""  # replay CheckTypeSize C
+SIZEOF_IN_ADDR_T 4  # replay CheckTypeSize C
+SIZEOF_LONG 8  # replay CheckTypeSize C
+SIZEOF_LONG_LONG 8  # replay CheckTypeSize C
+SIZEOF_MODE_T 2  # replay CheckTypeSize C
+SIZEOF_OFF_T 8  # replay CheckTypeSize C
+SIZEOF_SHORT 2  # replay CheckTypeSize C
+SIZEOF_SIGHANDLER_T ""  # replay CheckTypeSize C
+SIZEOF_SIGSET_T 8  # replay CheckTypeSize C
+SIZEOF_SIZE_T 8  # replay CheckTypeSize C
+SIZEOF_SOCKADDR_IN6 28  # replay CheckTypeSize C
+SIZEOF_SOCKLEN_T ""  # replay CheckTypeSize C
+SIZEOF_TIME_T 4  # replay CheckTypeSize C
+SIZEOF_UCHAR 1  # replay CheckTypeSize C
+SIZEOF_UINT 4  # replay CheckTypeSize C
+SIZEOF_UINT16 ""  # replay CheckTypeSize C
+SIZEOF_UINT32 ""  # replay CheckTypeSize C
+SIZEOF_UINT64 ""  # replay CheckTypeSize C
+SIZEOF_UINT8 ""  # replay CheckTypeSize C
+SIZEOF_ULONG 8  # replay CheckTypeSize C
+SIZEOF_USHORT 2  # replay CheckTypeSize C
+SIZEOF_VOIDP 8  # replay CheckTypeSize C
+STDC_HEADERS 1  # replay CheckIncludeFiles C
+STRUCT_DIRENT_HAS_D_INO 1  # replay CheckStructHasMember C
+STRUCT_DIRENT_HAS_D_NAMLEN ""  # replay CheckStructHasMember C
+STRUCT_TIMESPEC_HAS_TV_NSEC 1  # replay CheckStructHasMember C
+STRUCT_TIMESPEC_HAS_TV_SEC 1  # replay CheckStructHasMember C
+STRUCT_TM_HAS_TM_GMTOFF 1  # replay CheckStructHasMember C
+TIME_T_UNSIGNED 1  # replay CheckCSourceCompiles C
+TIME_WITH_SYS_TIME 1  # replay CheckIncludeFiles C
+TIOCSTAT_IN_SYS_IOCTL ""  # replay CheckSymbolExists C
+have_CXX__D_FORTIFY_SOURCE_2 ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wall ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wcast_function_type_strict ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wdeclaration_after_statement ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wenum_compare ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wenum_conversion ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Werror ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wextra ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wformat_security ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wformat_truncation ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wframe_larger_than_16384 ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Winconsistent_missing_override ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Winit_self ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wmissing_braces ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wnon_virtual_dtor ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wnonnull_compare ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wnull_conversion ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Woverloaded_virtual ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wsuggest_override ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wunused_parameter ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wunused_private_field ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wvla ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__Wwrite_strings ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__fno_omit_frame_pointer ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__fno_operator_names ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__fstack_protector___param_ssp_buffer_size_4 ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__ggdb3 ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_CXX__pie__fPIC ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__D_FORTIFY_SOURCE_2 ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wall ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wcast_function_type_strict ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wdeclaration_after_statement ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wenum_compare ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wenum_conversion ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Werror ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wextra ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wformat_security ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wformat_truncation ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wframe_larger_than_16384 ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Winconsistent_missing_override ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Winit_self ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wmissing_braces ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wnon_virtual_dtor ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wnonnull_compare ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wnull_conversion ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Woverloaded_virtual ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wsuggest_override ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wunused_parameter ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wunused_private_field ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wvla ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__Wwrite_strings ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__fno_omit_frame_pointer ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__fno_operator_names ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__fstack_protector___param_ssp_buffer_size_4 ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__ggdb3 ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
+have_C__pie__fPIC ""  # policy: GCC/linker flag check; the MMS build sets its own qualifiers
