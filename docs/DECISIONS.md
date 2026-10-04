@@ -121,8 +121,15 @@ Alternative: 10.11 LTS (also C++11, supported to Feb 2028) - no advantage over 1
   VMS. The cause (Stage A): a pthread mutex set up by `PTHREAD_MUTEX_INITIALIZER` fails with
   EINVAL when it lives **on the stack**; static and heap ones work, as does
   `pthread_mutex_init()`. libc++'s `std::mutex` (and `std::condition_variable`'s use of it)
-  relies on the static initializer, so automatic-storage `std::mutex` objects fail. Before
-  Stage B, audit `std::mutex`/`std::condition_variable` locals in tpool, InnoDB and sql/.
+  relies on the static initializer, so automatic-storage `std::mutex` objects fail.
+  Stage B step 0.2 (`probes/r_mutex.c`): **every** statically-initialised mutex on a thread
+  stack fails (main thread or created thread, any alignment, even a `memcpy` of a static
+  one), while the same bytes on the heap work. POSIX only promises the initializer for
+  statically allocated mutexes, so VMS is within its rights. Exposure in 11.4: `std::mutex`
+  appears 46 times in tpool, 24 in InnoDB, 4 in sql/, 3 in mysys, nearly all as members of
+  heap or static objects. Failures are loud (libc++ throws `system_error`), not silent.
+  Decision: audit stack-allocated objects with `std::mutex`/`std::condition_variable`
+  members as Stage B meets them and patch those sites; no global workaround.
 
 ## D6. File-system semantics: CRTL feature logicals + datadir with version limit 1
 
@@ -235,6 +242,35 @@ clang `BN_ULONG` is 8 bytes while `BN_get_word(2^32)` returns 0. Options:
 - (c) bundled wolfSSL (built with clang) for the server and mysys_ssl; but Connector/C
   cannot use wolfSSL on non-Windows (it wants GnuTLS or OpenSSL), so the client side would
   still need (a) or (b).
+
+## D10. Coherent file I/O across descriptors: open
+
+**Status:** open; needs the user (Stage B step 0.1).
+
+`probes/r_coherence.c` (x86-64, clang, `DECC$FILE_SHARING`), two descriptors of one file:
+- a descriptor that has only *read* a block sees another's write once the writer flushes
+  (`fsync`), or at once if the writer has `O_SYNC`/`O_DSYNC`: the CRTL buffers writes;
+- a descriptor that has itself *written* a block keeps serving it from its own buffer and
+  never sees later writes through other descriptors, in every variant tried (`O_SYNC`,
+  `O_DSYNC`, RMS `shr=...upi`, `ctx=bin/xplct/nocvt`, `mbc`, `mbf`, `rop`, `fop=wck`),
+  with `pread`/`pwrite` as with `lseek`+`read`/`write`.
+
+None of the 82 `DECC$` features (`docs/crtl-features-x86.txt`) controls this, except
+**`DECC$SSIO`** (shared stream I/O, VSI's answer to exactly this problem). On this node it
+does not work: on the system disk `open()` succeeds but every read/write fails with
+`%SYSTEM-?-...` "system service or exec routine is not loaded"; on DKA300 (converted to
+ODS-5 in place) `open()` fails with "unsupported file structure level".
+
+Options:
+- (a) **SSIO**: if it can be enabled on E9.2-4 (system component, parameter, later
+  update?) and the work volume supports it, the fix is one feature logical in `mariadbd`.
+- (b) **One shared CRTL descriptor per file inside mysys**: `my_open` of a file already open
+  returns a handle onto the same descriptor (refcounted, keyed by device + file id), so
+  all I/O in the server process goes through one buffer. Coherent within `mariadbd`; offline
+  tools (`aria_chk`, `myisamchk`) must not run against a live server (already upstream's
+  rule without external locking). Medium effort, contained in mysys.
+- (c) **mysys file I/O through RMS block I/O or `$QIO`**, bypassing the CRTL: coherent across
+  processes, but mysys must then manage EOF/file size and every `my_*` I/O call. Most work.
 
 ## Open items
 

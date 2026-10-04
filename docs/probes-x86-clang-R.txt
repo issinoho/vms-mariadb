@@ -1,0 +1,299 @@
+PROBE compiler CLANG: clang -std=gnu99 -D_LARGEFILE -D_USE_STD_STAT -c
+--- r_coherence (CRTL defaults)
+COH default                open2 failed: file currently locked by another user
+COH default lseek+rw       open2 failed: file currently locked by another user
+COH O_SYNC                 open2 failed: file currently locked by another user
+COH O_DSYNC                open2 failed: file currently locked by another user
+COH shr=get,put,upd        W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH shr=..,upi             W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH ctx=bin                open2 failed: file currently locked by another user
+COH ctx=xplct              open2 failed: file currently locked by another user
+COH ctx=nocvt              open2 failed: file currently locked by another user
+COH mbc=1                  open2 failed: file currently locked by another user
+COH mbf=1                  open2 failed: file currently locked by another user
+COH rop=rea                open2 failed: file currently locked by another user
+COH rop=wbh off? rop=rah   open2 failed: file currently locked by another user
+COH fop=wck                open2 failed: file currently locked by another user
+COH ctx=xplct shr=upi      W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH O_SYNC shr=upi         W2R1=Z W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=40001 size2=40001
+R_COHERENCE DONE
+--- r_coherence (feature logicals)
+COH default                W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH default lseek+rw       W2R1=A W2S2R1=A W2R1cold=A W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH O_SYNC                 W2R1=Z W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=40001 size2=40001
+COH O_DSYNC                W2R1=Z W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=40001 size2=40001
+COH shr=get,put,upd        W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH shr=..,upi             W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH ctx=bin                W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH ctx=xplct              W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH ctx=nocvt              W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH mbc=1                  W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH mbf=1                  W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH rop=rea                W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH rop=wbh off? rop=rah   W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH fop=wck                W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH ctx=xplct shr=upi      W2R1=A W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=32768 size2=32768
+COH O_SYNC shr=upi         W2R1=Z W2S2R1=Z W2R1cold=Y W1R2=A W1S1R2=A  size1=40001 size2=40001
+R_COHERENCE DONE
+--- r_io (CRTL defaults)
+IO O_DIRECT defined                   NO  
+IO O_DSYNC defined                    yes 
+IO O_SYNC defined                     yes 
+IO O_CLOEXEC defined                  yes 
+IO F_SETLK defined                    yes 
+IO F_FULLFSYNC defined                NO  
+IO open O_CREAT                       yes 
+IO pwrite at 0                        yes 
+IO pwrite at 64K (gap)                yes 
+IO fstat size after gap write         NO  st_size=0 (expect 69632)
+IO pread inside gap reads zeros       yes 
+IO pread at 64K                       yes 
+IO pwrite 1 byte mid-block            yes 
+IO odd-length append size             NO  st_size=0 (expect 70632)
+IO second O_RDWR open of same file    NO  errno=65535 (file currently locked by another user)
+IO fsync                              yes 
+IO ftruncate shrink                   yes 
+IO ftruncate grow                     yes 
+IO fcntl F_SETLK write lock           yes 
+IO fcntl F_SETLK unlock               yes 
+IO lseek past EOF + write             NO  
+IO O_APPEND write                     yes 
+IO rename over existing file          yes 
+IO rename source gone                 yes 
+IO unlink open file                   NO  errno=65535 (file currently locked by another user)
+IO unlinked file gone                 NO  
+IO O_TRUNC reuses file (no 2nd version) NO  unlink left an older version
+IO ioprobe/t1.frm                     yes 
+IO ioprobe/t1.MAI                     yes 
+IO ioprobe/t1.MAD                     yes 
+IO ioprobe/db.opt                     yes 
+IO ioprobe/ib_logfile0                yes 
+IO ioprobe/ibdata1                    yes 
+IO ioprobe/aria_log.00000001          yes 
+IO ioprobe/#sql-1a2b_3.frm            NO  errno=2 (no such file or directory)
+IO ioprobe/#sql-backup-1a2b-3.MAI     NO  errno=2 (no such file or directory)
+IO ioprobe/t@002d1.frm                NO  errno=2 (no such file or directory)
+IO ioprobe/MixedCase.frm              yes 
+IO ioprobe/a.b.c.d                    NO  errno=2 (no such file or directory)
+IO ioprobe/ddl_recovery.log           yes 
+IO ioprobe/x#P#p0.ibd                 NO  errno=2 (no such file or directory)
+IO ioprobe/.hidden                    yes 
+IO ioprobe/mysql-bin.000001           yes 
+IO ioprobe/sp ace.frm                 NO  errno=2 (no such file or directory)
+IO readdir: [.hidden] [aria_log.00000001] [data.bin] [db.opt] [ddl_recovery.log] [ibdata1.] [ib_logfile0.] [mixedcase.frm] [mysql-bin.000001] [t1.frm] [t1.mad] [t1.mai]
+IO realpath ioprobe/t1.frm -> errno=76 (function not implemented )
+IO getcwd -> DISK$SYSDUMP:[IAIN.VMS_MARIADB.MARIADB_PROBE]
+IO mkdir name with a dot              NO  errno=2 (no such file or directory)
+IO rmdir name with a dot              NO  errno=2 (no such file or directory)
+IO open() a directory                 NO  errno=2 (no such file or directory)
+R_IO DONE
+--- r_io (feature logicals)
+IO O_DIRECT defined                   NO  
+IO O_DSYNC defined                    yes 
+IO O_SYNC defined                     yes 
+IO O_CLOEXEC defined                  yes 
+IO F_SETLK defined                    yes 
+IO F_FULLFSYNC defined                NO  
+IO open O_CREAT                       yes 
+IO pwrite at 0                        yes 
+IO pwrite at 64K (gap)                yes 
+IO fstat size after gap write         NO  st_size=0 (expect 69632)
+IO pread inside gap reads zeros       yes 
+IO pread at 64K                       yes 
+IO pwrite 1 byte mid-block            yes 
+IO odd-length append size             NO  st_size=0 (expect 70632)
+IO second O_RDWR open of same file    yes 
+IO write via fd2 visible via fd1      NO  
+IO fsync                              yes 
+IO ftruncate shrink                   yes 
+IO ftruncate grow                     yes 
+IO fcntl F_SETLK write lock           yes 
+IO fcntl F_SETLK unlock               yes 
+IO lseek past EOF + write             NO  
+IO O_APPEND write                     yes 
+IO rename over existing file          yes 
+IO rename source gone                 yes 
+IO unlink open file                   yes 
+IO unlinked file gone                 NO  
+IO O_TRUNC reuses file (no 2nd version) NO  unlink left an older version
+IO ioprobe/t1.frm                     yes 
+IO ioprobe/t1.MAI                     yes 
+IO ioprobe/t1.MAD                     yes 
+IO ioprobe/db.opt                     yes 
+IO ioprobe/ib_logfile0                yes 
+IO ioprobe/ibdata1                    yes 
+IO ioprobe/aria_log.00000001          yes 
+IO ioprobe/#sql-1a2b_3.frm            yes 
+IO ioprobe/#sql-backup-1a2b-3.MAI     yes 
+IO ioprobe/t@002d1.frm                yes 
+IO ioprobe/MixedCase.frm              yes 
+IO ioprobe/a.b.c.d                    yes 
+IO ioprobe/ddl_recovery.log           yes 
+IO ioprobe/x#P#p0.ibd                 yes 
+IO ioprobe/.hidden                    yes 
+IO ioprobe/mysql-bin.000001           yes 
+IO ioprobe/sp ace.frm                 yes 
+IO readdir: [#sql-1a2b_3.frm] [#sql-backup-1a2b-3.MAI] [.hidden] [a.b.c.d] [aria_log.00000001] [data.bin] [db.opt] [ddl_recovery.log] [ibdata1] [ib_logfile0] [MixedCase.frm] [mysql-bin.000001] [sp ace.frm] [t1.frm] [t1.MAD] [t1.MAI] [t@002d1.frm] [x#P#p0.ibd]
+IO realpath ioprobe/t1.frm -> errno=76 (function not implemented )
+IO getcwd -> /DISK$SYSDUMP/IAIN/VMS_MARIADB/MARIADB_PROBE
+IO mkdir name with a dot              yes 
+IO rmdir name with a dot              yes 
+IO open() a directory                 NO  errno=2 (no such file or directory)
+R_IO DONE
+--- r_io2 (CRTL defaults)
+IO2 default  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 default  after fsync:       fstat=16384 stat=16384
+IO2 default  second open failed errno=65535 (file currently locked by another user)
+IO2 default  lseek(100000)=100000 write=1 errno=0
+IO2 default  after seek+write:  fstat=16384
+IO2 default  after close:       stat=100001 (expect 100001)
+IO2 default  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 ctx_stm  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 ctx_stm  after fsync:       fstat=16384 stat=16384
+IO2 ctx_stm  second open failed errno=65535 (file currently locked by another user)
+IO2 ctx_stm  lseek(100000)=100000 write=1 errno=0
+IO2 ctx_stm  after seek+write:  fstat=16384
+IO2 ctx_stm  after close:       stat=100001 (expect 100001)
+IO2 ctx_stm  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 rfm_udf  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 rfm_udf  after fsync:       fstat=16384 stat=16384
+IO2 rfm_udf  second open failed errno=65535 (file currently locked by another user)
+IO2 rfm_udf  lseek(100000)=100000 write=1 errno=0
+IO2 rfm_udf  after seek+write:  fstat=16384
+IO2 rfm_udf  after close:       stat=100001 (expect 100001)
+IO2 rfm_udf  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 rfm_fix  open failed errno=65535 (invalid maximum record size)
+IO2 shr_all  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 shr_all  after fsync:       fstat=16384 stat=16384
+IO2 shr_all  fd2 sees size:     fstat=16384
+IO2 shr_all  fd2 pwrite -> fd1 pread before fsync: A
+IO2 shr_all  fd2 pwrite -> fd1 pread after fsync(fd2): A
+IO2 shr_all  fd1 pwrite -> fd2 pread (no fsync): A
+IO2 shr_all  fd2 extends to 20K: fd1 fstat=16384 fd2 fstat=16384
+IO2 shr_all  after close(fd2):  fd1 fstat=20480 stat=20480
+IO2 shr_all  lseek(100000)=100000 write=1 errno=0
+IO2 shr_all  after seek+write:  fstat=20480
+IO2 shr_all  after close:       stat=100001 (expect 100001)
+IO2 shr_all  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 realpath(.) -> function not implemented 
+R_IO2 DONE
+--- r_io2 (feature logicals)
+IO2 default  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 default  after fsync:       fstat=16384 stat=16384
+IO2 default  fd2 sees size:     fstat=16384
+IO2 default  fd2 pwrite -> fd1 pread before fsync: A
+IO2 default  fd2 pwrite -> fd1 pread after fsync(fd2): A
+IO2 default  fd1 pwrite -> fd2 pread (no fsync): A
+IO2 default  fd2 extends to 20K: fd1 fstat=16384 fd2 fstat=16384
+IO2 default  after close(fd2):  fd1 fstat=20480 stat=20480
+IO2 default  lseek(100000)=100000 write=1 errno=0
+IO2 default  after seek+write:  fstat=20480
+IO2 default  after close:       stat=100001 (expect 100001)
+IO2 default  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 ctx_stm  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 ctx_stm  after fsync:       fstat=16384 stat=16384
+IO2 ctx_stm  fd2 sees size:     fstat=16384
+IO2 ctx_stm  fd2 pwrite -> fd1 pread before fsync: A
+IO2 ctx_stm  fd2 pwrite -> fd1 pread after fsync(fd2): A
+IO2 ctx_stm  fd1 pwrite -> fd2 pread (no fsync): A
+IO2 ctx_stm  fd2 extends to 20K: fd1 fstat=16384 fd2 fstat=16384
+IO2 ctx_stm  after close(fd2):  fd1 fstat=20480 stat=20480
+IO2 ctx_stm  lseek(100000)=100000 write=1 errno=0
+IO2 ctx_stm  after seek+write:  fstat=20480
+IO2 ctx_stm  after close:       stat=100001 (expect 100001)
+IO2 ctx_stm  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 rfm_udf  open failed errno=65535 (operation invalid for file organization or device)
+IO2 rfm_fix  open failed errno=65535 (invalid maximum record size)
+IO2 shr_all  after pwrite 16K: fstat=0 stat=0 lseek_end=16384
+IO2 shr_all  after fsync:       fstat=16384 stat=16384
+IO2 shr_all  fd2 sees size:     fstat=16384
+IO2 shr_all  fd2 pwrite -> fd1 pread before fsync: A
+IO2 shr_all  fd2 pwrite -> fd1 pread after fsync(fd2): A
+IO2 shr_all  fd1 pwrite -> fd2 pread (no fsync): A
+IO2 shr_all  fd2 extends to 20K: fd1 fstat=16384 fd2 fstat=16384
+IO2 shr_all  after close(fd2):  fd1 fstat=20480 stat=20480
+IO2 shr_all  lseek(100000)=100000 write=1 errno=0
+IO2 shr_all  after seek+write:  fstat=20480
+IO2 shr_all  after close:       stat=100001 (expect 100001)
+IO2 shr_all  after O_TRUNC + rename + one unlink, name still exists: no
+IO2 realpath(.) -> function not implemented 
+R_IO2 DONE
+--- r_net (CRTL defaults)
+NET SO_REUSEADDR                       yes 
+NET bind 127.0.0.1:0                   yes 
+NET fcntl O_NONBLOCK on socket         yes 
+NET non-blocking accept -> EWOULDBLOCK yes errno=35 (I/O stream empty)
+NET non-blocking connect               yes errno=36 (operation in progress)
+NET poll() on listening socket         yes 
+NET accept after poll                  yes 
+NET poll() POLLOUT on connecting socket yes 
+NET TCP_NODELAY                        yes 
+NET SO_KEEPALIVE                       yes 
+NET SO_RCVTIMEO                        yes 
+NET send/recv                          yes 
+NET MSG_DONTWAIT on empty socket       yes errno=35 (I/O stream empty)
+NET recv after peer close returns 0    yes 
+NET getaddrinfo localhost              yes 
+NET getaddrinfo passive                yes 
+NET AF_INET6 socket                    yes 
+NET IPV6_V6ONLY=0 (dual stack)         yes 
+NET AF_UNIX socket                     yes 
+NET AF_UNIX bind                       NO  errno=65535 (no logical name match)
+NET socketpair                         yes 
+R_NET DONE
+--- r_net (feature logicals)
+NET SO_REUSEADDR                       yes 
+NET bind 127.0.0.1:0                   yes 
+NET fcntl O_NONBLOCK on socket         yes 
+NET non-blocking accept -> EWOULDBLOCK yes errno=35 (I/O stream empty)
+NET non-blocking connect               yes errno=36 (operation in progress)
+NET poll() on listening socket         yes 
+NET accept after poll                  yes 
+NET poll() POLLOUT on connecting socket yes 
+NET TCP_NODELAY                        yes 
+NET SO_KEEPALIVE                       yes 
+NET SO_RCVTIMEO                        yes 
+NET send/recv                          yes 
+NET MSG_DONTWAIT on empty socket       yes errno=35 (I/O stream empty)
+NET recv after peer close returns 0    yes 
+NET getaddrinfo localhost              yes 
+NET getaddrinfo passive                yes 
+NET AF_INET6 socket                    yes 
+NET IPV6_V6ONLY=0 (dual stack)         yes 
+NET AF_UNIX socket                     yes 
+NET AF_UNIX bind                       NO  errno=65535 (no logical name match)
+NET socketpair                         yes 
+R_NET DONE
+--- r_proc (CRTL defaults)
+PROC sysconf(_SC_PAGESIZE)              yes 8192
+PROC sysconf(_SC_NPROCESSORS_ONLN)      yes 2
+PROC RLIMIT_NOFILE defined (getrlimit)  NO  
+PROC pthread_attr_setstacksize 1MB      yes 1048576
+PROC pthread_create + TSD key           yes 
+PROC PTHREAD_MUTEX_ERRORCHECK           yes 
+PROC PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP NO  
+PROC pthread_cond_timedwait timeout     yes 
+PROC clock_gettime(CLOCK_MONOTONIC)     yes 
+PROC sigaction + raise(SIGHUP)          yes 
+PROC sigprocmask block SIGTERM          yes 
+PROC mmap MAP_ANONYMOUS 64MB            yes 80006000
+PROC malloc 4GB in 256MB blocks         yes 4096 MB in 256MB blocks, highest 0x192006010
+PROC getpid                             yes 195642
+R_PROC DONE
+--- r_proc (feature logicals)
+PROC sysconf(_SC_PAGESIZE)              yes 8192
+PROC sysconf(_SC_NPROCESSORS_ONLN)      yes 2
+PROC RLIMIT_NOFILE defined (getrlimit)  NO  
+PROC pthread_attr_setstacksize 1MB      yes 1048576
+PROC pthread_create + TSD key           yes 
+PROC PTHREAD_MUTEX_ERRORCHECK           yes 
+PROC PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP NO  
+PROC pthread_cond_timedwait timeout     yes 
+PROC clock_gettime(CLOCK_MONOTONIC)     yes 
+PROC sigaction + raise(SIGHUP)          yes 
+PROC sigprocmask block SIGTERM          yes 
+PROC mmap MAP_ANONYMOUS 64MB            yes 80006000
+PROC malloc 4GB in 256MB blocks         yes 4096 MB in 256MB blocks, highest 0x192006010
+PROC getpid                             yes 195642
+R_PROC DONE
+PROBE-DONE
