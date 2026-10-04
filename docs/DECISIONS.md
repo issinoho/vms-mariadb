@@ -290,7 +290,22 @@ handled in the layer:
 - `O_TRUNC` on an existing file would create a new version: truncation goes through the
   master instead.
 
-## Open items
+## D11. PCRE2 for the server: open
+
+**Status:** open; needed before `mariadbd` links.
+
+The server needs PCRE2 (REGEXP). MariaDB's `WITH_PCRE=bundled` downloads PCRE2 10.47 from
+GitHub at build time (MD5 only) and builds it with PCRE2's own CMake, which the generated MMS
+build cannot follow. The configuration therefore takes PCRE2 as a system library
+(`server.options`, two hand-set answers in `manual.txt`): headers from vms-pcre2 10.49
+(host sysroot; `PCRE2$ROOT:[INCLUDE]` on the node), library from `PCRE2$ROOT:[LIB]` (`server.link`).
+vms-pcre2's library is built with VSI C (ILP32), so it cannot be linked into clang (LP64)
+code (D4); the headers are fine (`size_t` and fixed-width types). Options:
+- (a) add a clang (LP64) build of the library to **vms-pcre2** (install tree
+  `[.INSTALL_X86_64_CLANG]` or similar): one PCRE2 port for the family, as for zlib and grep;
+- (b) compile vms-pcre2's patched 10.49 sources with clang inside this repository's build
+  (pinned and verified like the MariaDB tarball): self-contained, but a second copy of the job.
+
 
 - Disk space (resolved 2026-10-04): the x86-64 work disk was the system disk with ~2 GB free.
   The port now works in `DISK$SYSDUMP:[IAIN.VMS_MARIADB]` (16 GB volume, 7.85 GB free), which

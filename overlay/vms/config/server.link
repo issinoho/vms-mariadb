@@ -1,0 +1,4 @@
+# Extra linker input for every image of the server configuration (gen_mms.py).
+# PCRE2, 8-bit library, from the tree vms/build.com defines as PCRE2$ROOT.
+# It must be a clang (LP64) build: see docs/DECISIONS.md D11.
+PCRE2$ROOT:[LIB]PCRE2-8.OLB/library

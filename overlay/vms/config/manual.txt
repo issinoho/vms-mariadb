@@ -13,3 +13,8 @@ HAVE_LINUX_MMAN_H ""  # resolves to <mman.h>
 HAVE_LINUX_UNISTD_H ""  # resolves to <unistd.h>
 HAVE_NETINET_IN6_H ""  # resolves to <in6.h>, not a BSD netinet/in6.h
 HAVE_SYS_MALLOC_H ""  # resolves to <malloc.h>
+#
+# PCRE2 comes from outside the MariaDB tree (server.options: WITH_PCRE=system),
+# linked from PCRE2$ROOT (server.link); CMake's library checks cannot see it.
+HAVE_PCRE2_MATCH_8 1  # PCRE2 library from PCRE2$ROOT
+NEEDS_PCRE2_DEBIAN_HACK ""  # PCRE2's own POSIX names (pcre2_regcomp)

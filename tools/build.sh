@@ -10,13 +10,15 @@ target=${3:-ALL}
 keep=${4:-}
 . "$top/upstream.conf"
 remote=$(echo "$UPSTREAM_NAME-$UPSTREAM_VERSION" | tr . _ | tr a-z A-Z)
-read -r _ _ _ _ _ WORKDIR _ < <(awk -v n="$node" '$1==n' "$top/tools/nodes.conf")
+read -r _ _ _ _ _ WORKDIR _ PCRE2ROOT < <(awk -v n="$node" '$1==n' "$top/tools/nodes.conf")
 
 "$top/tools/push.sh" "$node" "$cfg"
 mkdir -p "$top/out"
 job=$top/cache/build-$node-$cfg.com
-printf '$ set noon\n$ purge/nolog %s.%s...]*.*\n$ @%s.%s.VMS]BUILD.COM %s %s %s\n' \
-    "${WORKDIR%]}" "$remote" "${WORKDIR%]}" "$remote" "$cfg" "$target" "$keep" > "$job"
+# Optional 8th nodes.conf column: the PCRE2 install tree as a rooted device
+# spec (dev:[dir.INSTALL_X86_64.]), defined as PCRE2$ROOT for the build.
+printf '$ set noon\n$ purge/nolog %s.%s...]*.*\n$ @%s.%s.VMS]BUILD.COM %s %s "%s" "%s"\n' \
+    "${WORKDIR%]}" "$remote" "${WORKDIR%]}" "$remote" "$cfg" "$target" "$keep" "${PCRE2ROOT:-}" > "$job"
 log=$top/out/build-$node-$cfg.log
 VMS_TIMEOUT=${VMS_BUILD_TIMEOUT:-14400} "$top/tools/vms.sh" "$node" run "$job" | tee "$log"
 grep -q 'BUILD: done' "$log" || { echo "build: failed (see $log)" >&2; exit 1; }

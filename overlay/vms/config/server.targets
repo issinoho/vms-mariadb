@@ -1,0 +1,27 @@
+# Targets built for Stage B (server), libraries first, then mariadbd.
+strings
+dbug
+zlib
+mysys
+mysys_ssl
+vio
+tpool
+wsrep
+online_alter_log
+aria
+partition
+sql_sequence
+csv
+heap
+myisam
+myisammrg
+sequence
+feedback
+type_geom
+type_inet
+type_uuid
+user_variables
+userstat
+sql_builtins
+sql
+mariadbd
