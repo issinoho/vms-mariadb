@@ -5,10 +5,11 @@ success, so a failed login left $STATUS at %X00000001 and $SEVERITY at 1,
 and DCL's ON ERROR never fired. Map non-zero exit codes to an
 error-severity status under DCL, keeping the POSIX status under a GNV
 shell, as the sibling ports do (vms-wget patch 0008, vms-curl patch 0011).
+my_vms_exit() is noreturn, like exit().
 
---- a/include/my_global.h	2026-10-04 16:39:25.987541255 +0100
-+++ b/include/my_global.h	2026-10-04 16:39:26.006786836 +0100
-@@ -288,6 +288,34 @@
+--- a/include/my_global.h	2026-10-04 21:41:15.003691864 +0100
++++ b/include/my_global.h	2026-10-04 21:41:15.056911958 +0100
+@@ -288,6 +288,35 @@
  #ifdef HAVE_STDLIB_H
  #include <stdlib.h>
  #endif
@@ -30,13 +31,14 @@ shell, as the sibling ports do (vms-wget patch 0008, vms-curl patch 0011).
 +#ifdef __cplusplus
 +}
 +#endif
-+static inline void my_vms_exit(int status)
++__attribute__((noreturn)) static inline void my_vms_exit(int status)
 +{
 +  const char *shell= getenv("SHELL");
 +  if (shell && strcmp(shell, "DCL") != 0)
 +    decc$__posix_exit(status);
 +  decc$exit(status == 0 ? 1 :
 +            0x10000000 | 0x35A000 | ((status & 0xFF) << 3) | 2);
++  __builtin_unreachable();
 +}
 +#define exit(status) my_vms_exit(status)
 +#endif
