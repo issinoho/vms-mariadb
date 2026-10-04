@@ -243,9 +243,9 @@ clang `BN_ULONG` is 8 bytes while `BN_get_word(2^32)` returns 0. Options:
   cannot use wolfSSL on non-Windows (it wants GnuTLS or OpenSSL), so the client side would
   still need (a) or (b).
 
-## D10. Coherent file I/O across descriptors: open
+## D10. Coherent file I/O across descriptors: one shared descriptor per file in mysys
 
-**Status:** open; needs the user (Stage B step 0.1).
+**Status:** approved by the user (2026-10-04): option (b).
 
 `probes/r_coherence.c` (x86-64, clang, `DECC$FILE_SHARING`), two descriptors of one file:
 - a descriptor that has only *read* a block sees another's write once the writer flushes
@@ -271,6 +271,24 @@ Options:
   rule without external locking). Medium effort, contained in mysys.
 - (c) **mysys file I/O through RMS block I/O or `$QIO`**, bypassing the CRTL: coherent across
   processes, but mysys must then manage EOF/file size and every `my_*` I/O call. Most work.
+
+Implemented (patch 0014 + `mysys/my_vmsfile.c`, tested by `vms/tests/vmsfile_test.c`, 20/20):
+mysys file calls on VMS go through `my_vms_*()` beside the Windows `my_win_*()` hooks. One
+master descriptor per file (by `st_dev`/`st_ino`) does all data I/O; caller descriptors keep
+their own positions and `O_APPEND`. Building it exposed three more C RTL behaviours, all now
+handled in the layer:
+- `lseek(SEEK_END)` still reports the old size after `ftruncate()` (and `fstat()` lags
+  behind writes): the layer keeps each file's size itself.
+- A `pread()` past the end of file returns 0 but moves the end of file to that offset when
+  the file is closed: reads are clamped at the kept size.
+- `ftruncate()` keeps dirty buffered blocks past the new end, and `close()` writes them
+  back: the layer flushes before truncating.
+- Closing a *writable* channel writes that channel's stale end of file into the file
+  header, even after another channel synced: caller descriptors are made read-only
+  channels (`dup2`), the master closes last. Consequence: `fcntl()` write locks on mysys
+  descriptors fail, so `--external-locking` is unsupported on VMS.
+- `O_TRUNC` on an existing file would create a new version: truncation goes through the
+  master instead.
 
 ## Open items
 

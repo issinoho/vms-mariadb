@@ -1,0 +1,192 @@
+Subject: mysys: one shared descriptor per file on OpenVMS (my_vmsfile.c)
+
+The OpenVMS C RTL buffers file data per descriptor: one that has written a
+block keeps serving it from its own buffer and never sees writes made to
+the file through another descriptor (vms-mariadb docs/DECISIONS.md D10).
+MariaDB opens files several times. Like my_winfile.cc on Windows, route
+mysys file I/O on VMS through my_vms_*() in the new mysys/my_vmsfile.c: one
+master descriptor per file does all data I/O with pread()/pwrite(); each
+my_open() descriptor keeps only its own position. File sizes come from
+lseek(SEEK_END), since st_size is stale until fsync() or close().
+
+--- a/mysys/mysys_priv.h	2026-10-04 17:47:02.877601185 +0100
++++ b/mysys/mysys_priv.h	2026-10-04 17:47:03.063031283 +0100
+@@ -179,6 +179,24 @@
+ #define CREATE_NOSYMLINK_FUNCTION(PROTO,AT,NOAT)
+ #endif
+ 
++#ifdef __VMS
++#include <sys/stat.h>
++/* my_vmsfile.c exports (one shared descriptor per file), mysys only */
++extern File     my_vms_open(const char *path, int oflag, int mode);
++extern int      my_vms_close(File fd);
++extern size_t   my_vms_read(File fd, uchar *buffer, size_t count);
++extern size_t   my_vms_write(File fd, const uchar *buffer, size_t count);
++extern size_t   my_vms_pread(File fd, uchar *buffer, size_t count,
++                             my_off_t offset);
++extern size_t   my_vms_pwrite(File fd, const uchar *buffer, size_t count,
++                              my_off_t offset);
++extern my_off_t my_vms_lseek(File fd, my_off_t pos, int whence);
++extern int      my_vms_fsync(File fd);
++extern int      my_vms_chsize(File fd, my_off_t newlength);
++extern int      my_vms_fstat(File fd, struct stat *buf);
++extern int      my_vms_stat(const char *path, struct stat *buf);
++#endif
++
+ #ifdef _WIN32
+ #include <sys/stat.h>
+ /* my_winfile.c exports, should not be used outside mysys */
+--- a/mysys/CMakeLists.txt	2026-10-04 17:47:02.893562133 +0100
++++ b/mysys/CMakeLists.txt	2026-10-04 17:47:03.063251217 +0100
+@@ -61,6 +61,10 @@
+     my_win_popen.cc)
+ ENDIF()
+ 
++IF (VMS)
++  SET (MYSYS_SOURCES ${MYSYS_SOURCES} my_vmsfile.c)
++ENDIF()
++
+ IF(MSVC_INTEL)
+   SET(MYSYS_SOURCES ${MYSYS_SOURCES} crc32/crc32_x86.c crc32/crc32c_x86.cc)
+   IF(CMAKE_SIZEOF_VOID_P EQUAL 8)
+--- a/mysys/my_open.c	2026-10-04 17:47:02.909634301 +0100
++++ b/mysys/my_open.c	2026-10-04 17:47:03.069801956 +0100
+@@ -51,6 +51,8 @@
+     MyFlags|= my_global_flags;
+ #if defined(_WIN32)
+   fd= my_win_open(FileName, Flags);
++#elif defined(__VMS)
++  fd= my_vms_open(FileName, Flags | O_CLOEXEC, my_umask);
+ #else
+   if (MyFlags & MY_NOSYMLINKS)
+     fd = open_nosymlinks(FileName, Flags | O_CLOEXEC, my_umask);
+@@ -89,7 +91,9 @@
+     my_file_info[fd].name= NULL;
+     my_file_info[fd].type= UNOPEN;
+   }
+-#ifndef _WIN32
++#if defined(__VMS)
++  err= my_vms_close(fd);
++#elif !defined(_WIN32)
+   err= close(fd);
+ #else
+   err= my_win_close(fd);
+--- a/mysys/my_create.c	2026-10-04 17:47:02.926276766 +0100
++++ b/mysys/my_create.c	2026-10-04 17:47:03.069966011 +0100
+@@ -42,6 +42,9 @@
+ 		   FileName, CreateFlags, access_flags, MyFlags));
+ #if defined(_WIN32)
+   fd= my_win_open(FileName, access_flags | O_CREAT);
++#elif defined(__VMS)
++  fd= my_vms_open(FileName, access_flags | O_CREAT | O_CLOEXEC,
++                  CreateFlags ? CreateFlags : my_umask);
+ #else
+   fd= open((char *) FileName, access_flags | O_CREAT | O_CLOEXEC,
+ 	    CreateFlags ? CreateFlags : my_umask);
+--- a/mysys/my_read.c	2026-10-04 17:47:02.943388665 +0100
++++ b/mysys/my_read.c	2026-10-04 17:47:03.070095604 +0100
+@@ -47,6 +47,8 @@
+     errno= 0;					/* Linux, Windows don't reset this on EOF/success */
+ #ifdef _WIN32
+     readbytes= my_win_read(Filedes, Buffer, Count);
++#elif defined(__VMS)
++    readbytes= my_vms_read(Filedes, Buffer, Count);
+ #else
+     readbytes= read(Filedes, Buffer, Count);
+ #endif
+--- a/mysys/my_write.c	2026-10-04 17:47:02.962141217 +0100
++++ b/mysys/my_write.c	2026-10-04 17:47:03.070213317 +0100
+@@ -45,6 +45,8 @@
+       DBUG_RETURN((size_t)-1);
+     }
+     writtenbytes= my_win_write(Filedes, Buffer, Count);
++#elif defined(__VMS)
++    writtenbytes= my_vms_write(Filedes, Buffer, Count);
+ #else
+     writtenbytes= write(Filedes, Buffer, Count);
+ #endif
+--- a/mysys/my_pread.c	2026-10-04 17:47:02.978175313 +0100
++++ b/mysys/my_pread.c	2026-10-04 17:47:03.070484344 +0100
+@@ -62,6 +62,8 @@
+     errno= 0;    /* Linux, Windows don't reset this on EOF/success */
+ #ifdef _WIN32
+     readbytes= my_win_pread(Filedes, Buffer, Count, offset);
++#elif defined(__VMS)
++    readbytes= my_vms_pread(Filedes, Buffer, Count, offset);
+ #else
+     readbytes= pread(Filedes, Buffer, Count, offset);
+ #endif
+@@ -155,6 +157,8 @@
+   {
+ #ifdef _WIN32
+     writtenbytes= my_win_pwrite(Filedes, Buffer, Count,offset);
++#elif defined(__VMS)
++    writtenbytes= my_vms_pwrite(Filedes, Buffer, Count, offset);
+ #else
+     writtenbytes= pwrite(Filedes, Buffer, Count, offset);
+ #endif
+--- a/mysys/my_seek.c	2026-10-04 17:47:02.994242689 +0100
++++ b/mysys/my_seek.c	2026-10-04 17:47:03.070607240 +0100
+@@ -58,6 +58,8 @@
+   DBUG_ASSERT(fd != -1);
+ #ifdef _WIN32
+   newpos= my_win_lseek(fd, pos, whence);
++#elif defined(__VMS)
++  newpos= my_vms_lseek(fd, pos, whence);
+ #else
+   newpos= lseek(fd, pos, whence);
+ #endif
+--- a/mysys/my_sync.c	2026-10-04 17:47:03.010369488 +0100
++++ b/mysys/my_sync.c	2026-10-04 17:47:03.070736377 +0100
+@@ -80,7 +80,9 @@
+     /* Some file systems don't support F_FULLFSYNC and fail above: */
+     DBUG_PRINT("info",("fcntl(F_FULLFSYNC) failed, falling back"));
+ #endif
+-#if defined(HAVE_FDATASYNC) && HAVE_DECL_FDATASYNC
++#if defined(__VMS)
++    res= my_vms_fsync(fd);
++#elif defined(HAVE_FDATASYNC) && HAVE_DECL_FDATASYNC
+     res= fdatasync(fd);
+ #elif defined(HAVE_FSYNC)
+     res= fsync(fd);
+--- a/mysys/my_chsize.c	2026-10-04 17:47:03.026574322 +0100
++++ b/mysys/my_chsize.c	2026-10-04 17:47:03.070874809 +0100
+@@ -60,6 +60,13 @@
+       goto err;
+     }
+     DBUG_RETURN(0);
++#elif defined(__VMS)
++    if (my_vms_chsize(fd, newlength))
++    {
++      my_errno= errno;
++      goto err;
++    }
++    DBUG_RETURN(0);
+ #elif defined(HAVE_FTRUNCATE)
+     if (ftruncate(fd, (off_t) newlength))
+     {
+--- a/mysys/my_lib.c	2026-10-04 17:47:03.043270142 +0100
++++ b/mysys/my_lib.c	2026-10-04 17:47:03.071157209 +0100
+@@ -345,6 +345,8 @@
+   DBUG_PRINT("my",("fd: %d  MyFlags: %lu", Filedes, MyFlags));
+ #ifdef _WIN32
+   DBUG_RETURN(my_win_fstat(Filedes, stat_area));
++#elif defined(__VMS)
++  DBUG_RETURN(my_vms_fstat(Filedes, (struct stat *) stat_area));
+ #else
+   DBUG_RETURN(fstat(Filedes, (struct stat *) stat_area));
+ #endif
+@@ -362,7 +364,12 @@
+     if (!(stat_area= (MY_STAT *) my_malloc(key_memory_MY_STAT, sizeof(MY_STAT),
+                                            my_flags)))
+       goto error;
+-#ifndef _WIN32
++#if defined(__VMS)
++  if (!my_vms_stat(path, (struct stat *) stat_area))
++  {
++    DBUG_RETURN(stat_area);
++  }
++#elif !defined(_WIN32)
+   if (!stat((char *) path, (struct stat *) stat_area))
+   {
+     DBUG_RETURN(stat_area);

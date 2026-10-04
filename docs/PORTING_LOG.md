@@ -98,3 +98,16 @@ Follow-ups (cosmetic, not blocking):
   (e.g. `MARIADB$ROOT:[ETC]MY.CNF`, `SYS$LOGIN:`) belongs with packaging.
 - No input history or tab completion in the interactive client.
 - MMS has no header dependencies (a header change needs CLEAN); clang's `-MMS` depfiles could fix it.
+
+## Stage B step 0 (blockers)
+
+- **F** Cross-descriptor coherence (D10, option b): patch 0014 and `mysys/my_vmsfile.c`; see
+  D10 for the C RTL behaviours found on the way (stale `lseek(SEEK_END)` after truncate,
+  `pread` past EOF extending the file at close, truncate keeping dirty blocks, a writable
+  channel's close rewriting the header EOF). `vms/tests/run_vmsfile_test.com`: 20/20.
+  Client tests still 15/15.
+- **T** `DECC$FILE_SHARING` defined as a process logical makes clang unable to write its
+  object file: feature logicals for MariaDB belong inside the images (`LIB$INITIALIZE`),
+  never in the build process.
+- **X** Stack mutexes (D5): any statically-initialised pthread mutex on a thread stack fails;
+  audit as met.
