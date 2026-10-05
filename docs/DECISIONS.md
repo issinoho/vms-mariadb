@@ -337,6 +337,43 @@ SSL3), separate client and server kits (one product is simpler while the server 
 The server runs detached under the starting account's UAF quotas (`RUN/DETACHED/AUTHORIZE`,
 PORTING_LOG); no dedicated account or boot-time server start yet. Requires VSI SSL3.
 
+## D14. IA64: client access only, through Connector/C (future work)
+
+**Status:** recorded for possible future development (2026-10-05); not scheduled. Extends D3.
+
+An IA64 server is not feasible. MariaDB 11.4 needs C++11, and IA64 has only VSI C++ 7.4
+(EDG, pre-C++11: `static_assert` is rejected, PHASE0). VSI's clang compilers target x86-64
+only, and there is no other C++11 compiler for OpenVMS IA64. Routes considered for a server:
+
+- back-port 11.4 to C++98: thousands of changes in sql/, Aria and tpool (lambdas, `auto`,
+  `<atomic>`, `std::thread`, ...), redone every release - rejected;
+- an older, C++98-era MariaDB (5.5): out of support since 2020, with unfixed security bugs;
+  against the family's "current upstream" principle - rejected;
+- cross-compiling from x86-64, or another C++ compiler on IA64: none exists - not available.
+
+What IA64 can have is **client access** to a MariaDB server (on x86-64 VMS or elsewhere), so
+that C, COBOL, BASIC and Pascal applications on IA64 can use MariaDB:
+
+- **(a) Connector/C (libmariadb), recommended.** It is C99 (39 files in
+  `libmariadb/libmariadb`, no C++), which VSI C 7.4 compiles. IA64 is the easier target here:
+  VSI C is ILP32 like the C RTL, so `vms_lp64.h` (D12) is not needed, and the vms-zlib IA64
+  build links as is. Work: a VSI C build mode in the tooling (toolchain file, MMS rules
+  from `gen_mms.py`, check replay with CC on IA64); TLS through IA64's SSL3 kit; the client
+  authentication plugins built in; our Connector/C patches (0007, 0011) and the
+  `LIB$INITIALIZE` C RTL features; a test program running the client suite against a server;
+  an `I64VMS` kit with an object library or shareable image, headers and a link example.
+  Estimate: a few days, mostly the C-compiler build mode and debugging on a single-CPU node.
+- **(b) the C command-line tools** (`mysqldump`, `mysqlimport`, `mysqlshow`, `mysqlcheck`,
+  `mysqlslap` are C): they link mysys and mysys_ssl, which contain C++, so they need a C-only
+  mysys subset or rewiring onto Connector/C. Possible but more patching for less certain
+  payoff. The interactive `mariadb` client (`mysql.cc`) and `mariadb-admin` are C++ and
+  cannot be built; a small C query tool over Connector/C could stand in.
+- Packaging: the same VMSMARIADB product with an `I64VMS` kit holding only the client
+  library and headers, or a separate product (e.g. `VMSMARIADB_CLIENT`) for both
+  architectures, which x86-64 users could also build their own programs against.
+
+If taken up: start with a probe build of Connector/C with VSI C on IA64, then (a).
+
 
 - Disk space (resolved 2026-10-04): the x86-64 work disk was the system disk with ~2 GB free.
   The port now works in `DISK$SYSDUMP:[IAIN.VMS_MARIADB]` (16 GB volume, 7.85 GB free), which
