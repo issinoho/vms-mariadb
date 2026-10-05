@@ -381,3 +381,32 @@ If taken up: start with a probe build of Connector/C with VSI C on IA64, then (a
   `USER$ROOT:[IAIN.VMS_MARIADB]` (ODS-5, 25 GB free). Work directories must be ODS-5.
 - `time_t` is 32-bit with both compilers (Y2038); note for TIMESTAMP handling.
 - Prior-art 5.5-era VMS patches: not looked for yet.
+
+## D15. Running the server as a service: account, boot start, clean shutdown
+
+**Status:** direction approved by the user (2026-10-05); plan in `docs/PLAN_SERVICE.md`.
+Extends D13 (the kit's `VMSMARIADB$SERVER.COM` starts the server under the invoking user).
+
+- **A dedicated account**, `MARIADB` in its own UIC group, owning the data and temporary
+  directories; batch access only (no interactive, network, local, dialup or remote logins),
+  privileges `TMPMBX,NETMBX`, and quotas sized for a server (PGFLQUOTA, FILLM 1000+ below
+  SYSGEN `CHANNELCNT`, BYTLM/BIOLM for network buffers). Running as the installing user, as
+  now, mixes a person's files and quotas with the database's; running as SYSTEM gives a
+  network server far more privilege than it needs.
+- **Boot start through a batch job as the account**: `VMSMARIADB$STARTUP.COM START` submits
+  `VMSMARIADB$BOOT.COM` with `SUBMIT/USER=MARIADB`, and the job runs
+  `VMSMARIADB$SERVER START` (`RUN/DETACHED/AUTHORIZE` LOGINOUT, so the server gets the
+  account's UAF quotas) and exits. Alternative: `RUN/DETACHED/UIC=` from SYSTEM - which UAF
+  quotas apply, the creator's or none (PQL defaults, which starved the server in Stage B), is
+  to be probed; the SUBMIT route relies only on documented behaviour.
+- **Clean shutdown at system shutdown** from `SYSHUTDWN.COM`, through a MariaDB account with
+  only the SHUTDOWN privilege (`vmsmariadb_shutdown@localhost`), whose random password is in an
+  option file readable only by the service account and SYSTEM: no root password in startup
+  files. An unclean stop costs Aria recovery and possibly MyISAM repairs at the next start.
+- **Site settings outside the kit**: `SYS$MANAGER:VMSMARIADB$CONFIG.COM` (data directory, port,
+  account, node, autostart), so kit upgrades keep them. The node name binds the server to one
+  cluster member: two nodes opening one data directory would corrupt it (our locks are
+  process-local, not cluster-wide).
+- **A configure procedure**, `VMSMARIADB$CONFIGURE.COM`, run once by SYSTEM, in the manner of
+  `TCPIP$CONFIG`: account, data directory, system tables, root password, shutdown account,
+  configuration file.
