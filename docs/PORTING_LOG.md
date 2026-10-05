@@ -219,3 +219,34 @@ intact and CHECK TABLE OK; MEMORY empty, as it should be.
 
 Still to do for the Stage B exit (plan §3): repeated start/stop cycles, a 100+ MB data load,
 a remote client (Linux) over TCP, a 24-hour idle + light-load soak.
+
+## Stage B: remote client (2026-10-05)
+
+A native Linux `mariadb` 11.4.13 client (`cache/native-11.4.13`) connected to the VMS server
+over TCP from the build host, as a password account `vmsremote@'%'` (its credentials only in the
+git-ignored `tools/testdb.conf`): `VERSION()` 11.4.13-MariaDB, `version_compile_os` OpenVMS,
+`version_compile_machine` x86_64; TLS negotiated automatically (`Ssl_cipher`
+TLS_AES_256_GCM_SHA384, from the server's auto-generated certificate); CREATE TABLE, INSERT
+and SELECT in database `vmsremote`.
+
+## Stage B: data load and restart cycles (2026-10-05)
+
+`tools/loadcycle.sh x86`: 1,000,000 rows into an Aria and a MyISAM table, CHECKSUM TABLE,
+then stop/start cycles checking row counts, checksums and CHECK TABLE.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| S | Aria `INSERT ... SELECT` sat in "Repair by sorting" for 22+ minutes; a new client got no greeting for ~10 minutes | `server.sh` ran `RUN/DETACHED LOGINOUT` without `/AUTHORIZE`, so the server got the PQL_D* default quotas (page file 700,000 pagelets, nearly all used by its ~480 MB of virtual memory; FILLM 52, DIOLM 100) instead of the UAF's | `/AUTHORIZE`: the UAF quotas (PGFLQUOTA 10,000,000) |
+
+With the UAF quotas: Aria load 120 s, MyISAM 99 s (150 MB and 138 MB); a fresh connection
+every 30 s during the load answered in at most 0.8 s.
+
+**Performance (open):** each cycle's `CHECKSUM TABLE` + `CHECK TABLE` over the two tables
+takes ~35 minutes and ~3.8M direct I/Os, about 75 bytes per I/O. `probes/io_count.c` (16 MB
+file, x86) measures the C RTL: every `pread()` costs one QIO more than its 16 KB chunks
+(8 KB: 2 QIOs, 0.76 ms; 512 B: 2 QIOs, 0.74 ms; 128 KB: 9 QIOs), and `pwrite()` 8 KB costs 3.
+MyISAM's checksum scan uses no read cache (no `HA_EXTRA_CACHE` in
+`handler::calculate_checksum`), so each dynamic row is two small `pread()`s: ~2M calls x 0.75 ms
+is the half hour. On Linux these hit the page cache in ~1 us. The fix belongs in
+`my_vmsfile.c` (block I/O on the master by `$QIOW IO$_READVBLK/WRITEVBLK`, or a per-file
+block cache), not in the engines.

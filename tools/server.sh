@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # server.sh <node> start|stop|status|log [datadir-name] [port]
-#   start   run @[.VMS]SERVER as a detached process (RUN/DETACHED LOGINOUT),
+#   start   run @[.VMS]SERVER as a detached process (RUN/DETACHED/AUTHORIZE LOGINOUT: the
+#           UAF quotas; without /AUTHORIZE it gets the small PQL_D* defaults),
 #           output in [.<datadir>]SERVER.LOG, errors in [.<datadir>]MARIADBD.ERR
 #   stop    mariadb-admin shutdown (as root, no password, over TCP)
 #   status  mariadb-admin ping and the process list
@@ -29,7 +30,7 @@ start)
 \$ write o "\$ @${tree}.VMS]SERVER.COM ${data} $port SERVER ${EXTRA:-}"
 \$ close o
 \$ run/detached/process_name="MARIADBD_$port"/input=${data}SERVER_START.COM -
-    /output=${data}SERVER.LOG/error=${data}SERVER.LOG SYS\$SYSTEM:LOGINOUT.EXE
+    /output=${data}SERVER.LOG/error=${data}SERVER.LOG/authorize SYS\$SYSTEM:LOGINOUT.EXE
 \$ write sys\$output "SERVER-STARTED ", \$status
 DCL
     ;;
