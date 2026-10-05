@@ -224,7 +224,11 @@ def main():
             deps = [vms_file(o) for o in objs] + [vms_file(init_obj)] + ['%s%s.olb' % (vms_dir(objroot), l)
                                                  for l in dict.fromkeys(libs)]
             mms.append(deps_line(vms_file(exe), deps))
-            mms.append('\tlink/exe=%s/map=%s/traceback %s/options' %
+            # /THREADS_ENABLE: kernel threads and upcalls.  Without it all
+            # POSIX threads share one kernel thread, and a blocking system
+            # call (mariadbd's poll() on its listening sockets) stops them
+            # all: connections were accepted but never answered.
+            mms.append('\tlink/exe=%s/map=%s/traceback/threads_enable %s/options' %
                        (vms_file(exe), vms_file('%s/%s.map' % (objroot, tname)),
                         vms_file('%s/%s' % (rspdir, opt))))
         mms.append('')

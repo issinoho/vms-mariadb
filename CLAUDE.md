@@ -60,6 +60,9 @@ tools/vms.sh <node> dcl '<cmd>' ...   # run DCL; also run/batch/put/get
 
 ## Pitfalls found in this port
 
+- **Wait on fresh output files only**: delete (or rename) a job's output file before
+  starting it. A wait loop on `grep -q '^exit' x.out` returned at once on the previous
+  run's file, and its stale result looked like a new failure.
 - **A `vms.sh` timeout does not stop the job on VMS**: it keeps running. Give long jobs a
   big `VMS_TIMEOUT`, and check `show system` before re-running a test that timed out.
 - **ODS-5 has no sparse files**: seeking past the end and writing (or `fseek` on a stdio

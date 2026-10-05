@@ -22,3 +22,4 @@
 0022-time-t-narrowing-casts.patch
 0023-my-lock-through-master-vms.patch
 0024-aria-no-directory-fd-vms.patch
+0025-termination-socketpair-vms.patch

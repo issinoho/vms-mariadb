@@ -189,3 +189,21 @@ objects. `mariadbd.exe` (252,331 blocks with debug info) runs:
 | F | Aria: `File '.../DATA/' not found`, log initialization failed | `translog_init` opens the log directory to fsync it; VMS cannot open a directory | patch 0024 (skip it, as on Windows) |
 | S | `%APPEND-W-INCOMPAT` | header lines written by `OPEN/WRITE` (variable records) vs Stream_LF SQL files | `vms/bootstrap_header.sql` (Stream_LF) copied first |
 | T | cleanup: second `F$SEARCH` on the same wildcard returned "" | shared wildcard context (vms-grep pitfall) | explicit deletes |
+
+## Stage B: first server start (2026-10-05)
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| S | `Too many arguments (first extra is '')` | `server.com` passed an empty optional argument; the C RTL keeps empty quoted arguments | pass it only when given |
+| N | `Bind on unix socket: no logical name match`, abort | AF_UNIX `bind` fails on VMS (D7) | `--socket=` (none): TCP only |
+| X | connections accepted, never answered; shutdown hangs | **all POSIX threads ran on one kernel thread**: the main thread's blocking `poll()` stopped every other thread (`--thread-handling=no-threads` answered at once) | `LINK/THREADS_ENABLE` for every image (gen_mms.py) |
+| N | shutdown still hung | `poll()` reports a pipe readable before anything is written (`probes/poll_wake.c`); a socketpair wakes correctly | patch 0025 (termination socketpair) |
+| T | relink stopped at the first compile warning | MMS stops on warning status | `/IGNORE=WARNING` by default in `build.com` |
+| S | `SHOW DATABASES` lists `TMP` | tmpdir inside the datadir | tmpdir is `<datadir>_TMP` |
+
+Result: `@[.VMS]INSTALL_DB` creates the system tables; `tools/server.sh x86 start` starts
+`mariadbd` detached, our client queries it over TCP (Aria, MyISAM, MEMORY, CSV, MRG_MyISAM,
+SEQUENCE; `lower_case_table_names=2`, chosen by the server for case-insensitive ODS-5), and
+`mariadb-admin shutdown` gives "Normal shutdown" and "Shutdown complete".
+Not chased (my mistakes): a pipe-in-poll theory disproved by a probe before any change; a wait
+loop that read the previous run's output file (CLAUDE.md).

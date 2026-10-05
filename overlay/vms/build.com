@@ -18,7 +18,9 @@ $ set default [-]
 $ cfg = f$edit(p1, "UPCASE")
 $ target = f$edit(p2, "UPCASE")
 $ if target .eqs. "" then target = "ALL"
-$ keep = ""
+$! clang exits with warning severity when it warns, and MMS would stop on that:
+$! carry on past warnings, stop on errors (KEEP_GOING: carry on past those too).
+$ keep = "/IGNORE=WARNING"
 $ if f$edit(p3, "UPCASE") .eqs. "KEEP_GOING" then keep = "/IGNORE=FATAL"
 $! (the target may be a long list of LIB_ names: keep the message short)
 $ write sys$output "BUILD: ''cfg' ''f$extract(0, 60, target)' in ''f$environment("DEFAULT")'"

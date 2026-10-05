@@ -1,0 +1,26 @@
+Subject: mysqld.cc: socket pair, not pipe, to wake the listen loop on OpenVMS
+
+handle_connections_sockets() polls the listening sockets together with the
+read end of a pipe, which break_connect_loop() writes to on shutdown. On
+OpenVMS poll() reports a pipe readable at once, before any write
+(probes/poll_wake.c in vms-mariadb); a socketpair() wakes the poll only
+when written to, from any thread.
+
+--- a/sql/mysqld.cc	2026-10-05 01:48:51.777611745 -0700
++++ b/sql/mysqld.cc	2026-10-05 01:48:51.900215678 -0700
+@@ -6513,7 +6513,15 @@
+     set_non_blocking_if_supported(listen_sockets.at(i));
+   }
+   int termination_fds[2];
++#ifdef __VMS
++  /*
++    On OpenVMS poll() reports a pipe (a mailbox) readable before anything
++    has been written to it; a socket pair behaves as the pipe does elsewhere.
++  */
++  if (socketpair(AF_UNIX, SOCK_STREAM, 0, termination_fds))
++#else
+   if (pipe(termination_fds))
++#endif
+   {
+     sql_print_error("pipe() failed %d", errno);
+     DBUG_VOID_RETURN;

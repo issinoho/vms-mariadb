@@ -4,7 +4,8 @@ $! the same SQL files, in the same order, to "mariadbd --bootstrap".
 $!
 $! Usage:  @[.VMS]INSTALL_DB datadir [config]
 $!   datadir  e.g. DISK$USER:[ME.MARIADB.DATA]; created with /VERSION_LIMIT=1,
-$!            and so is its [.TMP] (tmpdir): MariaDB replaces files by
+$!            and so is <datadir>_TMP (tmpdir, beside it: every directory in
+$!            the datadir is a database to MariaDB): MariaDB replaces files by
 $!            O_TRUNC and rename, which on VMS create new versions
 $!            (docs/DECISIONS.md D6).
 $!   config   build configuration whose mariadbd to use (default SERVER)
@@ -36,8 +37,9 @@ $   say "INSTALL_DB: no [.VMSOBJ_''cfg']MARIADBD.EXE (build first)"
 $   goto done
 $ endif
 $ mariadbd = "$" + exe
-$ tmpdir = datadir - "]" + ".TMP]"
-$ if f$search(datadir - "]" + "...]*.*") .nes. ""
+$ tmpdir = datadir - "]" + "_TMP]"
+$ if f$search(datadir - "]" + "...]*.*") .nes. "" .or. -
+     f$search(tmpdir - "]" + "...]*.*") .nes. "" .or. f$search(tmpdir - "]" + "...]*.*") .nes. ""
 $ then
 $   say "INSTALL_DB: ''datadir' is not empty"
 $   goto done
