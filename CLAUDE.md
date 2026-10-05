@@ -47,6 +47,9 @@ tools/prepare.sh                      # fetch+verify, extract, patches, overlay,
 tools/replay.sh x86 client            # answer new CMake checks on the node; then prepare.sh again,
                                       #   until replay_gen.py reports 0 checks (REPLAY_ALL=1 redoes all)
 tools/build.sh x86 client [target] [KEEP_GOING]   # push + @[.VMS]BUILD CLIENT on the node
+tools/kit.sh [x86]                    # PCSI kit (both configs built first) -> out/kits/
+tools/installcheck.sh [x86]           # install kit, run a server from it, remove (changes system; ask first)
+tools/loadcycle.sh x86 [rows] [cycles]   # Stage B load + stop/start test (server on 3307)
 tools/recon.sh <node>; tools/probe.sh <node> [CLANG|CC]   # Phase 0 environment and probes
 tools/vms.sh <node> dcl '<cmd>' ...   # run DCL; also run/batch/put/get
 ```

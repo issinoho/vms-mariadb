@@ -271,5 +271,15 @@ copy (223,508 blocks), fetched to `out/kits/`.
 
 Checked without installing: `PRODUCT LIST` shows every file at its destination (the error
 messages under their material names, mapped by `source` in the PDF). PRODUCT EXTRACT FILE
-writes everything flat, so the installed layout and `VMSMARIADB$SERVER.COM` against
-`VMSMARIADB$ROOT` still need an install test (changes the system; not run yet).
+writes everything flat, so `tools/installcheck.sh x86` (with the user's approval) installs it:
+**INSTALLCHECK: PASS**. PRODUCT INSTALL into `SYS$COMMON:[VMSMARIADB]` (every language
+directory and the charsets in place, `VMSMARIADB$ROOT` defined by the postinstall step);
+`VMSMARIADB$SERVER INSTALL_DB` and `START` on a scratch data directory, port 3308; the
+installed `mariadb` reports 11.4.13-MariaDB/OpenVMS with `lc_messages_dir` and
+`character_sets_dir` under `VMSMARIADB$ROOT`, creates and reads an Aria table, and gets the
+server's "Unknown column" message text; `mariadb_dump` works; STOP shuts it down; PRODUCT
+REMOVE leaves no files, startup procedure or logical name.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| T | installcheck left the empty scratch directory `KITDATA.DIR` | a repeated `F$SEARCH` of the same spec continues its old search | delete without an `F$SEARCH` loop |

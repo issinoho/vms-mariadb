@@ -18,9 +18,9 @@ over TLS 1.3 through VSI's SSL3 kit. The server (Stage B) is next. The original 
 | Stage | Deliverable | Status |
 |---|---|---|
 | A | Connector/C + `mariadb` client (no server) | done: 15/15 client tests, TLS, interactive |
-| B | `mariadbd` with Aria/MyISAM/MEMORY | bootstraps, serves queries, restarts cleanly; server tests 12/12; soak and load tests next |
+| B | `mariadbd` with Aria/MyISAM/MEMORY | server tests 12/12; 1M-row load + 5 restart cycles pass; remote clients over TLS; 24-hour soak still to run |
 | C | InnoDB, durability-tested | not started |
-| D | PCSI kit, docs, upstream patches | not started |
+| D | PCSI kit, docs, upstream patches | preview kit `VMSMARIADB V11.4-13E1` (x86-64, clients + server) builds and passes an install check |
 
 IA64 is not a server target: its C++ compiler predates C++11, which MariaDB requires.
 
