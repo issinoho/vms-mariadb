@@ -42,5 +42,10 @@ batch=$top/cache/push-$name-$node.sftp
 } > "$batch"
 sftp -P "$PORT" -i "${VMS_SSH_KEY:-$HOME/.ssh/vms_ed25519}" -o BatchMode=yes -b "$batch" "$USER@$HOST" \
     2>&1 >/dev/null | grep -vE '^ *Welcome to|^ *$|^remote mkdir .*Failure' >&2 || true
-cp "$list" "$manifest"
+# Merge, not replace: the manifest covers every configuration pushed to this
+# node.  Replacing it with the client's list once made the next server push
+# resend ~3,000 server-only files, and MMS then rebuilt the whole server.
+awk 'NR == FNR { seen[$2] = 1; print; next } !($2 in seen)' "$list" "$manifest" |
+    sort -k2,2 > "$manifest.new"
+mv "$manifest.new" "$manifest"
 echo "push: done"

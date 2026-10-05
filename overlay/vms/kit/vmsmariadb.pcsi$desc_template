@@ -1,0 +1,48 @@
+--
+-- PCSI product description for MariaDB (vms-mariadb) on OpenVMS x86-64.
+-- Template: tools/prepare.sh substitutes @PRODUCER@, @BASE@, @PCSIVERSION@
+-- and @FILES@ (the share/ and scripts/ files, generated from the tree).
+--
+-- The product is VMSMARIADB, in [VMSMARIADB] with VMSMARIADB$ROOT, so that
+-- it can be installed beside VSI's own MariaDB kit.
+--
+product @PRODUCER@ @BASE@ VMSMARIADB @PCSIVERSION@ full ;
+
+    -- Clang (LP64) images: x86-64 only.  They link VSI's OpenSSL 3.0 shared
+    -- images (SYS$SHARE:SSL3$*); PCRE2 and zlib are linked in.
+    software VSI @BASE@ SSL3 ;
+
+    information RELEASE_NOTES phase after ;
+
+    directory [VMSMARIADB] ;
+    directory [VMSMARIADB.BIN] ;
+    directory [VMSMARIADB.DOC] ;
+    directory [VMSMARIADB.SCRIPTS] ;
+    directory [VMSMARIADB.SHARE] ;
+    directory [VMSMARIADB.SHARE.CHARSETS] ;
+
+    file [VMSMARIADB.BIN]MARIADBD.EXE ;
+    file [VMSMARIADB.BIN]MARIADB.EXE ;
+    file [VMSMARIADB.BIN]MARIADB-ADMIN.EXE ;
+    file [VMSMARIADB.BIN]MARIADB-CHECK.EXE ;
+    file [VMSMARIADB.BIN]MARIADB-DUMP.EXE ;
+    file [VMSMARIADB.BIN]MARIADB-IMPORT.EXE ;
+    file [VMSMARIADB.BIN]MARIADB-SHOW.EXE ;
+    file [VMSMARIADB.BIN]MARIADB-SLAP.EXE ;
+    file [VMSMARIADB.BIN]MY_PRINT_DEFAULTS.EXE ;
+    file [VMSMARIADB.BIN]PERROR.EXE ;
+    file [SYS$STARTUP]VMSMARIADB$STARTUP.COM ;
+    file [VMSMARIADB]VMSMARIADB$SETUP.COM ;
+    file [VMSMARIADB]VMSMARIADB$SERVER.COM ;
+    file [VMSMARIADB.DOC]README.VMS ;
+    file [VMSMARIADB.DOC]COPYING. ;
+    file [VMSMARIADB.DOC]CREDITS. ;
+@FILES@
+    -- Define VMSMARIADB$ROOT now and print the post-installation tasks.
+    execute postinstall "@PCSI$DESTINATION:[SYS$STARTUP]VMSMARIADB$STARTUP.COM INSTALL" interactive ;
+    -- On removal, deassign VMSMARIADB$ROOT.
+    execute install "CONTINUE" remove "@PCSI$DESTINATION:[SYS$STARTUP]VMSMARIADB$STARTUP.COM REMOVE" ;
+
+    information POST_INSTALL phase after ;
+
+end product ;

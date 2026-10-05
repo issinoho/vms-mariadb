@@ -1,0 +1,24 @@
+=product @PRODUCER@ @BASE@ VMSMARIADB @PCSIVERSION@ full
+1 'PRODUCER
+=prompt @PRODUCER@
+1 'PRODUCT
+=prompt MariaDB @VERSION@ for OpenVMS x86-64 (vms-mariadb, preview)
+1 'NOTICE
+=prompt MariaDB is distributed under the GNU General Public License, version 2.
+1 RELEASE_NOTES
+=prompt Documentation is in [VMSMARIADB.DOC]README.VMS under the installation directory.
+1 POST_INSTALL
+=prompt Post-installation tasks for MariaDB (vms-mariadb)
+    At system startup: to define VMSMARIADB$ROOT at every boot, add this
+    line to SYS$MANAGER:SYSTARTUP_VMS.COM:
+    $ @SYS$STARTUP:VMSMARIADB$STARTUP.COM
+    For each user: to define the mariadb commands, add this line to
+    LOGIN.COM (or SYLOGIN.COM, for everyone):
+    $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$SETUP.COM
+    To create a data directory (on an ODS-5 disk) and start a server:
+    $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$SERVER INSTALL_DB dev:[dir.DATA]
+    $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$SERVER START dev:[dir.DATA]
+    The new root@localhost account has no password: set one.
+
+PRODUCT REMOVE VMSMARIADB removes the product and deassigns VMSMARIADB$ROOT;
+data directories are not touched.

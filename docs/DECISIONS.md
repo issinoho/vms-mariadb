@@ -309,6 +309,34 @@ code (D4); the headers are fine (`size_t` and fixed-width types). Options:
 - (b) compile vms-pcre2's patched 10.49 sources with clang inside this repository's build
   (pinned and verified like the MariaDB tarball): self-contained, but a second copy of the job.
 
+**Chosen (user): (a).** vms-pcre2 builds a clang variant (`BUILD ALL "" CLANG`, install tree
+`[.INSTALL_X86_64_CLANG]`); nodes.conf's 8th column points `PCRE2$ROOT` at it. The library
+is linked in, so the server kit has no PCRE2 dependency.
+
+## D12. The C RTL's 32-bit `long` interfaces: a forced-include header
+
+clang's `long` is 64-bit but the C RTL's `long`-typed interfaces (printf's `%ld`, `strtol`,
+`ftell`, `LONG_MAX`...) are 32-bit. Options: (a) one header, `vms/include/vms_lp64.h`,
+force-included by `clang_common.rsp`, mapping those interfaces onto 64-bit equivalents and
+wrappers; (b) patch each call site. **Chosen (user): (a)**: object-like macros (a
+function-like `snprintf` macro once clashed with a struct member), positional formats left
+alone (the C RTL rejects `ll`/`j` in them).
+
+## D13. Packaging: a PCSI kit VMSMARIADB, x86-64, client and server
+
+Following vms-curl: product `ISSINOHO X86VMS VMSMARIADB`, in `[VMSMARIADB]` with
+`VMSMARIADB$ROOT`, so it can sit beside VSI's MariaDB kit; version `V11.4-13E<VMS_PATCH_LEVEL>`
+(upstream 11.4.13, our patch level as the ECO). x86-64 only (D3: IA64 has no C++11).
+One kit holds the clients and `mariadbd`, the error messages, character sets and bootstrap
+SQL. The images keep their compiled-in `/usr/local/mysql` paths; the kit's
+`VMSMARIADB$SERVER.COM` (INSTALL_DB, START, STOP, STATUS) passes `--basedir`,
+`--lc-messages-dir`, `--character-sets-dir` and `--tmpdir` explicitly, so no rebuild was
+needed. Rejected for now: a `CMAKE_INSTALL_PREFIX` of `/VMSMARIADB$ROOT` (needs full
+rebuilds; better done with the option-file work), a ZIP (no install/remove, no dependency on
+SSL3), separate client and server kits (one product is simpler while the server is a preview).
+The server runs detached under the starting account's UAF quotas (`RUN/DETACHED/AUTHORIZE`,
+PORTING_LOG); no dedicated account or boot-time server start yet. Requires VSI SSL3.
+
 
 - Disk space (resolved 2026-10-04): the x86-64 work disk was the system disk with ~2 GB free.
   The port now works in `DISK$SYSDUMP:[IAIN.VMS_MARIADB]` (16 GB volume, 7.85 GB free), which

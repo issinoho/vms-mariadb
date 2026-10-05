@@ -239,7 +239,11 @@ then stop/start cycles checking row counts, checksums and CHECK TABLE.
 | S | Aria `INSERT ... SELECT` sat in "Repair by sorting" for 22+ minutes; a new client got no greeting for ~10 minutes | `server.sh` ran `RUN/DETACHED LOGINOUT` without `/AUTHORIZE`, so the server got the PQL_D* default quotas (page file 700,000 pagelets, nearly all used by its ~480 MB of virtual memory; FILLM 52, DIOLM 100) instead of the UAF's | `/AUTHORIZE`: the UAF quotas (PGFLQUOTA 10,000,000) |
 
 With the UAF quotas: Aria load 120 s, MyISAM 99 s (150 MB and 138 MB); a fresh connection
-every 30 s during the load answered in at most 0.8 s.
+every 30 s during the load answered in at most 0.8 s. A first full run was stopped in cycle 3
+by memory pressure on the Linux host (not a failure); the rerun passed: **LOADCYCLE: PASS**,
+5/5 stop/start cycles with 2,000,000 rows, matching checksums (1377483367 for both tables)
+and CHECK TABLE OK after every start (load 143 s + 171 s, slowest probe 2.8 s while a
+previous run's CHECKSUM was still finishing).
 
 **Performance (open):** each cycle's `CHECKSUM TABLE` + `CHECK TABLE` over the two tables
 takes ~35 minutes and ~3.8M direct I/Os, about 75 bytes per I/O. `probes/io_count.c` (16 MB
@@ -250,3 +254,22 @@ MyISAM's checksum scan uses no read cache (no `HA_EXTRA_CACHE` in
 is the half hour. On Linux these hit the page cache in ~1 us. The fix belongs in
 `my_vmsfile.c` (block I/O on the master by `$QIOW IO$_READVBLK/WRITEVBLK`, or a per-file
 block cache), not in the engines.
+
+## Stage D (early): PCSI kit (2026-10-05)
+
+`tools/kit.sh` builds `ISSINOHO X86VMS VMSMARIADB V11.4-13E1` (D13) in `[.KIT_X86_64]`:
+`ISSINOHO-X86VMS-VMSMARIADB-V1104-13E1-1.PCSI` (409,616 blocks) and a `.PCSI$COMPRESSED`
+copy (223,508 blocks), fetched to `out/kits/`.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| T | the kit build recompiled the whole server (~600 objects) | `push.sh` replaced the node's manifest with the configuration just pushed; after a client push the server push resent ~3,000 server-only files with new dates | merge the manifest |
+| T | `%PCSI-E-SEARCHFAIL ... [.KIT_X86_64.MAT]MARIADB.EXE` | PRODUCT PACKAGE looks material up by file name in one flat directory, not by destination path | flat material directory |
+| T | 28 `ERRMSG.SYS` (one per language) cannot share a flat directory | as above | copy as `<LANGUAGE>_ERRMSG.SYS`; PDF `file [...SHARE.<LANG>]ERRMSG.SYS source [000000]<LANG>_ERRMSG.SYS` |
+| T | `%PCSI-E-PDFIVS, invalid value syntax` | `source NAME.EXT` needs a directory; PCSI then ignores it (tested with a dummy product) | `source [000000]NAME.EXT` |
+| T | `%DCL-W-NOLIST` from `SET SECURITY a,b` | SET SECURITY takes one file spec | one command per spec |
+
+Checked without installing: `PRODUCT LIST` shows every file at its destination (the error
+messages under their material names, mapped by `source` in the PDF). PRODUCT EXTRACT FILE
+writes everything flat, so the installed layout and `VMSMARIADB$SERVER.COM` against
+`VMSMARIADB$ROOT` still need an install test (changes the system; not run yet).
