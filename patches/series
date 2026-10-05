@@ -17,3 +17,6 @@
 0017-myrg-static-include-def.patch
 0018-tpool-thread-local-vms.patch
 0019-sql-thread-local-vms.patch
+0020-my-pthread-sigmask-vms.patch
+0021-mysqld-no-chroot-vms.patch
+0022-time-t-narrowing-casts.patch

@@ -41,6 +41,14 @@
 #define LONG_MAX __LONG_MAX__
 #define LONG_MIN (-__LONG_MAX__ - 1L)
 #define ULONG_MAX (__LONG_MAX__ * 2UL + 1UL)
+/* VSI's ULLONG_MAX is 18446744073709551615u, an unsigned long under LP64,
+   which makes overloads on long long / unsigned long long ambiguous. */
+#undef LLONG_MAX
+#undef LLONG_MIN
+#undef ULLONG_MAX
+#define LLONG_MAX __LONG_LONG_MAX__
+#define LLONG_MIN (-__LONG_LONG_MAX__ - 1LL)
+#define ULLONG_MAX (__LONG_LONG_MAX__ * 2ULL + 1ULL)
 
 #ifdef __cplusplus
 extern "C" {
@@ -187,26 +195,31 @@ static inline int vms_lp64_fseek(FILE *f, long off, int whence)
 }
 #endif
 
-#define printf(...)    vms_lp64_printf(__VA_ARGS__)
-#define fprintf(...)   vms_lp64_fprintf(__VA_ARGS__)
-#define sprintf(...)   vms_lp64_sprintf(__VA_ARGS__)
-#define snprintf(...)  vms_lp64_snprintf(__VA_ARGS__)
-#define vprintf(...)   vms_lp64_vprintf(__VA_ARGS__)
-#define vfprintf(...)  vms_lp64_vfprintf(__VA_ARGS__)
-#define vsprintf(...)  vms_lp64_vsprintf(__VA_ARGS__)
-#define vsnprintf(...) vms_lp64_vsnprintf(__VA_ARGS__)
-#define scanf(...)     vms_lp64_scanf(__VA_ARGS__)
-#define fscanf(...)    vms_lp64_fscanf(__VA_ARGS__)
-#define sscanf(...)    vms_lp64_sscanf(__VA_ARGS__)
-#define vscanf(...)    vms_lp64_vscanf(__VA_ARGS__)
-#define vfscanf(...)   vms_lp64_vfscanf(__VA_ARGS__)
-#define vsscanf(...)   vms_lp64_vsscanf(__VA_ARGS__)
-#define strtol(n, e, b)  strtoll((n), (e), (b))
-#define strtoul(n, e, b) strtoull((n), (e), (b))
-#define atol(n)          atoll(n)
-#define labs(n)          llabs(n)
-#define ftell(f)         vms_lp64_ftell(f)
-#define fseek(f, o, w)   vms_lp64_fseek((f), (o), (w))
+/*
+  Object-like macros, so that every use of the name is renamed the same way:
+  MariaDB's charset handler has a member called snprintf, and a function-like
+  macro would rename the calls (cs->cset->snprintf(...)) but not the member.
+*/
+#define printf    vms_lp64_printf
+#define fprintf   vms_lp64_fprintf
+#define sprintf   vms_lp64_sprintf
+#define snprintf  vms_lp64_snprintf
+#define vprintf   vms_lp64_vprintf
+#define vfprintf  vms_lp64_vfprintf
+#define vsprintf  vms_lp64_vsprintf
+#define vsnprintf vms_lp64_vsnprintf
+#define scanf     vms_lp64_scanf
+#define fscanf    vms_lp64_fscanf
+#define sscanf    vms_lp64_sscanf
+#define vscanf    vms_lp64_vscanf
+#define vfscanf   vms_lp64_vfscanf
+#define vsscanf   vms_lp64_vsscanf
+#define strtol    strtoll
+#define strtoul   strtoull
+#define atol      atoll
+#define labs      llabs
+#define ftell     vms_lp64_ftell
+#define fseek     vms_lp64_fseek
 
 #ifdef __cplusplus
 /* std::printf(...) and friends after <cstdio>/<cstdlib> */

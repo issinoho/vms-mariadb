@@ -51,6 +51,14 @@ printf 'VERSION=%s\nKIT_VERSION=%s-vms%s\n' "$UPSTREAM_VERSION" "$UPSTREAM_VERSI
 for cfg in ${CONFIGS:-client server}; do
     "$top/tools/host_configure.sh" "$cfg"
     bdir=$top/cache/cmake-$cfg
+    # {fmt}: unpack the pinned release where cmake/libfmt.cmake's
+    # ExternalProject would have put it (headers only; copied to vmsgen/ below).
+    if [ -d "$bdir/extra/libfmt" ]; then
+        fmtdir=$bdir/extra/libfmt/src/libfmt
+        rm -rf "$fmtdir"; mkdir -p "$fmtdir"
+        unzip -q "$top/cache/$(basename "$LIBFMT_URL")" "fmt-$LIBFMT_VERSION/include/*" -d "$fmtdir.tmp"
+        mv "$fmtdir.tmp/fmt-$LIBFMT_VERSION/include" "$fmtdir/include"; rm -rf "$fmtdir.tmp"
+    fi
     # Generated sources (error-message headers, ...) via the native tools.
     gen=$(sed -n 's/^\([A-Za-z_]*Gen[A-Za-z_]*\):.*/\1/p' "$bdir/Makefile" | sort -u | tr '\n' ' ')
     step "$cfg: generated sources ($gen)"

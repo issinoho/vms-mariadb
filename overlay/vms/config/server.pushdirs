@@ -1,0 +1,3 @@
+# Extra directories to upload for the server configuration (gen_mms.py).
+# sql/sql_prepare.cc includes ../libmysqld/embedded_priv.h unconditionally.
+libmysqld

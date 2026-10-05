@@ -29,3 +29,11 @@ echo "$status" | grep -q "^\[GNUPG:\] VALIDSIG .* $UPSTREAM_GPG_KEY\$" ||
     { echo "fetch: no valid signature by $UPSTREAM_GPG_KEY on $tarball" >&2; exit 1; }
 echo "fetch: signature OK ($UPSTREAM_GPG_KEY)"
 echo "fetch: $tarball"
+
+# {fmt} (no signature published): pinned by SHA-256.
+fmtzip=$cache/$(basename "$LIBFMT_URL")
+[ -f "$fmtzip" ] || { echo "fetch: downloading $LIBFMT_URL"
+                      curl -fsSL -o "$fmtzip.tmp" "$LIBFMT_URL"; mv "$fmtzip.tmp" "$fmtzip"; }
+echo "$LIBFMT_SHA256  $fmtzip" | sha256sum -c --quiet - ||
+    { echo "fetch: SHA-256 mismatch for $fmtzip" >&2; exit 1; }
+echo "fetch: $fmtzip"

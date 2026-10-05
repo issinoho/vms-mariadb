@@ -138,3 +138,16 @@ Follow-ups (cosmetic, not blocking):
 | L | `my_addr_resolve.c`: `fork`; `stacktrace.c`: `pthread_kill` | not on VMS | patches 0015, 0016 |
 
 Build speed: MMS is serial; `JOBS=n tools/build.sh` now runs n library groups at once.
+
+## Stage B, server round 3 (399 compiles; serial: the parallel split failed)
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| T | 191 files: no member `vms_lp64_snprintf` in `my_charset_handler_st` | `vms_lp64.h`'s function-like `snprintf(...)` macro renamed the call `cs->cset->snprintf(...)` but not the member | object-like macros in `vms_lp64.h` |
+| T | `sql_select.cc`: `Item_int(thd, ULONGLONG_MAX)` ambiguous | VSI's `ULLONG_MAX` is `18446744073709551615u`, an `unsigned long` under LP64 | `vms_lp64.h` defines `LLONG_*`/`ULLONG_MAX` |
+| L | `mysqld.cc`: `pthread_sigmask` undeclared | no `pthread_sigmask`/`sigthreadmask` on VMS | patch 0020 (`sigprocmask`) |
+| L | `mysqld.cc`: `chroot` undeclared | no `chroot` on VMS | patch 0021 (`--chroot` is an error) |
+| H | `table.cc`, `opt_histogram_json.cc`, `event_queue.cc`: narrowing `my_time_t` to `time_t` | VMS `time_t` is 32-bit unsigned | patch 0022 (casts) |
+| S | `sql_prepare.cc`: `../libmysqld/embedded_priv.h` not found | included by relative path; CMake does not list it | `server.pushdirs` |
+| D | `item_strfunc.cc`: `fmt/args.h` not found | bundled {fmt} is a build-time download | {fmt} 12.2.0 pinned by SHA-256 in `upstream.conf` (same file as cmake's MD5), unpacked by `prepare.sh` |
+| T | parallel groups: `%DCL-W-TKNOVF`, `%MMS-F-BADTARG` | long file-spec target list; case of the targets | `LIB_<name>` pseudo-targets |

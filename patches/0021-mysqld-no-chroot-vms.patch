@@ -1,0 +1,19 @@
+Subject: mysqld.cc: --chroot is an error on OpenVMS
+
+OpenVMS has no chroot() (undeclared identifier). Fail with a clear message
+rather than ignore the option.
+
+--- a/sql/mysqld.cc	2026-10-05 02:41:20.325691602 +0100
++++ b/sql/mysqld.cc	2026-10-05 02:41:20.347497447 +0100
+@@ -2398,7 +2398,10 @@
+ /** Change root user if started with @c --chroot . */
+ static void set_root(const char *path)
+ {
+-#if !defined(_WIN32)
++#if defined(__VMS)
++  sql_print_error("--chroot is not supported on OpenVMS");
++  unireg_abort(1);
++#elif !defined(_WIN32)
+   if (chroot(path) == -1)
+   {
+     sql_perror("chroot");

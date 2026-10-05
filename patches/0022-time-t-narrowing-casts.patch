@@ -1,0 +1,41 @@
+Subject: sql: cast my_time_t to time_t in brace initialisers
+
+On OpenVMS time_t is a 32-bit unsigned int while my_time_t is long, so
+these brace initialisers are narrowing conversions, which C++11 rejects
+(table.cc, opt_histogram_json.cc, event_queue.cc). The values are seconds
+since the epoch, which time_t holds until 2106 there; an explicit cast
+states that. A no-op where time_t is long.
+
+--- a/sql/table.cc	2026-10-05 02:41:20.412692758 +0100
++++ b/sql/table.cc	2026-10-05 02:41:20.471586519 +0100
+@@ -10656,7 +10656,7 @@
+ 
+   store(FLD_BEGIN_TS, thd->transaction_time());
+   thd->set_time();
+-  timeval end_time= {thd->query_start(), int(thd->query_start_sec_part())};
++  timeval end_time= {(time_t) thd->query_start(), int(thd->query_start_sec_part())};
+   store(FLD_TRX_ID, start_id);
+   store(FLD_COMMIT_ID, end_id);
+   store(FLD_COMMIT_TS, end_time);
+--- a/sql/opt_histogram_json.cc	2026-10-05 02:41:20.432340990 +0100
++++ b/sql/opt_histogram_json.cc	2026-10-05 02:41:20.472122259 +0100
+@@ -187,7 +187,7 @@
+     char buf[128];
+     String str(buf, sizeof(buf), system_charset_info);
+     THD *thd= current_thd;
+-    timeval tv= {thd->query_start(), 0}; // we do not need microseconds
++    timeval tv= {(time_t) thd->query_start(), 0}; // we do not need microseconds
+ 
+     Timestamp(tv).to_datetime(thd).to_string(&str, 0);
+     writer.add_member("target_histogram_size").add_ull(hist_width);
+--- a/sql/event_queue.cc	2026-10-05 02:41:20.450024412 +0100
++++ b/sql/event_queue.cc	2026-10-05 02:41:20.472329052 +0100
+@@ -632,7 +632,7 @@
+         Not yet time for top event, wait on condition with
+         time or until signaled. Release LOCK_queue while waiting.
+       */
+-      struct timespec top_time= { next_activation_at, 0 };
++      struct timespec top_time= { (time_t) next_activation_at, 0 };
+ 
+       /* Release any held audit resources before waiting */
+       mysql_audit_release(thd);

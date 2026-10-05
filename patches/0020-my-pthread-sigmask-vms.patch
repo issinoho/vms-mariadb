@@ -1,0 +1,25 @@
+Subject: my_pthread.h: pthread_sigmask() through sigprocmask() on OpenVMS
+
+The OpenVMS pthread library has no pthread_sigmask() (mysqld.cc: undeclared
+identifier) and the C RTL no sigthreadmask(). Use sigprocmask(), as the
+header already does for RTS threads; mysqld blocks the signals in all
+threads and handles them with sigwait() in one.
+
+--- a/include/my_pthread.h	2026-10-05 02:41:20.242727399 +0100
++++ b/include/my_pthread.h	2026-10-05 02:41:20.261523335 +0100
+@@ -201,6 +201,15 @@
+ #define pthread_sigmask(A,B,C) sigthreadmask((A),(B),(C))
+ #endif
+ 
++/*
++  OpenVMS has neither pthread_sigmask() nor sigthreadmask().  sigprocmask()
++  sets the process's mask, which is what mysqld does with it anyway: block
++  the signals everywhere and take them with sigwait() in one thread.
++*/
++#if defined(__VMS) && !defined(HAVE_PTHREAD_SIGMASK) && !defined(pthread_sigmask)
++#define pthread_sigmask(A,B,C) sigprocmask((A),(B),(C))
++#endif
++
+ #if !defined(HAVE_SIGWAIT) && !defined(HAVE_rts_threads) && !defined(sigwait) && !defined(alpha_linux_port) && !defined(_AIX)
+ int sigwait(sigset_t *setp, int *sigp);		/* Use our implementation */
+ #endif

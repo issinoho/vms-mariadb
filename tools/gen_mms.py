@@ -226,6 +226,13 @@ def main():
             if targets[tname]['type'] != 'EXECUTABLE':
                 f.write('LIB_%s %d\n' % (re.sub(r'\W', '_', tname).upper(),
                                         weight_of_target[tname]))
+    # Directories needed but invisible to CMake's description (sources
+    # #include'd by relative path, e.g. ../libmysqld/embedded_priv.h).
+    extra_dirs = os.path.join(TOP, 'overlay', 'vms', 'config', cfg + '.pushdirs')
+    if os.path.exists(extra_dirs):
+        for l in open(extra_dirs):
+            if l.strip() and not l.startswith('#'):
+                pushdirs.add(l.strip())
     with open(os.path.join(out, 'PUSHDIRS.TXT'), 'w') as f:
         f.write('\n'.join(sorted(pushdirs)) + '\n')
     # clang -o does not create directories: vms/build.com runs this first.
