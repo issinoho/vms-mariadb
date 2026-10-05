@@ -207,3 +207,15 @@ SEQUENCE; `lower_case_table_names=2`, chosen by the server for case-insensitive 
 `mariadb-admin shutdown` gives "Normal shutdown" and "Shutdown complete".
 Not chased (my mistakes): a pipe-in-poll theory disproved by a probe before any change; a wait
 loop that read the previous run's output file (CLAUDE.md).
+
+## Stage B: server tests (2026-10-05)
+
+`tools/servertest.sh x86`: **12/12**. (1) The client suite (`vms/test_client.com`, 15/15)
+against the VMS server on 127.0.0.1:3307: VMS clients and VMS server end to end. (2) Engines:
+Aria and MyISAM (20,000 rows each, BIGINT values to 10^14, UPDATE/DELETE, CHECK, REPAIR,
+OPTIMIZE), MEMORY, CSV, MRG_MyISAM, SEQUENCE; a three-way join across engines, GROUP BY ...
+HAVING, ORDER BY ... LIMIT, FLUSH TABLES. (3) Clean shutdown and restart: on-disk data
+intact and CHECK TABLE OK; MEMORY empty, as it should be.
+
+Still to do for the Stage B exit (plan §3): repeated start/stop cycles, a 100+ MB data load,
+a remote client (Linux) over TCP, a 24-hour idle + light-load soak.

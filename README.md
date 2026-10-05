@@ -18,7 +18,7 @@ over TLS 1.3 through VSI's SSL3 kit. The server (Stage B) is next. The original 
 | Stage | Deliverable | Status |
 |---|---|---|
 | A | Connector/C + `mariadb` client (no server) | done: 15/15 client tests, TLS, interactive |
-| B | `mariadbd` with Aria/MyISAM/MEMORY | bootstraps, starts, serves queries over TCP, shuts down cleanly; SQL tests next |
+| B | `mariadbd` with Aria/MyISAM/MEMORY | bootstraps, serves queries, restarts cleanly; server tests 12/12; soak and load tests next |
 | C | InnoDB, durability-tested | not started |
 | D | PCSI kit, docs, upstream patches | not started |
 
