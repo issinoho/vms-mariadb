@@ -109,5 +109,10 @@ Licence and source
 
 MariaDB is free software under the GNU General Public License, version 2
 ([DOC]COPYING).  This kit is built from the signed MariaDB @VERSION@ release
-tarball with the vms-mariadb patches; the corresponding source (the tarball,
-patches and build files) is available from the producer on request.
+tarball with the patches and files of the vms-mariadb project, which together
+are its corresponding source:
+
+    https://github.com/issinoho/vms-mariadb
+
+MariaDB is a trademark of the MariaDB Foundation; OpenVMS is a trademark of
+VMS Software, Inc.  This kit is not affiliated with either.

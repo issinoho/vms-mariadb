@@ -1,0 +1,3 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="460" height="460" viewBox="0 0 460 460" role="img" aria-label="MariaDB for OpenVMS">
+<rect width="460" height="460" rx="31.5" fill="#1b3a6b"/><g fill="#fafafa"><rect x="110" y="112" width="240" height="236"/><ellipse cx="230" cy="348" rx="120" ry="38"/></g><ellipse cx="230" cy="112" rx="120" ry="38" fill="#dfe8f2"/><g fill="none" stroke="#1b3a6b" stroke-width="10"><path d="M110,190 A120,38 0 0 0 350,190"/><path d="M110,270 A120,38 0 0 0 350,270"/></g><rect x="214" y="380" width="32" height="36" rx="6" fill="#ffb347"/><polygon points="176,410 284,410 230,446" fill="#ffb347"/>
+</svg>
