@@ -151,3 +151,18 @@ Build speed: MMS is serial; `JOBS=n tools/build.sh` now runs n library groups at
 | S | `sql_prepare.cc`: `../libmysqld/embedded_priv.h` not found | included by relative path; CMake does not list it | `server.pushdirs` |
 | D | `item_strfunc.cc`: `fmt/args.h` not found | bundled {fmt} is a build-time download | {fmt} 12.2.0 pinned by SHA-256 in `upstream.conf` (same file as cmake's MD5), unpacked by `prepare.sh` |
 | T | parallel groups: `%DCL-W-TKNOVF`, `%MMS-F-BADTARG` | long file-spec target list; case of the targets | `LIB_<name>` pseudo-targets |
+
+## Stage B, server round 4 (parallel; all compiles clean; link)
+
+- Every server source compiles. The link of `mariadbd` reported 8 undefined symbols:
+  - `ro_after_init_start`/`_end` (weak): section bounds that GNU ld makes; the VMS linker
+    does not. `HAVE_RO_AFTER_INIT` set to no in `manual.txt` (the replayed check links
+    because weak references may stay undefined).
+  - `Ack_receiver::*`: `SEMISYNC_MASTER_ACK_RECEIVER.OBJ` was **empty** (from a compile killed
+    when a round was stopped) and newer than its source, so MMS skipped it and the
+    librarian left it out with only `%LIBRAR-I-EMPTYFILE`.
+- **T** Cause behind that: `build.com`'s CLEAN deleted `[.VMSOBJ...]` only, never the
+  server's `[.VMSOBJ_SERVER]`, so "clean" server rounds kept objects from earlier rounds
+  (some compiled before `vms_lp64.h` and the pthread fix). CLEAN now deletes the
+  configuration's own tree, and `build.sh` treats `%LIBRAR-I-EMPTYFILE` as an error.
+  The client's CLEAN was always right; its results stand.

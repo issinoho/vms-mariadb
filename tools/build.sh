@@ -60,6 +60,8 @@ run_build all "$target" "$log"
 logs+=("$log")
 cat "$log"
 grep -q 'BUILD: done' "$log" || { echo "build: failed (see $log)" >&2; exit 1; }
-if grep -aE '%CXX-[EF]-|%MMS-F-|%ILINK-[EWF]-|%LIBRAR-[EF]-|%DCL-[WEF]-' "${logs[@]}" >&2; then
+# %LIBRAR-I-EMPTYFILE: an empty object (a compile killed half-way) went into a
+# library; MMS will think it is up to date.  Delete it and build again.
+if grep -aE '%CXX-[EF]-|%MMS-F-|%ILINK-[EWF]-|%LIBRAR-[EF]-|%LIBRAR-I-EMPTYFILE|%DCL-[WEF]-' "${logs[@]}" >&2; then
     echo "build: errors in ${logs[*]}" >&2; exit 1
 fi

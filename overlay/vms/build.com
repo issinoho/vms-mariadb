@@ -27,9 +27,13 @@ $ then
 $   write sys$error "BUILD: no configuration ''cfg' (run tools/prepare.sh)"
 $   goto done
 $ endif
+$! Objects of this configuration: [.VMSOBJ] for CLIENT, [.VMSOBJ_<config>] else
+$! (tools/gen_mms.py).
+$ objroot = "vmsobj"
+$ if cfg .nes. "CLIENT" then objroot = "vmsobj_" + cfg
 $ if target .eqs. "CLEAN"
 $ then
-$   if f$search("[.vmsobj...]*.*") .nes. "" then delete/nolog/exclude=*.dir [.vmsobj...]*.*;*
+$   if f$search("[.''objroot'...]*.*") .nes. "" then delete/nolog/exclude=*.dir [.'objroot'...]*.*;*
 $   status = 1
 $   goto finish
 $ endif

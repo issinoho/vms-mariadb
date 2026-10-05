@@ -18,3 +18,8 @@ HAVE_SYS_MALLOC_H ""  # resolves to <malloc.h>
 # linked from PCRE2$ROOT (server.link); CMake's library checks cannot see it.
 HAVE_PCRE2_MATCH_8 1  # PCRE2 library from PCRE2$ROOT
 NEEDS_PCRE2_DEBIAN_HACK ""  # PCRE2's own POSIX names (pcre2_regcomp)
+#
+# The check links a weak reference to ro_after_init_start/_end, which GNU ld
+# synthesises as section bounds.  The VMS linker does not: it links (weak
+# references may stay undefined) but mariadbd has no such symbols.
+HAVE_RO_AFTER_INIT ""  # no linker-made section bounds on VMS
