@@ -283,3 +283,26 @@ REMOVE leaves no files, startup procedure or logical name.
 | Code | Error | Root cause | Fix |
 |---|---|---|---|
 | T | installcheck left the empty scratch directory `KITDATA.DIR` | a repeated `F$SEARCH` of the same spec continues its old search | delete without an `F$SEARCH` loop |
+
+## Field use: a phpBB database on the x86 server (2026-10-05)
+
+A phpBB 3.3 database (71 InnoDB tables, 7 MB, ~21,500 rows) copied from a MariaDB 11.8 server
+on Linux to a user-run 11.4.13 server on x86-64 (port 3306): `mariadb-dump
+--single-transaction` on the host, `ENGINE=InnoDB` rewritten to `ENGINE=Aria`, loaded over
+TCP as the application account, created on the VMS server with the source's password hash
+(`IDENTIFIED BY PASSWORD`) and privileges on the one database. Result: 70 tables identical row
+for row (the 71st, `phpbb_sessions`, is live on the source), CHECK TABLE OK, the
+application account logs in over the network.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| S | the load stopped after 21 tables; the other 50 were created (`SHOW TABLES` lists them) but `ERROR 1146 ... doesn't exist` on use, engine NULL in `information_schema.tables` | the server process's open file quota ran out: `FILLM` 150, `FILCNT` 0. `table_open_cache` defaults to 2000 and `open_files_limit` is computed as 32182, so the server never closes tables to stay under FILLM; an Aria table holds two files, and our shared-descriptor layer (D10) holds **two VMS channels per file** (the master plus the caller's read-only channel), so ~35 open tables exhaust 150 | at run time, `SET GLOBAL table_open_cache = 20` and `FLUSH TABLES` (FILCNT back to 135); reloaded the dump |
+| S | a single `SELECT ... UNION ALL ...` over all 71 tables failed the same way | one statement needs all its tables open at once, whatever the cache size | one table per statement |
+
+Open (the port's fault, not the user's): (1) the server should size `open_files_limit` and
+the table cache from the process's `FILLM`/`FILCNT` (`getrlimit(RLIMIT_NOFILE)` does not
+reflect it on VMS) - a patch to `mysys/my_file.c`/`sql/mysqld.cc`; (2) `my_vmsfile.c` could
+keep one channel per file instead of two, halving the file count; (3) until then README.VMS
+should tell administrators to raise FILLM (1000 or more) for the server's account or set
+`table_open_cache` in the option file. The user's server keeps `table_open_cache = 20` only
+until it restarts.
