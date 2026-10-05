@@ -1,0 +1,21 @@
+Subject: Aria: no directory descriptor on OpenVMS
+
+translog_init opens the log directory to fsync it after creating and
+deleting log files. OpenVMS cannot open() a directory ('File .../DATA/ not
+found', Aria engine: log initialization failed), so skip it as on Windows:
+directory_fd stays -1 and every sync_dir() call already passes
+MY_IGNORE_BADFD. mysys only syncs directories on Linux
+(NEED_EXPLICIT_SYNC_DIR).
+
+--- a/storage/maria/ma_loghandler.c	2026-10-05 08:04:29.643243723 +0100
++++ b/storage/maria/ma_loghandler.c	2026-10-05 08:04:29.664641341 +0100
+@@ -3678,7 +3678,8 @@
+ 
+   /* Directory to store files */
+   unpack_dirname(log_descriptor.directory, directory);
+-#ifndef _WIN32
++  /* Neither Windows nor OpenVMS can open() a directory to sync it. */
++#if !defined(_WIN32) && !defined(__VMS)
+   if ((log_descriptor.directory_fd= my_open(log_descriptor.directory,
+                                             O_RDONLY, MYF(MY_WME))) < 0)
+   {

@@ -31,8 +31,9 @@
   descriptor, but a read-only one whatever the caller asked for: closing a
   writable channel writes that channel's (stale) idea of the end of file
   into the file header, which would undo what the master has synced.  So
-  fcntl() write locks on these descriptors fail (external locking is not
-  supported).  The position of each descriptor is kept here, so
+  fcntl() write locks on these descriptors would fail with EBADF: my_lock()
+  takes its locks on the master instead (my_vms_lock_fd()), which is the
+  same thing for POSIX record locks, as they belong to the process.  The position of each descriptor is kept here, so
   read()/write()/lseek() keep their meaning, including O_APPEND.
 
   The file size is kept here too, because the C RTL's own idea of it is
@@ -336,6 +337,14 @@ my_off_t my_vms_lseek(File fd, my_off_t pos, int whence)
     return (my_off_t) -1;
   }
   return e->pos= (my_off_t) newpos;
+}
+
+
+/* The descriptor to take fcntl() record locks on: the read-write master. */
+File my_vms_lock_fd(File fd)
+{
+  VMS_FD *e= fd_entry(fd);
+  return e ? e->file->master : fd;
 }
 
 

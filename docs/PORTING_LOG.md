@@ -179,3 +179,13 @@ objects. `mariadbd.exe` (252,331 blocks with debug info) runs:
   used for server UUIDs): follow-up.
 - Unix defaults for `basedir`, `datadir`, `socket`, option files: set explicitly for now;
   VMS defaults belong with packaging.
+
+## Stage B: bootstrap attempts
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| S | `INSTALL_DB.COM`: `%DCL-W-INSFPRM` on each APPEND; bootstrap ran on 3 lines | `'f$search(...)'` in a command line is not evaluated (only symbols are substituted) | `add_sql` subroutine |
+| F | Aria: `Can't lock aria control file ... error: 9` | `my_vmsfile.c` gives callers read-only channels; `F_WRLCK` on them is EBADF. Aria always locks `aria_log_control` (not only with `--external-locking`, as D10 assumed) | patch 0023: `my_lock()` locks through the master (`my_vms_lock_fd()`) |
+| F | Aria: `File '.../DATA/' not found`, log initialization failed | `translog_init` opens the log directory to fsync it; VMS cannot open a directory | patch 0024 (skip it, as on Windows) |
+| S | `%APPEND-W-INCOMPAT` | header lines written by `OPEN/WRITE` (variable records) vs Stream_LF SQL files | `vms/bootstrap_header.sql` (Stream_LF) copied first |
+| T | cleanup: second `F$SEARCH` on the same wildcard returned "" | shared wildcard context (vms-grep pitfall) | explicit deletes |

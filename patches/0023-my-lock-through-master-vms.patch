@@ -1,0 +1,37 @@
+Subject: my_lock.c: fcntl() locks through the master descriptor on OpenVMS
+
+With mysys/my_vmsfile.c (patch 0014) the descriptors my_open() returns are
+read-only channels; the I/O goes through one read-write master per file. A
+write lock (F_WRLCK) on a read-only descriptor fails with EBADF, so Aria
+could not lock aria_log_control ('error: 9') and the server would not
+start. Take the lock on the master: POSIX record locks belong to the
+process, so this is the same lock.
+
+--- a/mysys/mysys_priv.h	2026-10-05 08:00:16.037992605 +0100
++++ b/mysys/mysys_priv.h	2026-10-05 08:00:16.077266667 +0100
+@@ -195,6 +195,7 @@
+ extern int      my_vms_chsize(File fd, my_off_t newlength);
+ extern int      my_vms_fstat(File fd, struct stat *buf);
+ extern int      my_vms_stat(const char *path, struct stat *buf);
++extern File     my_vms_lock_fd(File fd);
+ #endif
+ 
+ #ifdef _WIN32
+--- a/mysys/my_lock.c	2026-10-05 08:00:16.055803234 +0100
++++ b/mysys/my_lock.c	2026-10-05 08:00:16.077517497 +0100
+@@ -159,6 +159,15 @@
+   {
+     struct flock lock;
+ 
++#ifdef __VMS
++    /*
++      my_vmsfile.c gives my_open() callers read-only channels and does the
++      I/O through a read-write master descriptor, so a write lock on the
++      caller's descriptor would fail (EBADF): lock through the master.
++    */
++    fd= my_vms_lock_fd(fd);
++#endif
++
+     lock.l_type=   (short) locktype;
+     lock.l_whence= SEEK_SET;
+     lock.l_start=  (off_t) start;

@@ -55,18 +55,21 @@ $ uroot = unix_path
 $!
 $! The bootstrap SQL, as mariadb-install-db's cat_sql().
 $ sql = tmpdir + "BOOTSTRAP.SQL"
-$ open/write o 'sql'
-$ write o "create database if not exists mysql;"
-$ write o "use mysql;"
-$ write o "SET @auth_root_socket=NULL;"
-$ close o
-$ s = "[.VMSGEN.SCRIPTS]"
-$ append 'f$search("''s'mariadb_system_tables.sql")' 'sql'
-$ append 'f$search("''s'mariadb_performance_tables.sql")' 'sql'
-$ append 'f$search("''s'mariadb_system_tables_data.sql")' 'sql'
-$ append 'f$search("''s'fill_help_tables.sql")' 'sql'
-$ append 'f$search("''s'maria_add_gis_sp_bootstrap.sql")' 'sql'
-$ append 'f$search("''s'mariadb_sys_schema.sql")' 'sql'
+$ missing == 0
+$! Start from [.VMS]BOOTSTRAP_HEADER.SQL, a Stream_LF file like the rest:
+$! APPEND will not mix it with the variable-length records OPEN/WRITE makes.
+$ copy [.vms]bootstrap_header.sql 'sql'
+$ call add_sql mariadb_system_tables.sql
+$ call add_sql mariadb_performance_tables.sql
+$ call add_sql mariadb_system_tables_data.sql
+$ call add_sql fill_help_tables.sql
+$ call add_sql maria_add_gis_sp_bootstrap.sql
+$ call add_sql mariadb_sys_schema.sql
+$ if missing
+$ then
+$   say "INSTALL_DB: bootstrap SQL missing from [.VMSGEN.SCRIPTS] (run tools/prepare.sh)"
+$   goto done
+$ endif
 $!
 $ say "INSTALL_DB: system tables in ''datadir' (''udata')"
 $ log = tmpdir + "BOOTSTRAP.LOG"
@@ -91,6 +94,19 @@ $ say "INSTALL_DB: done"
 $done:
 $ set default 'saved_default'
 $ exit status
+$!
+$! Append [.VMSGEN.SCRIPTS]<p1> to the bootstrap SQL; missing == 1 if absent.
+$add_sql: subroutine
+$ f = f$search("[.VMSGEN.SCRIPTS]''p1'")
+$ if f .eqs. ""
+$ then
+$   write sys$output "INSTALL_DB: no [.VMSGEN.SCRIPTS]''p1'"
+$   missing == 1
+$   exit 1
+$ endif
+$ append 'f' 'sql'
+$ exit 1
+$ endsubroutine
 $!
 $! dev:[a.b.c] -> /dev/a/b/c, in the global symbol unix_path
 $to_unix: subroutine

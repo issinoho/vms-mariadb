@@ -285,8 +285,9 @@ handled in the layer:
   back: the layer flushes before truncating.
 - Closing a *writable* channel writes that channel's stale end of file into the file
   header, even after another channel synced: caller descriptors are made read-only
-  channels (`dup2`), the master closes last. Consequence: `fcntl()` write locks on mysys
-  descriptors fail, so `--external-locking` is unsupported on VMS.
+  channels (`dup2`), the master closes last. `fcntl()` record locks are taken on the master
+  (patch 0023): a write lock on a read-only channel fails with EBADF, and Aria always locks
+  `aria_log_control`. POSIX record locks belong to the process, so this is the same lock.
 - `O_TRUNC` on an existing file would create a new version: truncation goes through the
   master instead.
 
