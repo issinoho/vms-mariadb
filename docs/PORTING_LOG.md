@@ -166,3 +166,16 @@ Build speed: MMS is serial; `JOBS=n tools/build.sh` now runs n library groups at
   (some compiled before `vms_lp64.h` and the pthread fix). CLEAN now deletes the
   configuration's own tree, and `build.sh` treats `%LIBRAR-I-EMPTYFILE` as an error.
   The client's CLEAN was always right; its results stand.
+
+## Stage B, server round 5: mariadbd links and runs (2026-10-05)
+
+Clean parallel build (`JOBS=2`): 599 compiles, no errors, no undefined symbols, no empty
+objects. `mariadbd.exe` (252,331 blocks with debug info) runs:
+- `mariadbd --version`: `Ver 11.4.13-MariaDB for OpenVMS on x86_64 (Source distribution)`.
+- `mariadbd --no-defaults --help --verbose`: the full option and variable listing (~2,000
+  lines), success status. Defaults are the 64-bit ones (`myisam-max-sort-file-size`
+  9223372036853727232 as on Linux).
+- Warning `failed to retrieve the MAC address` (`my_gethwaddr()` has no VMS implementation;
+  used for server UUIDs): follow-up.
+- Unix defaults for `basedir`, `datadir`, `socket`, option files: set explicitly for now;
+  VMS defaults belong with packaging.
