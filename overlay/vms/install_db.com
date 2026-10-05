@@ -39,7 +39,7 @@ $ endif
 $ mariadbd = "$" + exe
 $ tmpdir = datadir - "]" + "_TMP]"
 $ if f$search(datadir - "]" + "...]*.*") .nes. "" .or. -
-     f$search(tmpdir - "]" + "...]*.*") .nes. "" .or. f$search(tmpdir - "]" + "...]*.*") .nes. ""
+     f$search(tmpdir - "]" + "...]*.*") .nes. ""
 $ then
 $   say "INSTALL_DB: ''datadir' is not empty"
 $   goto done
