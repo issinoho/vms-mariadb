@@ -117,6 +117,15 @@ def main():
     weight_of_target = {}       # compile cost estimate: C++ 3, C 1 per object
     pushdirs = {'vms', 'vmsgen'}
 
+    # vms/vms_crtl_init.c: C RTL features, linked into every image.
+    init_obj = '%s/vms_crtl_init.obj' % objroot
+    with open(os.path.join(out, 'vms_crtl_init.rsp'), 'w') as f:
+        f.write(common + '\n-std=gnu99\n')
+    mms.append('%s : %s' % (vms_file(init_obj), vms_file('vms/vms_crtl_init.c')))
+    mms.append('\t$(CLANG) @$(ROOT)/%s/vms_crtl_init.rsp -c vms/vms_crtl_init.c -o %s'
+               % (rspdir, init_obj))
+    mms.append('')
+
     for tname in wanted:
         if tname not in targets:
             sys.exit('gen_mms: no target %s in %s' % (tname, bdir))
@@ -200,6 +209,10 @@ def main():
                 # The linker takes no wildcards in an options file.
                 for o in objs:
                     f.write('%s\n' % vms_file(o))
+                f.write('%s\n' % vms_file(init_obj))
+                # clang marks the section writable; give it the system's
+                # LIB$INITIALIZE attributes (see vms/vms_crtl_init.c).
+                f.write('PSECT_ATTR=LIB$INITIALIZE,CON,REL,GBL,NOSHR,NOEXE,RD,NOWRT\n')
                 for l in libs:
                     f.write('%s%s.olb/library\n' % (vms_dir(objroot), l))
                 if os.path.exists(extra_link):
@@ -208,7 +221,7 @@ def main():
                             f.write(l.strip() + '\n')
                 f.write('sys$share:ssl3$libssl_shr/share\nsys$share:ssl3$libcrypto_shr/share\n')
             all_outputs.append(exe)
-            deps = [vms_file(o) for o in objs] + ['%s%s.olb' % (vms_dir(objroot), l)
+            deps = [vms_file(o) for o in objs] + [vms_file(init_obj)] + ['%s%s.olb' % (vms_dir(objroot), l)
                                                  for l in dict.fromkeys(libs)]
             mms.append(deps_line(vms_file(exe), deps))
             mms.append('\tlink/exe=%s/map=%s/traceback %s/options' %

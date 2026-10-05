@@ -63,10 +63,12 @@ for cfg in ${CONFIGS:-client server}; do
     gen=$(sed -n 's/^\([A-Za-z_]*Gen[A-Za-z_]*\):.*/\1/p' "$bdir/Makefile" | sort -u | tr '\n' ' ')
     step "$cfg: generated sources ($gen)"
     make -C "$bdir" -s $gen > "$bdir/gen.out" 2>&1 || { tail "$bdir/gen.out"; die "make $gen failed"; }
-    # Everything source-like the host build directory holds -> vmsgen/.
+    # Everything source-like the host build directory holds -> vmsgen/,
+    # with the compiled error messages (sql/share/*/errmsg.sys) and the
+    # bootstrap SQL (scripts/*.sql) that vms/install_db.com feeds mariadbd.
     (cd "$bdir" && find . -path ./CMakeFiles -prune -o -path '*/CMakeFiles' -prune -o \
         -type f \( -name '*.h' -o -name '*.hh' -o -name '*.c' -o -name '*.cc' -o -name '*.ic' \
-        -o -name '*.inl' \) -print | cpio -pdm --quiet "$stage/vmsgen")
+        -o -name '*.inl' -o -name '*.sys' -o -name '*.sql' \) -print | cpio -pdm --quiet "$stage/vmsgen")
     python3 "$top/tools/gen_mms.py" "$cfg"
 done
 step "staged $stage ($(du -sh "$stage" | cut -f1))"
