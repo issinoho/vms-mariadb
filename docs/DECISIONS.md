@@ -387,7 +387,7 @@ If taken up: start with a probe build of Connector/C with VSI C on IA64, then (a
 **Status:** direction approved by the user (2026-10-05); plan in `docs/PLAN_SERVICE.md`.
 Extends D13 (the kit's `VMSMARIADB$SERVER.COM` starts the server under the invoking user).
 
-- **A dedicated account**, `MARIADB` in its own UIC group, owning the data and temporary
+- **A dedicated account**, `MARIADB` `[360,1]` (user's choice), owning the data and temporary
   directories; batch access only (no interactive, network, local, dialup or remote logins),
   privileges `TMPMBX,NETMBX`, and quotas sized for a server (PGFLQUOTA, FILLM 1000+ below
   SYSGEN `CHANNELCNT`, BYTLM/BIOLM for network buffers). Running as the installing user, as
@@ -396,9 +396,23 @@ Extends D13 (the kit's `VMSMARIADB$SERVER.COM` starts the server under the invok
 - **Boot start through a batch job as the account**: `VMSMARIADB$STARTUP.COM START` submits
   `VMSMARIADB$BOOT.COM` with `SUBMIT/USER=MARIADB`, and the job runs
   `VMSMARIADB$SERVER START` (`RUN/DETACHED/AUTHORIZE` LOGINOUT, so the server gets the
-  account's UAF quotas) and exits. Alternative: `RUN/DETACHED/UIC=` from SYSTEM - which UAF
-  quotas apply, the creator's or none (PQL defaults, which starved the server in Stage B), is
-  to be probed; the SUBMIT route relies only on documented behaviour.
+  account's UAF quotas) and exits. **Probed 2026-10-06** (`probes/service/`, a temporary
+  account with distinctive quotas, removed afterwards):
+
+  | Route, from a privileged process | Username | UIC | Quotas | Privileges |
+  |---|---|---|---|---|
+  | (a) `SUBMIT/USER=acct`, the job does `RUN/DETACHED/AUTHORIZE` LOGINOUT | acct | acct's | acct's UAF | acct's (`TMPMBX,NETMBX`) |
+  | (b) `RUN/DETACHED/UIC=[acct]/AUTHORIZE` LOGINOUT | creator | creator's (`/UIC` ignored) | creator's UAF | all of the creator's |
+  | (c) `RUN/DETACHED/UIC=[acct]` LOGINOUT | creator | acct's | PQL defaults | all of the creator's |
+
+  Only (a) gives the right identity, quotas and privileges; (b) and (c) would run a network
+  server with the system manager's privileges. Two account details came out of it:
+  `AUTHORIZE ADD` disables a new account unless `/FLAGS=NODISUSER` is given
+  (`%LOGIN-F-DISUSER`), and the `RESTRICTED` flag made the batch login fail
+  (`%DCL-E-NOCMDPROC, error opening captive command procedure - access denied`): it runs the
+  site's `SYLOGIN.COM` captive, and that procedure calls about 20 others. The service account
+  is therefore not RESTRICTED; its limits come from having no interactive, network or local
+  access and no privileges beyond `TMPMBX,NETMBX`.
 - **Clean shutdown at system shutdown** from `SYSHUTDWN.COM`, through a MariaDB account with
   only the SHUTDOWN privilege (`vmsmariadb_shutdown@localhost`), whose random password is in an
   option file readable only by the service account and SYSTEM: no root password in startup

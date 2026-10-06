@@ -1,6 +1,6 @@
 # Plan: MariaDB as a VMS service (boot start, dedicated account, clean shutdown)
 
-Status: approved direction (2026-10-05, D15). Not started.
+Status: approved direction (2026-10-05, D15); step 1 (probe) done 2026-10-06.
 
 ## Goal
 
@@ -20,8 +20,8 @@ $ @SYS$STARTUP:VMSMARIADB$SHUTDOWN.COM
 
 | Item | Default |
 |---|---|
-| Account | `MARIADB`, UIC in its own group (configure suggests an unused group, e.g. `[360,1]`) |
-| Account access | batch only; `/FLAGS=(RESTRICTED,DISMAIL,DISNEWMAIL)`; privileges `TMPMBX,NETMBX` |
+| Account | `MARIADB` `[360,1]`, its own group (configure checks it is free, else suggests the next free group) |
+| Account access | batch only; `/FLAGS=(NODISUSER,DISMAIL,DISNEWMAIL)` - not RESTRICTED (D15 probe); privileges `TMPMBX,NETMBX` |
 | Quotas | PGFLQUOTA 8,000,000; FILLM 1000; BYTLM 1,000,000; BIOLM 500; DIOLM 500; ASTLM 1000; TQELM 500; ENQLM 4000; WSQUOTA/WSEXTENT large |
 | Data directory | chosen at configure time, ODS-5, owned by MARIADB, `(S:RWE,O:RWED,G,W)` |
 | Port | 3306 |
@@ -55,10 +55,10 @@ $ @SYS$STARTUP:VMSMARIADB$SHUTDOWN.COM
 
 ## Steps
 
-1. Probe (needs a temporary UAF account; ask first): from SYSTEM, (a) `SUBMIT/USER=` of a job
-   that does `RUN/DETACHED/AUTHORIZE` LOGINOUT - confirm the detached process has the
-   account's username and UAF quotas; (b) `RUN/DETACHED/UIC=[account]/AUTHORIZE` directly -
-   whose quotas, which username. Remove the account afterwards.
+1. ~~Probe~~ done 2026-10-06 (D15): only the `SUBMIT/USER` route gives the account's
+   username, UAF quotas and privileges. Configure must give `/FLAGS=NODISUSER`, must not set
+   RESTRICTED, and the data directory must be on a path the account can traverse (execute
+   access on every directory above it).
 2. Write 1-6; extend `tools/installcheck.sh` with a service phase (configure non-interactively
    with a test account, START via the boot job, STATUS, SHUTDOWN, remove account and data).
 3. README.VMS section; new kit (patch level 2), install check, release `v11.4.13-vms2`.

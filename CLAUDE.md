@@ -68,6 +68,8 @@ tools/vms.sh <node> dcl '<cmd>' ...   # run DCL; also run/batch/put/get
   run's file, and its stale result looked like a new failure.
 - **A `vms.sh` timeout does not stop the job on VMS**: it keeps running. Give long jobs a
   big `VMS_TIMEOUT`, and check `show system` before re-running a test that timed out.
+  Leftover `FTA*_IAIN` sessions of ours can pile up and once stopped the SSH server
+  answering; check `show system/process=*IAIN*` and stop only the ones this work started.
 - **ODS-5 has no sparse files**: seeking past the end and writing (or `fseek` on a stdio
   stream) allocates and zero-fills real blocks. A test that seeked to 5 GB nearly filled
   the work disk. Never probe large offsets on a new file.

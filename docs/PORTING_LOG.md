@@ -306,3 +306,16 @@ keep one channel per file instead of two, halving the file count; (3) until then
 should tell administrators to raise FILLM (1000 or more) for the server's account or set
 `table_open_cache` in the option file. The user's server keeps `table_open_cache = 20` only
 until it restarts.
+
+## D15 probe: starting a detached process as a service account (2026-10-06)
+
+`probes/service/service_probe.com` (temporary account MDBPROBE `[361,1]` with distinctive
+quotas; SETUP, REPORT, CLEANUP). Results in DECISIONS D15: only `SUBMIT/USER=` gives the
+detached server the account's identity, UAF quotas and privileges.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| S | the batch job ran and vanished without a log | `AUTHORIZE ADD` sets DISUSER unless told otherwise (`%LOGIN-F-DISUSER`, seen with `SUBMIT/RETAIN=ALWAYS`) | `/FLAGS=NODISUSER` |
+| S | `%DCL-E-NOCMDPROC, error opening captive command procedure - access denied` | the RESTRICTED flag runs `SYLOGIN.COM` captive, and the site's SYLOGIN calls ~20 procedures | no RESTRICTED flag |
+| T | ssh to the node stopped answering (banner timeout) overnight | a session of ours stuck since a server stop had used 26 CPU minutes; stopped after access returned | watch for leftover `FTA*_IAIN` sessions (CLAUDE.md) |
+| - | (my mistake) blamed directory traversal for the first failure and added ACL entries | `[IAIN]` and `[IAIN.VMS_MARIADB]` already allow world execute | ACLs removed at cleanup |
