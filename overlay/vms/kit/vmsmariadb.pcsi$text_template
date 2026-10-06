@@ -9,16 +9,18 @@
 =prompt Documentation is in [VMSMARIADB.DOC]README.VMS under the installation directory.
 1 POST_INSTALL
 =prompt Post-installation tasks for MariaDB (vms-mariadb)
-    At system startup: to define VMSMARIADB$ROOT at every boot, add this
-    line to SYS$MANAGER:SYSTARTUP_VMS.COM:
+    To run the server as a service (its own account, started at boot,
+    stopped cleanly at shutdown), run once, as SYSTEM:
+    $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$CONFIGURE
+    and add the two lines it prints to SYSTARTUP_VMS.COM and SYSHUTDWN.COM.
+    Otherwise, to define VMSMARIADB$ROOT at every boot, add this line to
+    SYS$MANAGER:SYSTARTUP_VMS.COM:
     $ @SYS$STARTUP:VMSMARIADB$STARTUP.COM
     For each user: to define the mariadb commands, add this line to
     LOGIN.COM (or SYLOGIN.COM, for everyone):
     $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$SETUP.COM
-    To create a data directory (on an ODS-5 disk) and start a server:
-    $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$SERVER INSTALL_DB dev:[dir.DATA]
-    $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$SERVER START dev:[dir.DATA]
-    The new root@localhost account has no password: set one.
+    See VMSMARIADB$ROOT:[DOC]README.VMS.
 
 PRODUCT REMOVE VMSMARIADB removes the product and deassigns VMSMARIADB$ROOT;
-data directories are not touched.
+data directories, the service account and SYS$MANAGER:VMSMARIADB$CONFIG.COM
+are not touched.

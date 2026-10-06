@@ -18,7 +18,9 @@ Requirements
 - An ODS-5 disk for data directories.
 - For a server: a reasonable page file quota (PGFLQUOTA; a server with the
   default buffers uses about 500 MB of virtual memory) and FILLM of 150 or
-  more.  The server runs with the UAF quotas of the account that starts it.
+  more (1000 for many tables).  The server runs with the UAF quotas of the
+  account that starts it; VMSMARIADB$CONFIGURE.COM creates an account with
+  suitable ones.
 
 Installing
 ----------
@@ -27,13 +29,15 @@ Installing
 
 then, as the post-installation text says:
 
-- add  $ @SYS$STARTUP:VMSMARIADB$STARTUP.COM  to SYS$MANAGER:SYSTARTUP_VMS.COM
-  (it defines VMSMARIADB$ROOT; it does not start a server);
+- for a server started at boot, run VMSMARIADB$CONFIGURE.COM once ("Running
+  as a service" below); otherwise add  $ @SYS$STARTUP:VMSMARIADB$STARTUP.COM
+  to SYS$MANAGER:SYSTARTUP_VMS.COM (it defines VMSMARIADB$ROOT);
 - add  $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$SETUP.COM  to LOGIN.COM (or
   SYLOGIN.COM) for the client commands.
 
 PRODUCT REMOVE VMSMARIADB removes the product and VMSMARIADB$ROOT; it does not
-touch data directories.
+touch data directories, the service account or the site file
+SYS$MANAGER:VMSMARIADB$CONFIG.COM.
 
 Contents
 --------
@@ -44,7 +48,9 @@ Contents
     VMSMARIADB$ROOT:[SHARE]    error messages (one directory per language)
                                and [.CHARSETS]
     VMSMARIADB$ROOT:[SCRIPTS]  the SQL that creates the system tables
-    VMSMARIADB$ROOT:[000000]   VMSMARIADB$SETUP.COM, VMSMARIADB$SERVER.COM
+    VMSMARIADB$ROOT:[000000]   VMSMARIADB$SETUP.COM, VMSMARIADB$SERVER.COM,
+                               VMSMARIADB$CONFIGURE.COM
+    SYS$STARTUP:               VMSMARIADB$STARTUP.COM, VMSMARIADB$SHUTDOWN.COM
     VMSMARIADB$ROOT:[DOC]      this file, COPYING (GPL v2), CREDITS
 
 Client commands
@@ -84,7 +90,65 @@ Running a server
   otherwise the server runs with --no-defaults.  START's fourth parameter
   passes one more option, e.g. "--bind-address=127.0.0.1".
 - STOP asks the server to shut down (mariadb-admin as root); STATUS reports
-  it.  Always stop the server this way: STOP/ID loses unflushed data.
+  it.  Always stop the server this way: STOP/ID loses unflushed data.  Both
+  take an option file instead of root's password:
+      $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$SERVER STOP 3306 -
+          "--defaults-file=/DKA100/MARIADB/DATA/VMSMARIADB$SHUTDOWN.CNF"
+- The table cache (table_open_cache) is sized from the server process's
+  FILLM quota, (FILLM - 50) / 4, unless MY.CNF or the option sets it: past
+  FILLM, tables fail to open with ERROR 1146.
+
+Running as a service
+--------------------
+
+VMSMARIADB$CONFIGURE.COM sets the server up to run under its own account,
+start at boot and stop cleanly at shutdown.  Run it once, as SYSTEM:
+
+    $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$CONFIGURE
+
+It asks for the data directory (on an ODS-5 disk, two levels deep, e.g.
+DKA100:[MARIADB.DATA]; its parent is the account's login directory), the
+port (3306), the account (MARIADB) and, for a new account, its UIC ([360,1]
+or the next free group), and the password for MariaDB's root accounts.  It
+shows the AUTHORIZE commands and asks before doing anything.  Then it:
+
+- adds the account: batch access only, /FLAGS=(NODISUSER,DISMAIL,DISNEWMAIL),
+  privileges TMPMBX and NETMBX, PGFLQUOTA 8,000,000, FILLM 1000 (less if
+  SYSGEN CHANNELCNT is low), BYTLM 1,000,000 and room for network buffers.
+  An existing account is used as it is: it needs BATCH access and NODISUSER,
+  and must not be RESTRICTED (that runs SYLOGIN.COM captive, and batch
+  logins fail if it calls other procedures);
+- creates the data directory with the system tables and sets root's
+  password, or keeps an existing data directory (and its passwords);
+- creates vmsmariadb_shutdown@localhost and @127.0.0.1 with only the SHUTDOWN
+  privilege and a random password, kept in <datadir>VMSMARIADB$SHUTDOWN.CNF
+  (owner the account, (S:R,O:RW,G,W));
+- gives the data directory and its files to the account;
+- writes the site file SYS$MANAGER:VMSMARIADB$CONFIG.COM (data directory,
+  port, account, node, autostart, batch queue, one extra option, shutdown
+  timeout), which product upgrades leave alone and which may be edited.
+
+Then add to SYS$MANAGER:SYSTARTUP_VMS.COM, after TCP/IP and the batch queues
+have started (in place of a plain @VMSMARIADB$STARTUP line):
+
+    $ @SYS$STARTUP:VMSMARIADB$STARTUP.COM START
+
+and to SYS$MANAGER:SYSHUTDWN.COM:
+
+    $ @SYS$STARTUP:VMSMARIADB$SHUTDOWN.COM
+
+STARTUP START submits a batch job as the account (SUBMIT/USER), which runs
+VMSMARIADB$SERVER START: the server, MARIADBD_<port>, then has the account's
+username, UAF quotas and privileges.  It does nothing if autostart is off,
+if the site file names another node (two nodes must never open one data
+directory), or if MARIADBD_<port> already runs.  The job's log is
+<datadir>VMSMARIADB$START.LOG.  Run the same command to start the server by
+hand.  SHUTDOWN asks the server to stop through the shutdown account and
+waits up to shutdown_timeout seconds for it to exit; with NOWAIT it does
+not wait.
+
+Every directory above the data directory must give the account execute
+access (WORLD E, or an ACL entry); configure warns when one does not.
 
 Limitations of this preview
 ---------------------------
@@ -97,8 +161,9 @@ Limitations of this preview
   read call, so full scans of MyISAM tables with dynamic rows (CHECKSUM
   TABLE, CHECK TABLE) run at a few hundred kilobytes per second.
 - A 24-hour soak test has not been run yet.
-- The server sizes its table cache by open_files_limit, not by the process's
-  FILLM quota: with many tables, raise FILLM or set table_open_cache in MY.CNF.
+- One statement that uses more tables than FILLM allows (each open table
+  holds up to four channels) fails: raise FILLM.
+- No log rotation: mariadbd.err keeps growing.
 - Tested: system-table creation, a client suite over TCP and TLS, all six
   engines, 1,000,000-row (150 MB) Aria and MyISAM loads with five clean
   stop/start cycles (row counts, checksums and CHECK TABLE identical), and

@@ -114,7 +114,7 @@ if [ -d "$stage/vmsgen/sql/share" ] && [ -d "$stage/vmsgen/scripts" ]; then
         > "$kit/PRODUCT-X86VMS.PCSI\$DESC"
     subst < "$kit/$lc.pcsi\$text_template" > "$kit/PRODUCT-X86VMS.PCSI\$TEXT"
     rm -f "$kit/$lc.pcsi\$desc_template" "$kit/$lc.pcsi\$text_template"
-    for p in startup setup server; do
+    for p in startup shutdown setup server configure; do
         P=$(echo "$p" | tr a-z A-Z)
         subst < "$kit/$lc\$$p.com" > "$kit/$KIT_PRODUCT\$$P.COM"; rm -f "$kit/$lc\$$p.com"
     done

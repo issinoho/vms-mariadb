@@ -1,6 +1,8 @@
 # Plan: MariaDB as a VMS service (boot start, dedicated account, clean shutdown)
 
-Status: approved direction (2026-10-05, D15); step 1 (probe) done 2026-10-06. **Paused by the user (2026-10-06)**: resume at step 2.
+Status: approved direction (2026-10-05, D15); step 1 (probe) done 2026-10-06; step 2 resumed
+2026-10-06 at the user's request: procedures written, the bootstrap route probed; the install
+check's service phase (it creates a temporary account) waits for the user's go-ahead.
 
 ## Goal
 
@@ -61,6 +63,27 @@ $ @SYS$STARTUP:VMSMARIADB$SHUTDOWN.COM
    access on every directory above it).
 2. Write 1-6; extend `tools/installcheck.sh` with a service phase (configure non-interactively
    with a test account, START via the boot job, STATUS, SHUTDOWN, remove account and data).
+   Written 2026-10-06, with these departures from the pieces above:
+   - **No `VMSMARIADB$BOOT.COM`.** STARTUP submits `VMSMARIADB$SERVER.COM` itself with
+     `/PARAMETERS=(START,datadir,port,option)`. The job cannot read `SYS$MANAGER`, so the
+     parameters carry the configuration either way; a second procedure added nothing.
+   - **INSTALL_DB runs as SYSTEM inside configure**, and configure then gives the data
+     directory to the account (`SET SECURITY/OWNER`). Running it in a batch job as the
+     account would need configure to wait for the job (`SYNCHRONIZE`), for the same files.
+   - **Root's password and the shutdown account are set by a second `mariadbd --bootstrap`**,
+     not through a running server (`probes/service/bootstrap_users.com`, 2026-10-06):
+     `FLUSH PRIVILEGES` loads the grant tables, `EXECUTE IMMEDIATE ... QUOTE()` sets the
+     password, which DCL writes as hex (`X'...'`) so that no character needs quoting; the
+     shutdown password is `HEX(RANDOM_BYTES(16))` (OpenSSL) and the server writes the option
+     file itself (`SELECT ... INTO DUMPFILE`), so it never passes through DCL. No server has
+     to start and be waited for, and the same route adopts an existing data directory
+     (its root password is kept; only the shutdown account is added).
+   - The shutdown account exists at `localhost` **and** `127.0.0.1`, so it still matches if
+     the site sets `skip-name-resolve`.
+   - START does not wait for the server to answer (STATUS does that); it refuses a second
+     `MARIADBD_<port>` that it can see.
+   - A logical name `VMSMARIADB$CONFIG` names another site file (the install check uses it,
+     so it never writes `SYS$MANAGER`).
 3. README.VMS section; new kit (patch level 2), install check, release `v11.4.13-vms2`.
 
 ## Not in scope
