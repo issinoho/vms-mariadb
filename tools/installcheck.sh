@@ -31,29 +31,36 @@ for _ in $(seq 1 30); do
 done
 echo "server up: $up" | tee -a "$log"
 [ $up = 1 ] && phase QUERY > /dev/null
-for _ in $(seq 1 60); do
-    phase PROCESS 120 | grep -q INSTALLCHECK_GONE && break
-    sleep 10
-done
+# mariadb-admin's exit status says nothing (it returns from main(): PORTING_LOG),
+# so wait for the process itself; never remove the kit under a running server.
+gone() {  # gone <port>
+    for _ in $(seq 1 60); do
+        phase "PROCESS $1" 120 | grep -q INSTALLCHECK_GONE && return 0
+        sleep 10
+    done
+    echo "installcheck: MARIADBD_$1 still running; stopping here (kit left installed)" | tee -a "$log" >&2
+    exit 1
+}
+gone 3308
 # The service: configure (test account MDBSVCT), start through the boot job,
 # check, shut down as SYSHUTDWN would, remove the account and its data.
 svc=0
 if [ "${SVC:-1}" = 1 ]; then
     svc=1
-    phase SVC_CONFIGURE > /dev/null
-    phase SVC_START > /dev/null
     up=0
-    for _ in $(seq 1 30); do
-        phase SVC_STATUS 120 | grep -q INSTALLCHECK_SVC_UP && { up=1; break; }
-        sleep 10
-    done
-    echo "service up: $up" | tee -a "$log"
-    [ $up = 1 ] && phase SVC_QUERY > /dev/null
-    phase SVC_SHUTDOWN > /dev/null
-    for _ in $(seq 1 60); do
-        phase "PROCESS 3309" 120 | grep -q INSTALLCHECK_GONE && break
-        sleep 10
-    done
+    if phase SVC_CONFIGURE | grep -q 'VMSMARIADB\$CONFIGURE: wrote'; then
+        phase SVC_START > /dev/null
+        for _ in $(seq 1 30); do
+            phase SVC_STATUS 120 | grep -q INSTALLCHECK_SVC_UP && { up=1; break; }
+            sleep 10
+        done
+        echo "service up: $up" | tee -a "$log"
+        [ $up = 1 ] && phase SVC_QUERY > /dev/null
+        phase SVC_SHUTDOWN > /dev/null
+        gone 3309     # stops here, account and kit left, if it never exits
+    else
+        echo "service up: $up (configure failed)" | tee -a "$log"
+    fi
     phase SVC_CLEANUP > /dev/null
 fi
 phase REMOVE > /dev/null
@@ -65,9 +72,13 @@ grep -aq 'ERROR 1054' "$log" || { echo "installcheck: no error message text from
 grep -aq 'VMSMARIADB\$ROOT after removal: \[\]' "$log" && grep -aq 'files after removal: \[\]' "$log" &&
     grep -aq 'startup after removal: \[\]' "$log" || { echo "installcheck: removal incomplete" >&2; ok=0; }
 if [ $svc = 1 ]; then
-    for check in SVC_IDENTITY SVC_ROOTPW SVC_NOPW_DENIED SVC_SHUTDOWN_LIMITED SVC_CLEAN_STOP; do
+    for check in SVC_IDENTITY SVC_ROOTPW SVC_CLEAN_STOP; do
         grep -aq "INSTALLCHECK_$check: PASS" "$log" || { echo "installcheck: $check did not pass" >&2; ok=0; }
     done
+    grep -aq "Access denied for user 'root'@'localhost' (using password: NO)" "$log" ||
+        { echo "installcheck: root without a password was not refused" >&2; ok=0; }
+    grep -aq "SELECT command denied to user 'vmsmariadb_shutdown'" "$log" ||
+        { echo "installcheck: the shutdown account could read mysql.user" >&2; ok=0; }
     grep -aq 'MARIADBD_3309 is already running' "$log" || { echo "installcheck: second START not refused" >&2; ok=0; }
     grep -aq 'account after cleanup: \[0\]' "$log" && grep -aq 'svctest after cleanup: \[\]' "$log" ||
         { echo "installcheck: service cleanup incomplete" >&2; ok=0; }

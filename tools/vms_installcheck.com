@@ -152,9 +152,9 @@ $ mariadb "--defaults-file=''urootcnf'" "--host=127.0.0.1" "--port=3309" "--batc
     "SELECT CONCAT('INSTALLCHECK_SVC_ROOTPW: ', IF(CURRENT_USER() = 'root@localhost', 'PASS', CURRENT_USER())); SELECT CONCAT('INSTALLCHECK_SVC_CACHE: ', @@table_open_cache); SELECT CONCAT('shutdown grants: ', COUNT(*)) FROM mysql.global_priv WHERE user = 'vmsmariadb_shutdown'"
 $ delete/nolog 'rootcnf';*
 $ mariadb "--no-defaults" "--host=127.0.0.1" "--port=3309" "--user=root" "-e" "SELECT 1"
-$ if $severity .ne. 1 then say "INSTALLCHECK_SVC_NOPW_DENIED: PASS"
+$ say "=== above: expect ERROR 1045 for root without a password"
 $ mariadb "--defaults-file=''ucnf'" "--host=127.0.0.1" "--port=3309" "-e" "SELECT COUNT(*) FROM mysql.user"
-$ if $severity .ne. 1 then say "INSTALLCHECK_SVC_SHUTDOWN_LIMITED: PASS"
+$ say "=== above: expect ERROR 1142 for the shutdown account"
 $ say "=== a second STARTUP START (expect: already running)"
 $ @SYS$STARTUP:VMSMARIADB$STARTUP.COM START
 $ exit

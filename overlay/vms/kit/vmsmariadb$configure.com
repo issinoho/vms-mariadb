@@ -281,17 +281,21 @@ $ say "    Start at boot   ''autostart'"
 $ say "    Site file       ''cfg'"
 $ if new_account
 $ then
-$   uaf_add = "/UIC=" + uic + " /DEVICE=" + dev + " /DIRECTORY=[" + hdir + "]" + -
-      " /NOPWDEXPIRED /PWDLIFETIME=NONE /FLAGS=(NODISUSER,DISMAIL,DISNEWMAIL)" + -
-      " /NOINTERACTIVE /NONETWORK /NOLOCAL /NODIALUP /NOREMOTE /BATCH" + -
+$! Three commands, each part under DCL's 255-character limit for one
+$! token (one long symbol made AUTHORIZE see no ADD at all).
+$   uaf_add = "/UIC=" + uic + " /DEVICE=" + dev + " /DIRECTORY=[" + hdir + "]"
+$   uaf_flags = "/NOPWDEXPIRED /PWDLIFETIME=NONE /FLAGS=(NODISUSER,DISMAIL,DISNEWMAIL)"
+$   uaf_access = "/NOINTERACTIVE /NONETWORK /NOLOCAL /NODIALUP /NOREMOTE /BATCH" + -
       " /PRIVILEGES=(TMPMBX,NETMBX) /DEFPRIVILEGES=(TMPMBX,NETMBX)"
 $   uaf_quotas = "/PGFLQUOTA=8000000 /FILLM=" + f$string(fillm) + -
       " /BYTLM=1000000 /BIOLM=500 /DIOLM=500 /ASTLM=1000 /TQELM=500 /ENQLM=4000" + -
       " /PRCLM=5 /WSDEFAULT=4096 /WSQUOTA=65536 /WSEXTENT=262144"
 $   say ""
 $   say "    The account is added with (the password is random; nobody logs in):"
-$   say "    UAF> ADD ''account' /PASSWORD=<random> ''uaf_add'"
-$   say "    UAF> MODIFY ''account' ''uaf_quotas'"
+$   say "    UAF> ADD ", account, " /PASSWORD=<random> ", uaf_add
+$   say "         ", uaf_flags
+$   say "    UAF> MODIFY ", account, " ", uaf_access
+$   say "    UAF> MODIFY ", account, " ", uaf_quotas
 $ endif
 $ if warnings .gt. 0 then say "    (''warnings' warning(s) above)"
 $ say ""
@@ -312,7 +316,8 @@ $ then
 $   uaf_com = "SYS$SCRATCH:VMSMARIADB$CONFIGURE_UAF.TMP"
 $   open/write o 'uaf_com'
 $   set security/protection=(S:RWED,O:RWED,G,W) 'uaf_com'
-$   write o "ADD ", account, " /PASSWORD=M", f$extract(0, 24, f$unique()), " ", uaf_add
+$   write o "ADD ", account, " /PASSWORD=M", f$extract(0, 24, f$unique()), " ", uaf_add, " ", uaf_flags
+$   write o "MODIFY ", account, " ", uaf_access
 $   write o "MODIFY ", account, " ", uaf_quotas
 $   write o "EXIT"
 $   close o

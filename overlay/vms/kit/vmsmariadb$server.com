@@ -221,7 +221,7 @@ $! over the file's user); any other option follows --user=root.
 $admin_options: subroutine
 $ admin_defaults == "--no-defaults"
 $ admin_extra == """--user=root"""
-$ if f$locate("--defaults-", p1) .eq. 0
+$ if p1 .nes. "" .and. f$locate("--defaults-", p1) .eq. 0
 $ then
 $   admin_defaults == p1
 $   admin_extra == ""

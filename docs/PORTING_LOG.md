@@ -334,3 +334,16 @@ ping and shut down but not read `mysql.user`; its shutdown was clean.
 | Code | Error | Root cause | Fix |
 |---|---|---|---|
 | S | `ERROR: 1064 ... near 'BY ', QUOTE(@pw));'` in the bootstrap | DCL substitutes `''localhost'` inside a quoted string: the SQL `root@''localhost''` lost its host | `QUOTE('localhost')` (no doubled apostrophes in DCL strings) |
+
+## PLAN_SERVICE step 2: first install check with the service phase (2026-10-07, kit V11.4-13E2)
+
+`tools/installcheck.sh x86`, run by the user: the kit part passed (install, INSTALL_DB, START,
+queries, removal of the product), the service part did not get past configure. Nothing was left
+on the system but my 3308 test server (stopped cleanly afterwards) and its scratch directories
+(deleted).
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| S | `%DCL-W-TKNOVF, command element is too long`, then `%UAF-W-BADSPC, no user matches specification`; configure stopped (`AUTHORIZE did not add MDBSVCT`) | the ADD qualifiers were one ~300-character symbol; DCL allows 255 per token, so the ADD line was never written and the MODIFY found no user | three AUTHORIZE commands (ADD, MODIFY access, MODIFY quotas), each built from parts under 255 |
+| S | `MARIADBD_3308` still running 10 minutes after STOP; the check went on to `PRODUCT REMOVE` under it | my `admin_options`: `F$LOCATE("--defaults-", "")` is 0, so no option counted as an option file and STOP sent no `--user=root` (`Access denied for user 'IAIN'`) | require a non-empty option |
+| S | STOP reported "shutdown requested" although mariadb-admin failed | mariadb-admin ends with `return error;` from `main()`: the C RTL encodes `exit(n)` (`%X1035A00A`) but passes main's return value to DCL raw, and 1 is success. mariadb-dump, -check, -import, -show and -slap end the same way; `mariadb` uses `exit()` | **open**: a patch (`exit()` under `__VMS`) proposed. Meanwhile the procedures and the install check do not trust mariadb-admin's status: they wait for the process, and the check stops before removing anything while a test server still runs |
