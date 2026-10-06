@@ -230,6 +230,27 @@ Audit (2026-10-04; Connector/C `secure/openssl*.c`, auth plugins, `vio/`, `mysys
 Result: no source changes needed. Revisit with the server (more OpenSSL use in `sql/`) and if
 TLS tests misbehave.
 
+Server audit (2026-10-06): every OpenSSL call in the sources `vms/build/server/DESCRIP.MMS`
+compiles, beyond the client audit's: `sql/mysqld.cc`, `item_strfunc.cc`, `des_key_file.cc`,
+`sql_acl.cc`, `sql_connect.cc`, `sys_vars.cc`, `slave.cc`, `sql-common/client.c`, and
+`mysys_ssl/my_crypt.cc`, `my_md5.cc`, `openssl.c`. The `long`/`size_t` ones:
+- `long` results: `SSL_get_default_timeout` (7200), `SSL_get_verify_result` (`X509_V_*`
+  codes), `SSL_CTX_sess_get_cache_size` and `SSL_CTX_get_session_cache_mode` (`SSL_CTX_ctrl`,
+  128 and a small mode), `ERR_get_error`/`ERR_peek_error` (as above).
+- `long`/`unsigned long` arguments: `DES_ede3_cbc_encrypt` length (a string length, bounded by
+  `max_allowed_packet`, 1 GB at most), `X509_STORE_set_flags` (`X509_V_FLAG_*` constants).
+- `size_t`: `EVP_PKEY_derive(..., size_t *keylen)` in `KDF(..., 'hkdf')` (`HAVE_hkdf` is set;
+  `klen` is at most 8192), `X509_check_host` length by value (a host name). Both fit in 32 bits.
+- `SSL_CTX_set_options`/`SSL_set_options` take `uint64_t`, 64-bit in both compilers.
+Test (3307 test server, native Linux 11.4.13 client over TLS): `KDF` (hkdf with and without
+info, pbkdf2_hmac), `DES_ENCRYPT`/`DES_DECRYPT` (short, and a 1 MB round trip), `AES_ENCRYPT`
+(ecb, cbc, ctr, and a 3 MB round trip), `MD5`, `SHA1`, `SHA2` 224/512, `RANDOM_BYTES`, and the
+`Ssl_*` session and global status variables all match the 11.8 reference server byte for
+byte; only `Ssl_server_not_before/after` differ, being each server's own auto-generated
+certificate (VMS: start time + 10 years, correct). Result: no source changes for the server.
+Not exercised: TLS from a replica (`slave.cc` through `sql-common/client.c`) and
+`REQUIRE ISSUER/SUBJECT` accounts; their calls are covered by the reading above.
+
 MariaDB 11.4 cannot be configured without a TLS library (`WITH_SSL` is bundled wolfSSL or
 system OpenSSL; even the client tools hash through it). The configure uses VSI SSL3's
 headers for now. `probes/ssl3_abi.c` (clang code calling SSL3's 64-bit-pointer images):
