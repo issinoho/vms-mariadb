@@ -319,3 +319,18 @@ detached server the account's identity, UAF quotas and privileges.
 | S | `%DCL-E-NOCMDPROC, error opening captive command procedure - access denied` | the RESTRICTED flag runs `SYLOGIN.COM` captive, and the site's SYLOGIN calls ~20 procedures | no RESTRICTED flag |
 | T | ssh to the node stopped answering (banner timeout) overnight | a session of ours stuck since a server stop had used 26 CPU minutes; stopped after access returned | watch for leftover `FTA*_IAIN` sessions (CLAUDE.md) |
 | - | (my mistake) blamed directory traversal for the first failure and added ACL entries | `[IAIN]` and `[IAIN.VMS_MARIADB]` already allow world execute | ACLs removed at cleanup |
+
+## PLAN_SERVICE step 2: accounts through a second bootstrap (2026-10-06)
+
+`probes/service/bootstrap_users.com` (build tree's images, scratch data directory in the work
+directory, port 3310; removed afterwards): a second `mariadbd --bootstrap` on an existing data
+directory runs `FLUSH PRIVILEGES`, `ALTER USER IF EXISTS root@... IDENTIFIED BY` (the password
+`Pr0be'x"y%z\` given as hex), `CREATE OR REPLACE USER vmsmariadb_shutdown` with
+`HEX(RANDOM_BYTES(16))`, `GRANT SHUTDOWN`, and writes the option file with
+`SELECT ... INTO DUMPFILE` (Stream_LF, created `(S:RWD,O:RWD,G:R,W:R)`, so configure resets the
+protection). Root logs in with the new password and not without one; the shutdown account can
+ping and shut down but not read `mysql.user`; its shutdown was clean.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| S | `ERROR: 1064 ... near 'BY ', QUOTE(@pw));'` in the bootstrap | DCL substitutes `''localhost'` inside a quoted string: the SQL `root@''localhost''` lost its host | `QUOTE('localhost')` (no doubled apostrophes in DCL strings) |
