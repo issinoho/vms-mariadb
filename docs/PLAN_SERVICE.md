@@ -1,6 +1,6 @@
 # Plan: MariaDB as a VMS service (boot start, dedicated account, clean shutdown)
 
-Status: approved direction (2026-10-05, D15); step 1 (probe) done 2026-10-06.
+Status: approved direction (2026-10-05, D15); step 1 (probe) done 2026-10-06. **Paused by the user (2026-10-06)**: resume at step 2.
 
 ## Goal
 
