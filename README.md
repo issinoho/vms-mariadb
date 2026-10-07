@@ -139,7 +139,8 @@ commands, and asks before changing anything. Then it:
 - adds the account: batch access only, `/FLAGS=(NODISUSER,DISMAIL,DISNEWMAIL)`, privileges
   `TMPMBX` and `NETMBX`, `PGFLQUOTA` 8,000,000, `FILLM` 1000; an existing account is used as
   it is (it must have BATCH access and NODISUSER, and must not be RESTRICTED);
-- creates the data directory and sets root's password, or keeps an existing data directory;
+- creates the data directory and sets root's password, or keeps an existing data directory
+  (stop its server first);
 - creates `vmsmariadb_shutdown`, with only the SHUTDOWN privilege and a random password kept
   in `<datadir>VMSMARIADB$SHUTDOWN.CNF`, so no root password sits in a startup file;
 - gives the data directory to the account and writes `SYS$MANAGER:VMSMARIADB$CONFIG.COM`
@@ -156,8 +157,10 @@ $ @SYS$STARTUP:VMSMARIADB$SHUTDOWN.COM
 `STARTUP START` submits a batch job as the account (`SUBMIT/USER`), so the server has the
 account's username, UAF quotas and privileges; it does nothing if autostart is off, the site
 file names another node, or `MARIADBD_<port>` already runs. `SHUTDOWN` stops the server
-through the shutdown account and waits for it to exit. Details in `README.VMS` and
-[docs/PLAN_SERVICE.md](docs/PLAN_SERVICE.md).
+through the shutdown account and waits for it to exit. Run the same two procedures by hand to
+stop and start the service. Stop it before installing a newer kit or removing this one. To
+remove the service, take out the two lines, delete the site file and remove the account.
+Details in `README.VMS` and [docs/PLAN_SERVICE.md](docs/PLAN_SERVICE.md).
 
 ## Using the clients
 
@@ -221,7 +224,8 @@ choice and the alternatives considered.
 
 ## How to build
 
-The build runs from a Linux host that has CMake, a native C/C++ toolchain (for MariaDB's
+The build runs from a Linux host (macOS is untried: the scripts need bash 4 or later and
+`sha256sum`) that has CMake, a native C/C++ toolchain (for MariaDB's
 generators) and ssh/sftp access to an OpenVMS x86-64 node with VSI C++ 10.1, MMS, the SSL3
 kit and a clang build of [vms-pcre2](https://github.com/issinoho/vms-pcre2) (`PCRE2$ROOT`,
 the 8th column of `tools/nodes.conf`). Work directories must be on ODS-5 volumes.
@@ -237,7 +241,10 @@ tools/kit.sh x86                 # PCSI kit -> out/kits/
 ```
 
 `tools/replay.sh` answers new CMake checks on the node, `tools/servertest.sh` and
-`tools/clienttest.sh` run the tests, `tools/installcheck.sh` installs and removes the kit.
+`tools/clienttest.sh` run the tests. `tools/installcheck.sh` installs the kit, runs a server
+from it, then configures the service with a **temporary account** (`MDBSVCT [361,1]`, port
+3309), starts and stops it, and removes the account and the kit: it changes the system's UAF
+and PCSI database while it runs (`SVC=0` skips the service part).
 Set up `tools/nodes.conf` as described in
 [vms-grep's README](https://github.com/issinoho/vms-grep#2b-build-on-vms-from-the-host-over-ssh).
 The original plan is in [MARIADB_OPENVMS_PLAN.md](MARIADB_OPENVMS_PLAN.md).

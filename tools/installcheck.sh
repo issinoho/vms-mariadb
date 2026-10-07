@@ -4,7 +4,8 @@
 # it with the installed clients, stop it; then (unless SVC=0) configure the
 # service with a temporary account MDBSVCT [361,1] (port 3309), start it
 # through the boot job, check it, shut it down and remove the account; then
-# remove the kit and the scratch data directories.  Changes the system while
+# remove the kit and the scratch data directories.  CONFIGURE_TTY=1 runs
+# configure interactively in a terminal session (tools/configure_tty.py).  Changes the system while
 # it runs (PCSI database, SYS$COMMON:[VMSMARIADB], VMSMARIADB$ROOT, the
 # temporary account); run kit.sh first.  Ask first.
 # Output: out/install-<node>.txt.
@@ -56,7 +57,19 @@ svc=0
 if [ "${SVC:-1}" = 1 ]; then
     svc=1
     up=0
-    if has SVC_CONFIGURE 'VMSMARIADB\$CONFIGURE: wrote'; then
+    if [ "${CONFIGURE_TTY:-0}" = 1 ]; then
+        # configure as an administrator runs it: in a terminal, answering prompts
+        configured() {
+            local out
+            out=$(TTY_ROOTPW="Svc'Chk\"pw%1" python3 "$top/tools/configure_tty.py" "$node" \
+                "${WORKDIR%]}.SVCTEST.DATA]" 3309 MDBSVCT "[361,1]" 2>&1 || true)
+            printf '%s\n' "$out" >> "$log"
+            grep -q 'CONFIGURE_TTY: PASS' <<< "$out"
+        }
+    else
+        configured() { has SVC_CONFIGURE 'VMSMARIADB\$CONFIGURE: wrote'; }
+    fi
+    if configured; then
         phase SVC_START > /dev/null
         for _ in $(seq 1 30); do
             has SVC_STATUS INSTALLCHECK_SVC_UP 120 && { up=1; break; }
@@ -87,6 +100,8 @@ if [ $svc = 1 ]; then
         { echo "installcheck: root without a password was not refused" >&2; ok=0; }
     grep -aq "SELECT command denied to user 'vmsmariadb_shutdown'" "$log" ||
         { echo "installcheck: the shutdown account could read mysql.user" >&2; ok=0; }
+    [ "${CONFIGURE_TTY:-0}" = 1 ] && { grep -aq 'CONFIGURE_TTY: PASS' "$log" ||
+        { echo "installcheck: interactive configure did not pass" >&2; ok=0; }; }
     grep -aq 'MARIADBD_3309 is already running' "$log" || { echo "installcheck: second START not refused" >&2; ok=0; }
     grep -aq 'account after cleanup: \[0\]' "$log" && grep -aq 'svctest after cleanup: \[\]' "$log" ||
         { echo "installcheck: service cleanup incomplete" >&2; ok=0; }

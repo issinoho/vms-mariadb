@@ -406,7 +406,8 @@ If taken up: start with a probe build of Connector/C with VSI C on IA64, then (a
 ## D15. Running the server as a service: account, boot start, clean shutdown
 
 **Status:** direction approved by the user (2026-10-05); plan in `docs/PLAN_SERVICE.md`.
-Extends D13 (the kit's `VMSMARIADB$SERVER.COM` starts the server under the invoking user).
+Implemented and released in `v11.4.13-vms2` (2026-10-07); the departures from the plan
+(no BOOT procedure, accounts set by a second bootstrap) are listed there. Extends D13 (the kit's `VMSMARIADB$SERVER.COM` starts the server under the invoking user).
 
 - **A dedicated account**, `MARIADB` `[360,1]` (user's choice), owning the data and temporary
   directories; batch access only (no interactive, network, local, dialup or remote logins),

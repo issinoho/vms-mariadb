@@ -25,7 +25,7 @@ Requirements
 Installing
 ----------
 
-    $ PRODUCT INSTALL VMSMARIADB /SOURCE=dev:[dir]
+    $ PRODUCT INSTALL VMSMARIADB /PRODUCER=@PRODUCER@ /SOURCE=dev:[dir]
 
 then, as the post-installation text says:
 
@@ -37,7 +37,8 @@ then, as the post-installation text says:
 
 PRODUCT REMOVE VMSMARIADB removes the product and VMSMARIADB$ROOT; it does not
 touch data directories, the service account or the site file
-SYS$MANAGER:VMSMARIADB$CONFIG.COM.
+SYS$MANAGER:VMSMARIADB$CONFIG.COM.  Stop the server before installing a newer
+kit or removing this one: it has the kit's images open.
 
 Contents
 --------
@@ -85,7 +86,8 @@ Running a server
 - START runs the server as a detached process MARIADBD_<port> (default port
   3306) under the starting user's UAF quotas.  Output goes to
   <datadir>VMSMARIADB$SERVER.LOG, the error log to <datadir>mariadbd.err.
-  The account owns the data files: use a dedicated account for a real server.
+  The account owns the data files: for a real server use a dedicated account,
+  as "Running as a service" below sets up.
 - Options: if <datadir>MY.CNF exists it is the server's only option file;
   otherwise the server runs with --no-defaults.  START's fourth parameter
   passes one more option, e.g. "--bind-address=127.0.0.1".
@@ -119,7 +121,9 @@ shows the AUTHORIZE commands and asks before doing anything.  Then it:
   and must not be RESTRICTED (that runs SYLOGIN.COM captive, and batch
   logins fail if it calls other procedures);
 - creates the data directory with the system tables and sets root's
-  password, or keeps an existing data directory (and its passwords);
+  password, or keeps an existing data directory (and its passwords), which
+  must not be in use: stop its server first (configure refuses while
+  <datadir>mariadbd.pid exists);
 - creates vmsmariadb_shutdown@localhost and @127.0.0.1 with only the SHUTDOWN
   privilege and a random password, kept in <datadir>VMSMARIADB$SHUTDOWN.CNF
   (owner the account, (S:R,O:RW,G,W));
@@ -150,6 +154,22 @@ not wait.
 Every directory above the data directory must give the account execute
 access (WORLD E, or an ACL entry); configure warns when one does not.
 
+To stop and start the service by hand (as SYSTEM):
+
+    $ @SYS$STARTUP:VMSMARIADB$SHUTDOWN.COM
+    $ @SYS$STARTUP:VMSMARIADB$STARTUP.COM START
+
+and to see it:
+
+    $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$SERVER STATUS 3306 -
+          "--defaults-file=/DKA100/MARIADB/DATA/VMSMARIADB$SHUTDOWN.CNF"
+
+To upgrade the kit: stop the service, PRODUCT INSTALL the new kit, start it
+again; the account, data and site file stay.  To remove the service: stop
+it, take the two lines out of SYSTARTUP_VMS.COM and SYSHUTDWN.COM, delete
+SYS$MANAGER:VMSMARIADB$CONFIG.COM, and remove the account (UAF> REMOVE
+MARIADB) once its data directory is no longer wanted or has a new owner.
+
 Limitations of this preview
 ---------------------------
 
@@ -166,8 +186,10 @@ Limitations of this preview
 - No log rotation: mariadbd.err keeps growing.
 - Tested: system-table creation, a client suite over TCP and TLS, all six
   engines, 1,000,000-row (150 MB) Aria and MyISAM loads with five clean
-  stop/start cycles (row counts, checksums and CHECK TABLE identical), and
-  remote clients from Linux.
+  stop/start cycles (row counts, checksums and CHECK TABLE identical),
+  remote clients from Linux, and the service: configure, the boot start
+  (the server ran as the account, with its quotas and only TMPMBX and
+  NETMBX), passwords, and a clean stop through the shutdown account.
 
 Licence and source
 ------------------
