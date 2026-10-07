@@ -1,8 +1,9 @@
 # Plan: MariaDB as a VMS service (boot start, dedicated account, clean shutdown)
 
-Status: approved direction (2026-10-05, D15); step 1 (probe) done 2026-10-06; step 2 resumed
-2026-10-06 at the user's request: procedures written, the bootstrap route probed; the install
-check's service phase (it creates a temporary account) waits for the user's go-ahead.
+Status: approved direction (2026-10-05, D15); step 1 (probe) done 2026-10-06; step 2 done
+2026-10-07: `tools/installcheck.sh x86` PASS with the service phase (kit V11.4-13E2; the server
+ran as the test account with its UAF quotas and only TMPMBX,NETMBX, and stopped cleanly through
+the shutdown account). Next: step 3 (release), when the user asks.
 
 ## Goal
 
