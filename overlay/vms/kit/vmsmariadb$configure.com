@@ -256,6 +256,9 @@ $     set terminal/echo
 $     if pw .eqs. "" .or. pw .nes. pw2
 $     then
 $       say "    Empty, or the two differ; again."
+$! (VMS writes the line feed before a line, so without this the READ prompt
+$! would start on this line and overwrite the message)
+$       say ""
 $       goto pw_again
 $     endif
 $     pw2 = ""

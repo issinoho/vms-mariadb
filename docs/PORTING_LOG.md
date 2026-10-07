@@ -389,3 +389,15 @@ then `kit: client build failed` with no further detail and no images on the node
 
 Not checked on a Mac (none here). Still GNU/bash-4 assumptions, which the user's run got past:
 `mapfile` (host_configure.sh, build.sh: bash 4+), `sha256sum` (fetch.sh, push.sh).
+
+## Interactive configure in a terminal (2026-10-07)
+
+`CONFIGURE_TTY=1 tools/installcheck.sh x86` (kit V11.4-13E2 as released; configure driven over
+an ssh terminal by `tools/configure_tty.py`): **INSTALLCHECK: PASS**, CONFIGURE_TTY: PASS. All
+prompts answered, the next free UIC offered (`[360,1]`), a mismatched confirmation asked again,
+the default taken at "Go ahead", the password never echoed. Driving DCL: lines must end with
+CR (LF is Ctrl/J, delete word); the site prompt was `X86VMS::`, so the driver sets its own.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| S | on a terminal, "Empty, or the two differ; again." is overwritten by the next password prompt (transcript: `again.^M^[>Password ...`) | VMS terminal output puts the line feed before each line, and `READ/PROMPT` writes its prompt without one, so it starts at column 0 of the message's line | a blank line after the message (in the next kit; not yet run on the node) |
