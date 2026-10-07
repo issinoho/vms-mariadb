@@ -17,6 +17,14 @@ read -r _ _ _ _ _ WORKDIR _ < <(awk -v n="$node" '$1==n' "$top/tools/nodes.conf"
 "$top/tools/vms.sh" "$node" put "$top/tools/vms_installcheck.com" >/dev/null
 mkdir -p "$top/out"
 log=$top/out/install-$node.txt; : > "$log"
+# has <phase> <pattern> [timeout]: run a phase (output to the log) and test
+# its output.  Not "phase | grep -q": grep stops at the first match, tee then
+# dies of SIGPIPE, and with pipefail the test fails although the text was there.
+has() {
+    local out
+    out=$(phase "$1" "${3:-1800}" || true)
+    grep -q -- "$2" <<< "$out"
+}
 phase() {
     local job=$top/cache/installcheck-$node-${1// /_}.com
     printf '$ set noon\n$ set default %s\n$ @%sVMS_INSTALLCHECK.COM %s %s\n' \
@@ -26,7 +34,7 @@ phase() {
 phase INSTALL > /dev/null
 up=0
 for _ in $(seq 1 30); do
-    phase STATUS 120 | grep -q INSTALLCHECK_UP && { up=1; break; }
+    has STATUS INSTALLCHECK_UP 120 && { up=1; break; }
     sleep 10
 done
 echo "server up: $up" | tee -a "$log"
@@ -35,7 +43,7 @@ echo "server up: $up" | tee -a "$log"
 # so wait for the process itself; never remove the kit under a running server.
 gone() {  # gone <port>
     for _ in $(seq 1 60); do
-        phase "PROCESS $1" 120 | grep -q INSTALLCHECK_GONE && return 0
+        has "PROCESS $1" INSTALLCHECK_GONE 120 && return 0
         sleep 10
     done
     echo "installcheck: MARIADBD_$1 still running; stopping here (kit left installed)" | tee -a "$log" >&2
@@ -48,10 +56,10 @@ svc=0
 if [ "${SVC:-1}" = 1 ]; then
     svc=1
     up=0
-    if phase SVC_CONFIGURE | grep -q 'VMSMARIADB\$CONFIGURE: wrote'; then
+    if has SVC_CONFIGURE 'VMSMARIADB\$CONFIGURE: wrote'; then
         phase SVC_START > /dev/null
         for _ in $(seq 1 30); do
-            phase SVC_STATUS 120 | grep -q INSTALLCHECK_SVC_UP && { up=1; break; }
+            has SVC_STATUS INSTALLCHECK_SVC_UP 120 && { up=1; break; }
             sleep 10
         done
         echo "service up: $up" | tee -a "$log"

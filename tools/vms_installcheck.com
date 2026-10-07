@@ -232,14 +232,16 @@ $! (no F$SEARCH loop: a repeated F$SEARCH continues its old search and
 $! returns files already deleted)
 $ top = f$environment("DEFAULT") - "]" + "." + p1 + "]"
 $ set message/nofacility/noseverity/noidentification/notext
+$! The service's files give SYSTEM no delete access (we delete by SYSPRV).
+$ set security/protection=(s:rwed,o:rwed) 'f$string(top - "]" + "...]*.*;*")'
 $ delete/nolog 'f$string(top - "]" + "...]*.*;*")'/exclude=*.DIR
 $ n = 0
 $dt_loop:
-$ set security/protection=(o:rwed) 'f$string(top - "]" + "...]*.DIR;*")'
+$ set security/protection=(s:rwed,o:rwed) 'f$string(top - "]" + "...]*.DIR;*")'
 $ delete/nolog 'f$string(top - "]" + "...]*.DIR;*")'
 $ n = n + 1
 $ if n .lt. 6 then goto dt_loop
-$ set security/protection=(o:rwed) 'p1'.DIR;*
+$ set security/protection=(s:rwed,o:rwed) 'p1'.DIR;*
 $ delete/nolog 'p1'.DIR;*
 $ set message/facility/severity/identification/text
 $ exit 1

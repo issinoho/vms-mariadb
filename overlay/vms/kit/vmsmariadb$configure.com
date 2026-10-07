@@ -395,9 +395,28 @@ $   goto done
 $ endif
 $!
 $! --- give the data to the account ---
-$ set security/owner='uic'/protection=(S:RWED,O:RWED,G,W) -
-    'datadir_file','tmpdir_file','f$string(datadir - "]" + "...]*.*;*")','f$string(tmpdir - "]" + "...]*.*;*")'
+$! (SET SECURITY takes one file specification: no comma lists)
+$ owned = 1
+$ i = 0
+$own_loop:
+$ data_files = datadir - "]" + "...]*.*;*"
+$ tmp_files = tmpdir - "]" + "...]*.*;*"
+$ spec = f$element(i, "|", datadir_file + "|" + tmpdir_file + "|" + data_files + "|" + tmp_files)
+$ if spec .eqs. "|" then goto own_done
+$ i = i + 1
+$ if i .ge. 3 .and. f$search(spec) .eqs. "" then goto own_loop
+$ set security/owner='uic'/protection=(S:RWED,O:RWED,G,W) 'spec'
+$ if .not. $status then owned = 0
+$ goto own_loop
+$own_done:
 $ set security/protection=(S:R,O:RW,G,W) 'cnf'
+$ if .not. $status then owned = 0
+$ if .not. owned
+$ then
+$   say "VMSMARIADB$CONFIGURE: could not give all of ''datadir' to ''account'"
+$   status = 44
+$   goto done
+$ endif
 $ say "VMSMARIADB$CONFIGURE: ''datadir' belongs to ''account'"
 $!
 $! --- the site file ---

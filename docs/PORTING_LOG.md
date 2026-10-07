@@ -364,3 +364,14 @@ The service part did not run: the SVC_CONFIGURE phase came back at once with no 
 |---|---|---|---|
 | T | a phase returned empty output within a minute; the check took it as "configure failed" | the node had the phase's `.com` (06:59:24) but no `/OUTPUT` log: the ssh session never started, and `vms.sh` printed nothing and returned 0 | `vms.sh`: no log means no session, so retry once after 15 s; a log without the end marker (timeout, cut off) now returns 1 with a message |
 | S | `[.KITDATA]` and `[.KITDATA_TMP]` left behind (empty) after REMOVE, in both runs | `deltree` is a CALLed subroutine, which starts with `ON ERROR THEN EXIT`: the first error (deleting a directory not yet empty) left it before the top `.DIR` was deleted | `SET NOON` in it, and in every subroutine of the kit procedures (e.g. `run_bootstrap` would have exited before typing a failed bootstrap's log) |
+
+## PLAN_SERVICE step 2: third install check (2026-10-07)
+
+Configure ran end to end (account MDBSVCT added, data directory, shutdown option file, site
+file), but the check reported "configure failed" and went straight to cleanup.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| T | "service up: 0 (configure failed)" although configure wrote the site file | `phase SVC_CONFIGURE \| grep -q ...`: grep stops at the first match, `tee` then dies of SIGPIPE, and with `pipefail` the `if` is false (the STATUS loops had the same pattern and passed by timing) | `has <phase> <pattern>`: capture the output, then grep it |
+| S | `%DCL-W-NOLIST, list of parameter values not allowed` at "give the data to the account", yet configure printed "belongs to MDBSVCT" | `SET SECURITY` takes one file specification; the files were owned by `[361,1]` only because they inherited the owner of the login directory configure had just created (an adopted data directory would have kept its owner) | one `SET SECURITY` per specification, status checked |
+| T | `[.SVCTEST]` left after cleanup | the service's files give the system category no delete access, and the check deletes through SYSPRV | `deltree` sets `(S:RWED,O:RWED)` first |
