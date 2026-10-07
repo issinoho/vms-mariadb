@@ -247,6 +247,10 @@ $ else
 $   if interactive
 $   then
 $pw_again:
+$! After SET TERMINAL, READ's prompt starts at column 0 of the current line,
+$! overwriting the last message (a warning, or the mismatch below):
+$! probes/service/prompt_lf.com.  A blank line first keeps it.
+$     say ""
 $     set terminal/noecho
 $     read/end_of_file=pw_eof/prompt="Password for the MariaDB root accounts: " sys$command pw
 $     say ""
@@ -256,9 +260,6 @@ $     set terminal/echo
 $     if pw .eqs. "" .or. pw .nes. pw2
 $     then
 $       say "    Empty, or the two differ; again."
-$! (VMS writes the line feed before a line, so without this the READ prompt
-$! would start on this line and overwrite the message)
-$       say ""
 $       goto pw_again
 $     endif
 $     pw2 = ""

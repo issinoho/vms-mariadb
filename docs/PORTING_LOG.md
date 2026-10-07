@@ -400,4 +400,4 @@ CR (LF is Ctrl/J, delete word); the site prompt was `X86VMS::`, so the driver se
 
 | Code | Error | Root cause | Fix |
 |---|---|---|---|
-| S | on a terminal, "Empty, or the two differ; again." is overwritten by the next password prompt (transcript: `again.^M^[>Password ...`) | VMS terminal output puts the line feed before each line, and `READ/PROMPT` writes its prompt without one, so it starts at column 0 of the message's line | a blank line after the message (in the next kit; not yet run on the node) |
+| S | on a terminal, "Empty, or the two differ; again." is overwritten by the next password prompt (transcript: `again.^M^[>Password ...`) | `SET TERMINAL/NOECHO` between the message and the READ: after it, READ writes its prompt at column 0 of the current line (without SET TERMINAL, a prompt after a message starts on a new line). `probes/service/prompt_lf.com` over a terminal: `SECRET1: oecho prompt next` on screen; with a blank line first, both intact. Any warning just before the first password prompt would be lost the same way | a blank line before every password prompt (`pw_again`); in the next kit, not yet run through configure on the node |

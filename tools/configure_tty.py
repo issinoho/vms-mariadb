@@ -64,8 +64,12 @@ try:
             c.read_nonblocking(4096, timeout=5)
         except pexpect.TIMEOUT:
             break
-    c.sendline('set prompt="TTY$ "')
-    step(r"TTY\$ ", "set default " + workdir)
+    # A slow login can swallow the first command: retry until the prompt shows.
+    for _ in range(4):
+        c.sendline('set prompt="TTY$ "')
+        if c.expect([r"TTY\$ ", pexpect.TIMEOUT], timeout=20) == 0:
+            break
+    c.sendline("set default " + workdir)
     step(r"TTY\$ ", "set process/privilege=(SYSPRV,CMKRNL,WORLD)")
     step(r"TTY\$ ", f"define/process VMSMARIADB$CONFIG {workdir}SVCTEST_CONFIG.COM")
     step(r"TTY\$ ", f'write sys$output "TTY account=", f$identifier("{account}","NAME_TO_NUMBER")')
