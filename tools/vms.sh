@@ -63,15 +63,32 @@ dcl_logged() {
     done
     # The log is closed only when the process exits, after the DONE marker:
     # fetch until it holds the end line written just before the marker.
+    local got_log=0
     for _ in 1 2 3 4 5 6 7 8 9 10; do
-        sftp_batch "cd $SFTPDIR" "get $tag.LOG $out" 2>/dev/null || true
+        sftp_batch "cd $SFTPDIR" "get $tag.LOG $out" 2>/dev/null && got_log=1
         grep -aq '^VMSRUN-END' "$out" 2>/dev/null && break
         sleep 3
     done
     kill "$pid" 2>/dev/null || true; wait "$pid" 2>/dev/null || true
     sftp_batch "cd $SFTPDIR" "-rm $tag.com" "-rm $tag.LOG" "-rm $tag.DONE" || true
+    local rc=0
+    if [ $got_log = 0 ]; then
+        # /OUTPUT creates the log as the procedure starts: with no log, the ssh
+        # session never ran it (once it simply failed to connect), so nothing
+        # happened on the node and one retry is safe.
+        rm -f "$com" "$out" "$done_f"
+        if [ -z "${VMS_RETRIED:-}" ]; then
+            echo "vms.sh: no session started on $node; retrying once" >&2
+            sleep 15
+            VMS_RETRIED=1 dcl_logged "$@"; return
+        fi
+        echo "vms.sh: no session started on $node" >&2
+        return 1
+    fi
+    grep -aq '^VMSRUN-END' "$out" || { echo "vms.sh: the procedure did not finish (output incomplete)" >&2; rc=1; }
     tr -d '\r' < "$out" | grep -av '^VMSRUN-END' || true
     rm -f "$com" "$out" "$done_f"
+    return $rc
 }
 
 case $op in

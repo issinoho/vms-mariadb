@@ -78,6 +78,7 @@ $ waited = waited + 2
 $ goto wait_loop
 $!
 $forget_config: subroutine
+$ set noon
 $ delete/symbol/global vmsmariadb_datadir
 $ delete/symbol/global vmsmariadb_port
 $ delete/symbol/global vmsmariadb_account
@@ -91,6 +92,7 @@ $ endsubroutine
 $!
 $! The PID of the process named p1, or "", in the global found_pid.
 $find_process: subroutine
+$ set noon
 $ found_pid == ""
 $ ctx = ""
 $ x = f$context("PROCESS", ctx, "PRCNAM", p1, "EQL")
@@ -103,6 +105,7 @@ $!
 $! dev:[a.b.c] -> /dev/a/b/c (physical device, concealed roots expanded), in
 $! the global symbol unix_path
 $to_unix: subroutine
+$ set noon
 $ spec = p1
 $ u = "/" + (f$parse(spec,,,"DEVICE","NO_CONCEAL") - ":")
 $ d = f$parse(spec,,,"DIRECTORY","NO_CONCEAL") - "][" - "[" - "]" - "<" - ">"

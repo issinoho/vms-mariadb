@@ -57,6 +57,7 @@ $ exit 44
 $!
 $! --- datadir checks shared by INSTALL_DB, START and RUN ---
 $get_datadir: subroutine
+$ set noon
 $ d = f$edit(p1, "UPCASE,TRIM")
 $ if d .eqs. "" .or. f$locate("]", d) .eq. f$length(d)
 $ then
@@ -219,6 +220,7 @@ $! p1, in the globals admin_defaults and admin_extra.  An option file
 $! replaces both --no-defaults and --user=root (the command line would win
 $! over the file's user); any other option follows --user=root.
 $admin_options: subroutine
+$ set noon
 $ admin_defaults == "--no-defaults"
 $ admin_extra == """--user=root"""
 $ if p1 .nes. "" .and. f$locate("--defaults-", p1) .eq. 0
@@ -234,6 +236,7 @@ $!
 $! The PID of the process named p1, if this process can see it, else "",
 $! in the global found_pid.
 $find_process: subroutine
+$ set noon
 $ found_pid == ""
 $ ctx = ""
 $ x = f$context("PROCESS", ctx, "PRCNAM", p1, "EQL")
@@ -246,6 +249,7 @@ $!
 $! mariadbd --bootstrap on datadir (udata, utmp) with the SQL file p1 as
 $! its input; tmpdir BOOTSTRAP.LOG is typed and kept if it fails.
 $run_bootstrap: subroutine
+$ set noon
 $ log = tmpdir + "BOOTSTRAP.LOG"
 $ define/user sys$input 'p1'
 $ define/user sys$output 'log'
@@ -268,6 +272,7 @@ $!
 $! dev:[a.b.c] -> /dev/a/b/c (physical device, concealed roots expanded), in
 $! the global symbol unix_path
 $to_unix: subroutine
+$ set noon
 $ spec = p1
 $ u = "/" + (f$parse(spec,,,"DEVICE","NO_CONCEAL") - ":")
 $ d = f$parse(spec,,,"DIRECTORY","NO_CONCEAL") - "][" - "[" - "]" - "<" - ">"

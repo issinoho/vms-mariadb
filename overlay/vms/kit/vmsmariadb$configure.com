@@ -447,6 +447,7 @@ $!
 $! p1 = prompt, p2 = default; the reply (or the default) in the global
 $! answer.  Without a terminal (NOCONFIRM), the default.
 $ask: subroutine
+$ set noon
 $ answer == p2
 $ if .not. interactive then exit 1
 $ read/end_of_file=ask_eof/prompt="''p1' [''p2']: " sys$command reply
@@ -459,6 +460,7 @@ $!
 $! The last dot-separated element of p1 and the number of elements, in
 $! the globals last_element and element_count
 $last_element: subroutine
+$ set noon
 $ i = 0
 $le_loop:
 $ e = f$element(i, ".", p1)
@@ -473,6 +475,7 @@ $ endsubroutine
 $!
 $! Is p1 a non-empty string of octal digits?  In the global is_octal.
 $is_octal: subroutine
+$ set noon
 $ is_octal == p1 .nes. ""
 $ i = 0
 $io_loop:
@@ -484,6 +487,7 @@ $ endsubroutine
 $!
 $! The integer p1 in octal, without leading zeros, in the global octal_string
 $octal: subroutine
+$ set noon
 $ s = f$fao("!OL", f$integer(p1))
 $oc_loop:
 $ if f$length(s) .gt. 1 .and. f$extract(0, 1, s) .eqs. "0"
@@ -498,6 +502,7 @@ $!
 $! Does file p1's protection give WORLD access p2 (R, W, E or D)?  In the
 $! global world_has.
 $world_has: subroutine
+$ set noon
 $ pro = f$file_attributes(p1, "PRO")
 $ w = f$extract(f$locate("WORLD=", pro) + 6, 4, pro)
 $ w = f$element(0, ",", w)
@@ -507,6 +512,7 @@ $ endsubroutine
 $!
 $! pw (the caller's symbol) in hex, in the global hex_string
 $to_hex: subroutine
+$ set noon
 $ h = ""
 $ i = 0
 $th_loop:
@@ -521,6 +527,7 @@ $ endsubroutine
 $!
 $! The PID of the process named p1, or "", in the global found_pid.
 $find_process: subroutine
+$ set noon
 $ found_pid == ""
 $ ctx = ""
 $ x = f$context("PROCESS", ctx, "PRCNAM", p1, "EQL")
@@ -533,6 +540,7 @@ $!
 $! dev:[a.b.c] -> /dev/a/b/c (physical device, concealed roots expanded), in
 $! the global symbol unix_path
 $to_unix: subroutine
+$ set noon
 $ spec = p1
 $ u = "/" + (f$parse(spec,,,"DEVICE","NO_CONCEAL") - ":")
 $ d = f$parse(spec,,,"DIRECTORY","NO_CONCEAL") - "][" - "[" - "]" - "<" - ">"

@@ -124,6 +124,7 @@ $ if status then say "VMSMARIADB$STARTUP: starting MARIADBD_''port' as ''account
 $ exit status
 $!
 $forget_config: subroutine
+$ set noon
 $ delete/symbol/global vmsmariadb_datadir
 $ delete/symbol/global vmsmariadb_port
 $ delete/symbol/global vmsmariadb_account

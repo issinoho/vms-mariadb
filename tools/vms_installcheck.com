@@ -206,6 +206,7 @@ $ exit
 $!
 $! dev:[a.b.c] -> /dev/a/b/c, in the global symbol unix_path
 $to_unix: subroutine
+$ set noon
 $ spec = p1
 $ u = "/" + (f$parse(spec,,,"DEVICE","NO_CONCEAL") - ":")
 $ d = f$parse(spec,,,"DIRECTORY","NO_CONCEAL") - "][" - "[" - "]" - "<" - ">"
@@ -224,6 +225,9 @@ $!
 $! Delete a directory tree of ours, [.<p1>] under the current default: files,
 $! then directories deepest first, then <p1>.DIR.
 $deltree: subroutine
+$! A subroutine starts with ON ERROR THEN EXIT: without SET NOON the first
+$! error (a directory not yet empty) left it before KITDATA.DIR was deleted.
+$ set noon
 $! (no F$SEARCH loop: a repeated F$SEARCH continues its old search and
 $! returns files already deleted)
 $ top = f$environment("DEFAULT") - "]" + "." + p1 + "]"

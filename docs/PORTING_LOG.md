@@ -354,3 +354,13 @@ with a bad option `%X1035A012`, mariadb-import `%X1035A00A`, all severity 2; `--
 plain my_print_defaults stay `%X00000001`. `tools/clienttest.sh x86`: 15 passed, 0 failed.
 (Probe pitfalls: a CALLed subroutine starts with `ON ERROR THEN EXIT`, so it needs its own
 `SET NOON`; and `st = $STATUS` resets `$SEVERITY`, so take the severity from `st`.)
+
+## PLAN_SERVICE step 2: second install check (2026-10-07, kit V11.4-13E2 with patch 0026)
+
+The kit part passed and the 3308 server stopped cleanly (patch 0026 and the process wait).
+The service part did not run: the SVC_CONFIGURE phase came back at once with no output.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| T | a phase returned empty output within a minute; the check took it as "configure failed" | the node had the phase's `.com` (06:59:24) but no `/OUTPUT` log: the ssh session never started, and `vms.sh` printed nothing and returned 0 | `vms.sh`: no log means no session, so retry once after 15 s; a log without the end marker (timeout, cut off) now returns 1 with a message |
+| S | `[.KITDATA]` and `[.KITDATA_TMP]` left behind (empty) after REMOVE, in both runs | `deltree` is a CALLed subroutine, which starts with `ON ERROR THEN EXIT`: the first error (deleting a directory not yet empty) left it before the top `.DIR` was deleted | `SET NOON` in it, and in every subroutine of the kit procedures (e.g. `run_bootstrap` would have exited before typing a failed bootstrap's log) |
