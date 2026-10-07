@@ -34,9 +34,10 @@ batch=$top/cache/push-$name-$node.sftp
 {
     echo "cd $SFTPDIR"
     echo "-mkdir $remote"
-    # (grep finds nothing when no file changed: not an error)
-    { echo "$changed" | grep . || true; } | xargs -r -n1 dirname | sort -u |
-        awk -F/ '{p=""; for(i=1;i<=NF;i++){p=p (i>1?"/":"") $i; print p}}' |
+    # Every directory above each changed file (awk, not "xargs -r dirname":
+    # -r is a GNU option).  grep finds nothing when no file changed: not an error.
+    { echo "$changed" | grep . || true; } |
+        awk -F/ '{p=""; for(i=1;i<NF;i++){p=p (i>1?"/":"") $i; print p}}' |
         sort -u | sed "s|^|-mkdir $remote/|"
     { echo "$changed" | grep . || true; } | while read -r f; do echo "put $stage/$f $remote/$f"; done
 } > "$batch"

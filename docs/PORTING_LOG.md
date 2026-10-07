@@ -375,3 +375,17 @@ file), but the check reported "configure failed" and went straight to cleanup.
 | T | "service up: 0 (configure failed)" although configure wrote the site file | `phase SVC_CONFIGURE \| grep -q ...`: grep stops at the first match, `tee` then dies of SIGPIPE, and with `pipefail` the `if` is false (the STATUS loops had the same pattern and passed by timing) | `has <phase> <pattern>`: capture the output, then grep it |
 | S | `%DCL-W-NOLIST, list of parameter values not allowed` at "give the data to the account", yet configure printed "belongs to MDBSVCT" | `SET SECURITY` takes one file specification; the files were owned by `[361,1]` only because they inherited the owner of the login directory configure had just created (an adopted data directory would have kept its owner) | one `SET SECURITY` per specification, status checked |
 | T | `[.SVCTEST]` left after cleanup | the service's files give the system category no delete access, and the check deletes through SYSPRV | `deltree` sets `(S:RWED,O:RWED)` first |
+
+## Host tools on macOS (2026-10-07, a user's report)
+
+A user building on macOS (BSD userland) reported prepare.sh failing in the PCSI kit inputs,
+then `kit: client build failed` with no further detail and no images on the node.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| T | `sed: 1: "d}": extra characters at the end of d command` | prepare.sh inserted the kit's file list with GNU sed's `{r file` / `d}` across two `-e`s; BSD sed rejects it (removing the `d` leaves the `@FILES@` line in the PCSI description) | awk (`getline` from the file); output identical to the release build's (`cmp`), also with mawk and busybox awk |
+| T | (possible) push fails on macOS | push.sh used `xargs -r` (GNU) for the directories to create | the existing awk lists every parent directory itself; same list as before but for a harmless `.` |
+| T | `kit: client build failed`, nothing else | kit.sh sent build.sh's output to /dev/null and showed only the build log, which does not exist when push or ssh fails | build.sh's output kept in `out/kit-build-<node>-<config>.txt` and shown on failure |
+
+Not checked on a Mac (none here). Still GNU/bash-4 assumptions, which the user's run got past:
+`mapfile` (host_configure.sh, build.sh: bash 4+), `sha256sum` (fetch.sh, push.sh).

@@ -110,7 +110,9 @@ if [ -d "$stage/vmsgen/sql/share" ] && [ -d "$stage/vmsgen/scripts" ]; then
             -e "s/@KITVERSION@/$kitversion/g"
     }
     lc=$(echo "$KIT_PRODUCT" | tr A-Z a-z)
-    subst < "$kit/$lc.pcsi\$desc_template" | sed -e "/^@FILES@\$/{r $files" -e 'd}' \
+    # awk, not sed's "{r file" + "d}": BSD sed (macOS) rejects that form.
+    subst < "$kit/$lc.pcsi\$desc_template" |
+        awk -v files="$files" '/^@FILES@$/ { while ((getline l < files) > 0) print l; next } { print }' \
         > "$kit/PRODUCT-X86VMS.PCSI\$DESC"
     subst < "$kit/$lc.pcsi\$text_template" > "$kit/PRODUCT-X86VMS.PCSI\$TEXT"
     rm -f "$kit/$lc.pcsi\$desc_template" "$kit/$lc.pcsi\$text_template"

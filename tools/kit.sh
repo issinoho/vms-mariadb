@@ -17,8 +17,14 @@ read -r _ ARCH _ _ _ WORKDIR _ _ < <(awk -v n="$node" '$1==n' "$top/tools/nodes.
 mkdir -p "$top/out/kits"
 
 for cfg in client server; do
-    "$top/tools/build.sh" "$node" "$cfg" > /dev/null 2>&1 ||
-        { tail -20 "$top/out/build-$node-$cfg.log"; echo "kit: $cfg build failed" >&2; exit 1; }
+    # build.sh's own output says where it stopped (push, ssh, MMS); the build
+    # log exists only once the node has run the build.
+    if ! "$top/tools/build.sh" "$node" "$cfg" > "$top/out/kit-build-$node-$cfg.txt" 2>&1; then
+        tail -20 "$top/out/kit-build-$node-$cfg.txt"
+        [ -s "$top/out/build-$node-$cfg.log" ] && tail -20 "$top/out/build-$node-$cfg.log"
+        echo "kit: $cfg build failed (output in out/kit-build-$node-$cfg.txt)" >&2
+        exit 1
+    fi
 done
 
 job=$top/cache/kit-$node.com
