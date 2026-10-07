@@ -1,0 +1,106 @@
+Subject: clients: return main()'s status through exit() on OpenVMS
+
+mariadb-admin, mariadb-dump, mariadb-check, mariadb-import and
+my_print_defaults end main() with a return of their error code. Patch 0013
+maps exit(n) to an error-severity status for DCL, but the C RTL hands
+main()'s return value to DCL unchanged, so a failed run left $STATUS at
+%X00000001: a mariadb-admin shutdown refused for lack of a password read as
+success (PORTING_LOG, PLAN_SERVICE step 2). Under __VMS a small main() runs
+the program's own, renamed vms_main(), through exit(), which covers every
+return path (mariadb-import has five).
+
+--- a/client/mysqladmin.cc	2026-10-07 03:44:47.562081583 +0100
++++ b/client/mysqladmin.cc	2026-10-07 03:44:47.640023920 +0100
+@@ -322,6 +322,16 @@
+ }
+ 
+ 
++#ifdef __VMS
++/*
++  OpenVMS: the C RTL passes main()'s return value to DCL as it is (1 is
++  success), while exit() goes through my_vms_exit() (my_global.h), which
++  gives a non-zero code an error status.  Run main() through exit().
++*/
++static int vms_main(int argc, char **argv);
++int main(int argc, char **argv) { exit(vms_main(argc, argv)); }
++#define main vms_main
++#endif
+ int main(int argc,char *argv[])
+ {
+   int error= 0, temp_argc;
+--- a/client/mysqldump.cc	2026-10-07 03:44:47.578579891 +0100
++++ b/client/mysqldump.cc	2026-10-07 03:44:47.641093923 +0100
+@@ -7219,6 +7219,16 @@
+   fprintf(md_result_file, "%s", set_gtid_pos);
+ }
+ 
++#ifdef __VMS
++/*
++  OpenVMS: the C RTL passes main()'s return value to DCL as it is (1 is
++  success), while exit() goes through my_vms_exit() (my_global.h), which
++  gives a non-zero code an error status.  Run main() through exit().
++*/
++static int vms_main(int argc, char **argv);
++int main(int argc, char **argv) { exit(vms_main(argc, argv)); }
++#define main vms_main
++#endif
+ int main(int argc, char **argv)
+ {
+   char bin_log_name[FN_REFLEN];
+--- a/client/mysqlcheck.c	2026-10-07 03:44:47.593854232 +0100
++++ b/client/mysqlcheck.c	2026-10-07 03:44:47.641396935 +0100
+@@ -1178,6 +1178,16 @@
+ }
+ 
+ 
++#ifdef __VMS
++/*
++  OpenVMS: the C RTL passes main()'s return value to DCL as it is (1 is
++  success), while exit() goes through my_vms_exit() (my_global.h), which
++  gives a non-zero code an error status.  Run main() through exit().
++*/
++static int vms_main(int argc, char **argv);
++int main(int argc, char **argv) { exit(vms_main(argc, argv)); }
++#define main vms_main
++#endif
+ int main(int argc, char **argv)
+ {
+   int ret= EX_USAGE;
+--- a/client/mysqlimport.c	2026-10-07 03:44:47.607811735 +0100
++++ b/client/mysqlimport.c	2026-10-07 03:44:47.641583360 +0100
+@@ -654,6 +654,16 @@
+ }
+ 
+ 
++#ifdef __VMS
++/*
++  OpenVMS: the C RTL passes main()'s return value to DCL as it is (1 is
++  success), while exit() goes through my_vms_exit() (my_global.h), which
++  gives a non-zero code an error status.  Run main() through exit().
++*/
++static int vms_main(int argc, char **argv);
++int main(int argc, char **argv) { exit(vms_main(argc, argv)); }
++#define main vms_main
++#endif
+ int main(int argc, char **argv)
+ {
+   int error=0;
+--- a/extra/my_print_defaults.c	2026-10-07 03:44:47.622149072 +0100
++++ b/extra/my_print_defaults.c	2026-10-07 03:44:47.641695754 +0100
+@@ -121,6 +121,16 @@
+   return 0;
+ }
+ 
++#ifdef __VMS
++/*
++  OpenVMS: the C RTL passes main()'s return value to DCL as it is (1 is
++  success), while exit() goes through my_vms_exit() (my_global.h), which
++  gives a non-zero code an error status.  Run main() through exit().
++*/
++static int vms_main(int argc, char **argv);
++int main(int argc, char **argv) { exit(vms_main(argc, argv)); }
++#define main vms_main
++#endif
+ int main(int argc, char **argv)
+ {
+   int count, error, args_used;
