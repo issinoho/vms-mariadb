@@ -39,7 +39,7 @@ patches in `patches/`, adds our files from `overlay/`, configures with CMake on 
 | A | Connector/C and the clients | done: 15/15 client tests against MariaDB 11.8, TLS 1.3, interactive use |
 | B | `mariadbd` with Aria, MyISAM, MEMORY, CSV, MRG_MyISAM, SEQUENCE | server tests 12/12; 1,000,000-row (150 MB) loads and 5/5 stop/start cycles with identical checksums; remote clients from Linux over TLS; a 24-hour soak still to run |
 | C | InnoDB, durability-tested | not started |
-| D | PCSI kit, docs, upstream patches | preview kit ([v11.4.13-vms1](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms1)) builds and passes an install check |
+| D | PCSI kit, docs, upstream patches | preview kit ([v11.4.13-vms2](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms2)) builds and passes an install check, including the server as a service |
 
 | | x86-64 (OpenVMS E9.2-4, VSI C++ 10.1) |
 |---|---|
@@ -48,19 +48,20 @@ patches in `patches/`, adds our files from `overlay/`, configures with CMake on 
 | Server tests: engines, joins, CHECK/REPAIR/OPTIMIZE, restart | 12/12 |
 | Load and restart: 1M rows into Aria and MyISAM, 5 clean stop/start cycles | pass |
 | Kit install, INSTALL_DB, START, clients from the kit, STOP, remove | clean |
-| PCSI kit | `ISSINOHO-X86VMS-VMSMARIADB-V1104-13E1-1.PCSI` |
+| Service: configure (account, data, passwords), boot start as the account, clean shutdown | pass |
+| PCSI kit | `ISSINOHO-X86VMS-VMSMARIADB-V1104-13E2-1.PCSI` |
 
 IA64 is not a target: its C++ compiler (VSI C++ 7.4) predates C++11, which MariaDB requires.
 
 ## Installing the kit
 
 The kit needs OpenVMS x86-64 and VSI's **SSL3** kit (OpenSSL 3.0). Download it from the
-[release](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms1) and check it
+[release](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms2) and check it
 against the release's `SHA256SUMS`. A kit downloaded through a non-VMS system loses its
 record format, so restore that first, then install it:
 
 ```
-$ SET FILE/ATTRIBUTE=(RFM:FIX,LRL:8192,MRS:8192,RAT:NONE) ISSINOHO-X86VMS-VMSMARIADB-V1104-13E1-1.PCSI
+$ SET FILE/ATTRIBUTE=(RFM:FIX,LRL:8192,MRS:8192,RAT:NONE) ISSINOHO-X86VMS-VMSMARIADB-V1104-13E2-1.PCSI
 $ PRODUCT INSTALL VMSMARIADB /PRODUCER=ISSINOHO /SOURCE=dev:[dir]
 $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$SETUP.COM
 ```
@@ -75,15 +76,19 @@ VMSMARIADB$ROOT:[SHARE...]               error messages (28 languages), characte
 VMSMARIADB$ROOT:[SCRIPTS]                the SQL that creates the system tables
 VMSMARIADB$ROOT:[000000]VMSMARIADB$SETUP.COM    (defines the client commands)
 VMSMARIADB$ROOT:[000000]VMSMARIADB$SERVER.COM   (INSTALL_DB, START, STOP, STATUS)
+VMSMARIADB$ROOT:[000000]VMSMARIADB$CONFIGURE.COM  (sets the server up as a service)
 VMSMARIADB$ROOT:[DOC]README.VMS, COPYING., CREDITS.
-SYS$STARTUP:VMSMARIADB$STARTUP.COM
+SYS$STARTUP:VMSMARIADB$STARTUP.COM, VMSMARIADB$SHUTDOWN.COM
 ```
 
 It defines the rooted logical name `VMSMARIADB$ROOT` and prints the post-installation tasks.
-To define it at every boot, add `$ @SYS$STARTUP:VMSMARIADB$STARTUP.COM` to
-`SYS$MANAGER:SYSTARTUP_VMS.COM` (it does not start a server). `PRODUCT REMOVE VMSMARIADB`
-removes the product and deassigns `VMSMARIADB$ROOT`; it does not touch data directories.
-The version `V11.4-13E1` is MariaDB 11.4.13 with our patch level as the ECO.
+For a server started at boot, run `VMSMARIADB$CONFIGURE.COM` once ([Running as a
+service](#running-as-a-service)); otherwise, to define `VMSMARIADB$ROOT` at every boot, add
+`$ @SYS$STARTUP:VMSMARIADB$STARTUP.COM` to `SYS$MANAGER:SYSTARTUP_VMS.COM`.
+`PRODUCT REMOVE VMSMARIADB` removes the product and deassigns `VMSMARIADB$ROOT`; it does not
+touch data directories, the service account or the site file
+`SYS$MANAGER:VMSMARIADB$CONFIG.COM`. The version `V11.4-13E2` is MariaDB 11.4.13 with our
+patch level as the ECO.
 
 **Alongside VSI's MariaDB kit:** this kit uses `VMSMARIADB` names throughout, so both can be
 installed.
@@ -110,9 +115,49 @@ $ mariadb_server STOP 3306 "--password=secret"
   with `--no-defaults`. A fourth parameter passes one more option, such as
   `"--bind-address=127.0.0.1"`.
 - **STOP** asks the server to shut down (`mariadb-admin shutdown` as root); **STATUS** reports
-  on it. Stop the server this way, not with `STOP/ID`.
+  on it. Both take an option file (`"--defaults-file=..."`) instead of root's password. Stop
+  the server this way, not with `STOP/ID`.
 - **Quotas:** a server with the default buffers uses about 500 MB of virtual memory, so the
-  account needs a matching `PGFLQUOTA`; give it `FILLM` 150 or more.
+  account needs a matching `PGFLQUOTA`; give it `FILLM` 150 or more (1000 for many
+  tables). START sizes `table_open_cache` from the process's `FILLM`, `(FILLM - 50) / 4`,
+  unless `MY.CNF` sets it: past `FILLM`, tables fail to open.
+
+## Running as a service
+
+`VMSMARIADB$CONFIGURE.COM`, run once by SYSTEM, sets the server up to run under its own
+account, start at boot and stop cleanly at shutdown:
+
+```
+$ @VMSMARIADB$ROOT:[000000]VMSMARIADB$CONFIGURE
+```
+
+It asks for the data directory (ODS-5, two levels deep, e.g. `DKA100:[MARIADB.DATA]`; the
+parent is the account's login directory), the port, the account (`MARIADB`, UIC `[360,1]` or
+the next free group) and the password for MariaDB's root accounts, shows the AUTHORIZE
+commands, and asks before changing anything. Then it:
+
+- adds the account: batch access only, `/FLAGS=(NODISUSER,DISMAIL,DISNEWMAIL)`, privileges
+  `TMPMBX` and `NETMBX`, `PGFLQUOTA` 8,000,000, `FILLM` 1000; an existing account is used as
+  it is (it must have BATCH access and NODISUSER, and must not be RESTRICTED);
+- creates the data directory and sets root's password, or keeps an existing data directory;
+- creates `vmsmariadb_shutdown`, with only the SHUTDOWN privilege and a random password kept
+  in `<datadir>VMSMARIADB$SHUTDOWN.CNF`, so no root password sits in a startup file;
+- gives the data directory to the account and writes `SYS$MANAGER:VMSMARIADB$CONFIG.COM`
+  (data directory, port, account, node, autostart), which upgrades leave alone.
+
+Then add to `SYS$MANAGER:SYSTARTUP_VMS.COM`, after TCP/IP and the batch queues have started,
+and to `SYS$MANAGER:SYSHUTDWN.COM`:
+
+```
+$ @SYS$STARTUP:VMSMARIADB$STARTUP.COM START
+$ @SYS$STARTUP:VMSMARIADB$SHUTDOWN.COM
+```
+
+`STARTUP START` submits a batch job as the account (`SUBMIT/USER`), so the server has the
+account's username, UAF quotas and privileges; it does nothing if autostart is off, the site
+file names another node, or `MARIADBD_<port>` already runs. `SHUTDOWN` stops the server
+through the shutdown account and waits for it to exit. Details in `README.VMS` and
+[docs/PLAN_SERVICE.md](docs/PLAN_SERVICE.md).
 
 ## Using the clients
 
@@ -138,8 +183,9 @@ means a Unix-domain socket, which VMS lacks. TLS works, through the SSL3 kit.
 - **Uncached reads are slow.** The C RTL issues an extra disk I/O for every `read()`, so a
   full scan of a MyISAM table with dynamic rows (`CHECKSUM TABLE`, `CHECK TABLE`) runs at a
   few hundred kilobytes per second. A block layer in mysys is planned.
-- The server sizes its table cache by `open_files_limit`, not the process's `FILLM`: with
-  many tables, raise `FILLM` or set `table_open_cache`.
+- One statement that uses more tables than `FILLM` allows fails (each open table holds up to
+  four channels): raise `FILLM`.
+- No rotation of `mariadbd.err`.
 - A 24-hour soak test has not been run yet.
 
 ## Patches
@@ -167,6 +213,7 @@ means a Unix-domain socket, which VMS lacks. TLS works, through the SSL3 kit.
 | 0023 | `my_lock.c`: `fcntl()` locks through the shared descriptor. |
 | 0024 | Aria: no directory descriptor. |
 | 0025 | `mysqld.cc`: a socket pair, not a pipe, wakes the listen loop (`poll()` reports a pipe readable early). |
+| 0026 | clients: `main()`'s status through `exit()`, so a failing mariadb-admin, -dump, -check, -import or my_print_defaults gives DCL an error status. |
 
 Each patch is guarded by `__VMS` and carries its reason; [docs/PORTING_LOG.md](docs/PORTING_LOG.md)
 records every failure and fix, and [docs/DECISIONS.md](docs/DECISIONS.md) every design
@@ -210,8 +257,7 @@ docs/              decisions, porting log, environment and probe results
 1. The 24-hour soak, closing Stage B.
 2. Faster file I/O: block reads and writes in the mysys file layer.
 3. InnoDB (Stage C), durability-tested.
-4. Option files and default paths under `VMSMARIADB$ROOT`; a dedicated server account and
-   boot-time start.
+4. Option files and default paths under `VMSMARIADB$ROOT`.
 5. The portable patches offered to MariaDB.
 
 The family of ports, each following its upstream releases:
@@ -234,7 +280,7 @@ The family of ports, each following its upstream releases:
 | GNU make — [vms-make](https://github.com/issinoho/vms-make) | [v4.4.1-vms1](https://github.com/issinoho/vms-make/releases/tag/v4.4.1-vms1) | built with make's own VMS port |
 | GNU diffutils — [vms-diffutils](https://github.com/issinoho/vms-diffutils) | [v3.12-vms1](https://github.com/issinoho/vms-diffutils/releases/tag/v3.12-vms1) | cmp, diff, diff3, sdiff |
 | GNU patch — [vms-patch](https://github.com/issinoho/vms-patch) | [v2.8-vms1](https://github.com/issinoho/vms-patch/releases/tag/v2.8-vms1) | applies diffs |
-| **MariaDB** (this port) — [vms-mariadb](https://github.com/issinoho/vms-mariadb) | [v11.4.13-vms1](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms1) | server and clients, x86-64; preview |
+| **MariaDB** (this port) — [vms-mariadb](https://github.com/issinoho/vms-mariadb) | [v11.4.13-vms2](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms2) | server and clients, x86-64; preview |
 
 ## Artwork
 
