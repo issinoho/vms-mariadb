@@ -31,14 +31,20 @@ run_build() {
     # spec (dev:[dir.INSTALL_X86_64.]), defined as PCRE2$ROOT for the build.
     printf '$ set noon\n$ @%s.%s.VMS]BUILD.COM %s "%s" "%s" "%s"\n' \
         "${WORKDIR%]}" "$remote" "$cfg" "$tgt" "$keep" "${PCRE2ROOT:-}" > "$job"
-    VMS_TIMEOUT=${VMS_BUILD_TIMEOUT:-28800} "$top/tools/vms.sh" "$node" run "$job" > "$out"
+    # Under set -e a failing vms.sh would end this script with nothing said:
+    # report it and carry on, so the log (if any) is still shown below.
+    VMS_TIMEOUT=${VMS_BUILD_TIMEOUT:-28800} "$top/tools/vms.sh" "$node" run "$job" > "$out" ||
+        echo "build: vms.sh run on $node ended with status $? ($tag)" >&2
 }
 
 purge=$top/cache/purge-$node.com
 printf '$ set noon\n$ purge/nolog %s.%s...]*.*\n' "${WORKDIR%]}" "$remote" > "$purge"
-"$top/tools/vms.sh" "$node" run "$purge" >/dev/null
+"$top/tools/vms.sh" "$node" run "$purge" >/dev/null ||
+    echo "build: purge on $node failed; building anyway" >&2
 
 logs=()
+# Nothing is printed until the node finishes, which can take hours: say so.
+echo "build: $cfg $target running on $node; its log is shown when it ends (live on the node: ${WORKDIR}VMSRUN_*.LOG)"
 if [ "$jobs" -gt 1 ] && [ "$target" = ALL ]; then
     targets=$top/staging/$name/vms/build/$cfg/TARGETS.TXT
     # Greedy split, biggest targets first, each to the lightest group.
