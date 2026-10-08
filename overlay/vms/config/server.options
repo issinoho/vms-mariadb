@@ -42,3 +42,7 @@
 -DPLUGIN_PROVIDER_SNAPPY=NO
 -DPLUGIN_TYPE_MYSQL_JSON=NO
 -DPLUGIN_DUCKDB=NO
+# cmake/dtrace.cmake turns DTrace on when the host has a dtrace program (macOS
+# does, in /usr/sbin); probes_mysql.h then wants probes_mysql_dtrace.h, which
+# nothing generates for VMS.  VMS has no DTrace.
+-DENABLE_DTRACE=OFF

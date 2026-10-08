@@ -13,3 +13,7 @@
 -DWITH_WSREP=OFF
 -DWITH_EMBEDDED_SERVER=OFF
 -DCMAKE_BUILD_TYPE=RelWithDebInfo
+# cmake/dtrace.cmake turns DTrace on when the host has a dtrace program (macOS
+# does, in /usr/sbin); probes_mysql.h then wants probes_mysql_dtrace.h, which
+# nothing generates for VMS.  VMS has no DTrace.
+-DENABLE_DTRACE=OFF
