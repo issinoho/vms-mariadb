@@ -172,8 +172,12 @@ jobs use the TRADITIONAL style.
 
 ```
 $ mariadb "-h" dbhost "-u" me "-p" mydb
-$ mariadb_dump "--host=dbhost" "--user=me" "-p" mydb > mydb.sql
+$ mariadb_dump "--host=dbhost" "--user=me" "-p" "--result-file=mydb.sql" mydb
 ```
+
+DCL has no `>` redirection and the clients do not do their own: `> mydb.sql` reaches the
+program as two more arguments (mariadb-dump: `Couldn't find table: ">"`). Write to a file
+with `--result-file`, or `DEFINE/USER SYS$OUTPUT mydb.sql` before the command.
 
 Connections are TCP only: give `-h` (`127.0.0.1` for a local server), since `localhost`
 means a Unix-domain socket, which VMS lacks. TLS works, through the SSL3 kit.

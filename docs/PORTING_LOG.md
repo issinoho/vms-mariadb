@@ -401,3 +401,12 @@ CR (LF is Ctrl/J, delete word); the site prompt was `X86VMS::`, so the driver se
 | Code | Error | Root cause | Fix |
 |---|---|---|---|
 | S | on a terminal, "Empty, or the two differ; again." is overwritten by the next password prompt (transcript: `again.^M^[>Password ...`) | `SET TERMINAL/NOECHO` between the message and the READ: after it, READ writes its prompt at column 0 of the current line (without SET TERMINAL, a prompt after a message starts on a new line). `probes/service/prompt_lf.com` over a terminal: `SECRET1: oecho prompt next` on screen; with a blank line first, both intact. Any warning just before the first password prompt would be lost the same way | a blank line before every password prompt (`pw_again`); in the next kit, not yet run through configure on the node |
+
+## Client output redirection (2026-10-08, a user's report)
+
+`mariadb_dump -h 127.0.0.1 -u vamp -p phpbb3315 > phpbb3315_081026.sql` (installed kit):
+the dump header appeared on the terminal, then `Couldn't find table: ">"`.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| S | `Couldn't find table: ">"`; no output file | DCL has no `>` redirection, and the C RTL does not redirect for our images either: `probes/redirect.com` on x86 (installed kit) shows `> file` and `>file` both leave stdout on the terminal and create no file, while `DEFINE/USER SYS$OUTPUT` captures it (Stream_LF). So `>` and the file name reach mariadb-dump as table names. README and README.VMS showed exactly this command | documentation: `--result-file=<file>` (the user's dump worked with it) or `DEFINE/USER SYS$OUTPUT`. No code change; parsing `>` in the clients would be a decision of its own |
