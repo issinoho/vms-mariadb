@@ -39,7 +39,7 @@ patches in `patches/`, adds our files from `overlay/`, configures with CMake on 
 | A | Connector/C and the clients | done: 15/15 client tests against MariaDB 11.8, TLS 1.3, interactive use |
 | B | `mariadbd` with Aria, MyISAM, MEMORY, CSV, MRG_MyISAM, SEQUENCE | server tests 14/14; 1,000,000-row (150 MB) loads and 5/5 stop/start cycles with identical checksums; remote clients from Linux over TLS; a 24-hour soak still to run |
 | C | InnoDB, durability-tested | not started |
-| D | PCSI kit, docs, upstream patches | preview kit ([v11.4.13-vms2](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms2)) builds and passes an install check, including the server as a service |
+| D | PCSI kit, docs, upstream patches | preview kit ([v11.4.13-vms3](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms3)) builds; vms2 passed the full install check, including the server as a service; vms3 was tested as an upgrade of a running service (vms2 to vms3) |
 
 | | x86-64 (OpenVMS E9.2-4, VSI C++ 10.1) |
 |---|---|
@@ -49,19 +49,19 @@ patches in `patches/`, adds our files from `overlay/`, configures with CMake on 
 | Load and restart: 1M rows into Aria and MyISAM, 5 clean stop/start cycles | pass |
 | Kit install, INSTALL_DB, START, clients from the kit, STOP, remove | clean |
 | Service: configure (account, data, passwords), boot start as the account, clean shutdown | pass |
-| PCSI kit | `ISSINOHO-X86VMS-VMSMARIADB-V1104-13E2-1.PCSI` |
+| PCSI kit | `ISSINOHO-X86VMS-VMSMARIADB-V1104-13E3-1.PCSI` |
 
 IA64 is not a target: its C++ compiler (VSI C++ 7.4) predates C++11, which MariaDB requires.
 
 ## Installing the kit
 
 The kit needs OpenVMS x86-64 and VSI's **SSL3** kit (OpenSSL 3.0). Download it from the
-[release](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms2) and check it
+[release](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms3) and check it
 against the release's `SHA256SUMS`. A kit downloaded through a non-VMS system loses its
 record format, so restore that first, then install it:
 
 ```
-$ SET FILE/ATTRIBUTE=(RFM:FIX,LRL:8192,MRS:8192,RAT:NONE) ISSINOHO-X86VMS-VMSMARIADB-V1104-13E2-1.PCSI
+$ SET FILE/ATTRIBUTE=(RFM:FIX,LRL:8192,MRS:8192,RAT:NONE) ISSINOHO-X86VMS-VMSMARIADB-V1104-13E3-1.PCSI
 $ PRODUCT INSTALL VMSMARIADB /PRODUCER=ISSINOHO /SOURCE=dev:[dir]
 $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$SETUP.COM
 ```
@@ -87,7 +87,7 @@ service](#running-as-a-service)); otherwise, to define `VMSMARIADB$ROOT` at ever
 `$ @SYS$STARTUP:VMSMARIADB$STARTUP.COM` to `SYS$MANAGER:SYSTARTUP_VMS.COM`.
 `PRODUCT REMOVE VMSMARIADB` removes the product and deassigns `VMSMARIADB$ROOT`; it does not
 touch data directories, the service account or the site file
-`SYS$MANAGER:VMSMARIADB$CONFIG.COM`. The version `V11.4-13E2` is MariaDB 11.4.13 with our
+`SYS$MANAGER:VMSMARIADB$CONFIG.COM`. The version `V11.4-13E3` is MariaDB 11.4.13 with our
 patch level as the ECO.
 
 **Alongside VSI's MariaDB kit:** this kit uses `VMSMARIADB` names throughout, so both can be
@@ -293,7 +293,7 @@ The family of ports, each following its upstream releases:
 | GNU make — [vms-make](https://github.com/issinoho/vms-make) | [v4.4.1-vms1](https://github.com/issinoho/vms-make/releases/tag/v4.4.1-vms1) | built with make's own VMS port |
 | GNU diffutils — [vms-diffutils](https://github.com/issinoho/vms-diffutils) | [v3.12-vms1](https://github.com/issinoho/vms-diffutils/releases/tag/v3.12-vms1) | cmp, diff, diff3, sdiff |
 | GNU patch — [vms-patch](https://github.com/issinoho/vms-patch) | [v2.8-vms1](https://github.com/issinoho/vms-patch/releases/tag/v2.8-vms1) | applies diffs |
-| **MariaDB** (this port) — [vms-mariadb](https://github.com/issinoho/vms-mariadb) | [v11.4.13-vms2](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms2) | server and clients, x86-64; preview |
+| **MariaDB** (this port) — [vms-mariadb](https://github.com/issinoho/vms-mariadb) | [v11.4.13-vms3](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms3) | server and clients, x86-64; preview |
 
 ## Artwork
 

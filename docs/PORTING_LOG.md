@@ -467,3 +467,16 @@ A clienttest run against an address the node could not reach failed every test w
 | Code | Error | Root cause | Fix |
 |---|---|---|---|
 | R | `ERROR 2002 (HY000): Can't connect to server on '<host>' (36)` for an unreachable host without `--connect-timeout`; with it, `(60)` | Connector/C (`pvio_socket_internal_connect()`) connects a non-blocking socket: `connect()` sets `errno` to `EINPROGRESS` (36 on OpenVMS), `poll()` waits, `getsockopt(SO_ERROR)` gives the real error, which is returned; but `pvio_socket_connect()` reports `socket_errno`, still 36. With `--connect-timeout` the `poll()` timeout sets `ETIMEDOUT` itself. Upstream bug (Linux would show 115) | patch 0028: `errno` set to the `SO_ERROR` value before it is returned. x86: refused port `(61)`; unreachable `(60)` with and without `--connect-timeout` (75 s, one TCP timeout); `mariadb-dump` likewise, one attempt in 74.6 s (the apparent retry loop was clienttest's separate commands, each waiting out a TCP timeout); normal connections unchanged; `clienttest.sh x86` 15/15 |
+
+## Release v11.4.13-vms3 (2026-10-09)
+
+Patch level 3: the clang memset/bzero flags, patch 0027 (DROP DATABASE), patch 0028 (connect
+errors). Kit `ISSINOHO-X86VMS-VMSMARIADB-V1104-13E3-1.PCSI` from `tools/kit.sh x86`.
+
+The full install check was not run: it installs and then removes the product, and the x86
+node's board runs its server from the installed kit. Instead, at the user's choice, vms3 was
+tested as an upgrade of that running service, following README.VMS: SHUTDOWN, PRODUCT INSTALL
+over V11.4-13E2, STARTUP START (done by the user as SYSTEM). Afterwards: product V11.4-13E3
+installed; MARIADBD_3306 running as MARIADB from the new image; the start job logged a clean
+start; the board's pages answered HTTP 200. `servertest.sh` 14/14 and `clienttest.sh` 15/15 on
+the build tree; `loadcycle.sh` not rerun for this release.
