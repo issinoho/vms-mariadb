@@ -49,6 +49,14 @@ $ call expect BAD_LOGIN "Access denied"
 $ if sts then call fail BAD_LOGIN_STATUS "success status ''sts'"
 $ if .not. sts then call pass BAD_LOGIN_STATUS "status ''sts'"
 $!
+$! A refused connection (nothing listens on the node's port 1) must report
+$! ECONNREFUSED (61), not connect()'s EINPROGRESS (36): patch 0028
+$! (probes/conn_refused.c: the refusal comes only from SO_ERROR).
+$ define/user sys$output 'out'
+$ define/user sys$error 'err'
+$ mariadb "--no-defaults" "--host=127.0.0.1" "--port=1" "-e" "SELECT 1"
+$ call expect REFUSED "'127.0.0.1' (61)"
+$!
 $! The server kills our session in the middle of a batch.  Given with -e
 $! (not through "source", where upstream also exits 0) the client must fail,
 $! as upstream's does on Linux.
