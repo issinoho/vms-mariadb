@@ -7,6 +7,7 @@
 [![Release](https://img.shields.io/github/v/release/issinoho/vms-mariadb?label=release)](https://github.com/issinoho/vms-mariadb/releases/latest)
 [![Downloads](https://img.shields.io/github/downloads/issinoho/vms-mariadb/total?label=downloads)](https://github.com/issinoho/vms-mariadb/releases)
 ![OpenVMS](https://img.shields.io/badge/OpenVMS-x86--64-blue)
+[![License](https://img.shields.io/github/license/issinoho/vms-mariadb)](COPYING)
 
 [MariaDB](https://mariadb.org) (**11.4.13**, the 11.4 LTS series) built natively for OpenVMS
 **x86-64**, server and command-line clients, with VSI's clang-based C/C++ compiler. This is a
