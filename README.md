@@ -195,6 +195,35 @@ means a Unix-domain socket, which VMS lacks. TLS works, through the SSL3 kit.
 - No rotation of `mariadbd.err`.
 - A 24-hour soak test has not been run yet.
 
+## Common problems
+
+Problems users have reported, and what to do. Each has an entry in
+[docs/PORTING_LOG.md](docs/PORTING_LOG.md) with the root cause.
+
+**Using the kit**
+
+| Symptom | Cause and fix |
+|---|---|
+| `Can't connect to server on '<host>' (36)` | Kits before V11.4-13E3: 36 (`EINPROGRESS`) hid the real error (patch 0028). Upgrade; the error is then `(61)` or `(60)`. |
+| `Can't connect to server on '<host>' (61)` | Connection refused: nothing listens on that address and port. Check the server is running, its `port` and `bind-address`, and `-P` (upper case, quoted). |
+| `Can't connect to server on '<host>' (60)` | Timed out: the host is unreachable or a firewall drops the connection. `perror 60` explains any such number. |
+| `Couldn't find table: ">"` (mariadb_dump) | DCL has no `>` redirection: use `"--result-file=file"` or `DEFINE/USER SYS$OUTPUT file` (see [Using the clients](#using-the-clients)). |
+| An option seems ignored, or `-P` asks for a password | DCL lowercased an unquoted option (`-P` became `-p`): quote options, or `SET PROCESS/PARSE_STYLE=EXTENDED`. |
+| `ERROR 24 ... Can't read value for symlink './<db>'` on `DROP DATABASE` | Kits before V11.4-13E3 (patch 0027): the tables are dropped but the directory stays. Upgrade, then drop it again. |
+| `ERROR 1146 ... doesn't exist` for a table `SHOW TABLES` lists, after many tables were opened | The server's account ran out of `FILLM` (every open table holds channels): raise `FILLM` to 1000 or more, or lower `table_open_cache`. |
+
+**Building from source**
+
+| Symptom | Cause and fix |
+|---|---|
+| `build.sh: the server needs PCRE2`, `BUILD: no PCRE2$ROOT:[INCLUDE]PCRE2.H`, or `'pcre2.h' file not found` | The server build needs vms-pcre2's clang install tree as the 8th column of `tools/nodes.conf` (see [How to build](#how-to-build)). |
+| `BUILD: PCRE2$ROOT:[LIB]PCRE2-8.OLB was not built by clang` | The 8th column names vms-pcre2's VSI C tree (`INSTALL_X86_64`); use `INSTALL_X86_64_CLANG` (`@[.VMS]BUILD ALL "" CLANG` in vms-pcre2). |
+| `BUILD: compiler self-check failed` | Before each build, `vms/tests/calloc_shape_test.c` is compiled with the build's flags; VSI clang's memset/bzero lowering returned the wrong pointer. Check that `overlay/vms/config/clang_common.rsp` still has `-fno-builtin-memset -fno-builtin-bzero`, or the compiler changed. |
+| `sed: 1: "d}": extra characters at the end of d command` (macOS) | An older checkout: `git pull`, then `tools/prepare.sh`. |
+| `'probes_mysql_dtrace.h' file not found` (macOS host) | An older checkout enabled DTrace because the host has `dtrace`: `git pull`, then `tools/prepare.sh`. |
+| `kit: client build failed` | The build's own output is in `out/kit-build-<node>-<config>.txt`. |
+| A fix in a header, or a new clang flag, makes no difference | MMS tracks neither headers nor flags: `tools/build.sh <node> <config> CLEAN`, then build again. |
+
 ## Patches
 
 | Patch | Purpose |
@@ -254,7 +283,10 @@ and PCSI database while it runs (`SVC=0` skips the service part).
 Set up `tools/nodes.conf` as described in
 [vms-grep's README](https://github.com/issinoho/vms-grep#2b-build-on-vms-from-the-host-over-ssh),
 with an 8th column for the server: vms-pcre2's clang install tree as a rooted directory, e.g.
-`DKA0:[USERS.ME.PCRE2-10_49.INSTALL_X86_64_CLANG.]` (built there with `@[.VMS]BUILD ALL "" CLANG`).
+`DKA0:[USERS.ME.PCRE2-10_49.INSTALL_X86_64_CLANG.]` (built there with `@[.VMS]BUILD ALL "" CLANG`);
+the server build refuses a PCRE2 library not compiled by clang. Before MMS runs, `BUILD.COM`
+also compiles and runs a compiler self-check with the build's flags (see
+[Common problems](#common-problems)).
 The original plan is in [MARIADB_OPENVMS_PLAN.md](MARIADB_OPENVMS_PLAN.md).
 
 ```

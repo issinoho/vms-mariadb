@@ -489,3 +489,23 @@ source that includes PCRE2.
 | Code | Error | Root cause | Fix |
 |---|---|---|---|
 | T | `%CXX-F-FATAL, sql/item_cmpfunc.cc:37:10: fatal error: 'pcre2.h' file not found` | the server's response files include `/PCRE2$ROOT/INCLUDE`; build.com defines `PCRE2$ROOT` only from P4, which build.sh takes from the optional 8th column of `tools/nodes.conf`. Without it (or with a tree that has no `[INCLUDE]PCRE2.H`, e.g. not rooted) nothing complained until clang did, after mysys etc. had compiled | build.sh refuses a server build without the 8th column; build.com stops a SERVER build at once when `PCRE2$ROOT:[INCLUDE]PCRE2.H` is missing, naming the expected tree (vms-pcre2's `[.INSTALL_X86_64_CLANG.]`). DCL check tried on the node with a good tree and a bad one |
+
+## Guards and tests for the recent reports (2026-10-09)
+
+A review of the reports since vms2 found three fixes that nothing would catch if they
+regressed, and an example that pointed at the wrong tree:
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| T | (risk) a server built against vms-pcre2's VSI C tree | `tools/nodes.conf.example` gave `...PCRE2-10_49.INSTALL_X86_64.]` as the 8th column: the VSI C (ILP32) build, which has the same layout as the clang one, so the `PCRE2.H` check above passes it | example now names `INSTALL_X86_64_CLANG` and says why. build.com also stops a SERVER build when `SEARCH PCRE2$ROOT:[LIB]PCRE2-8.OLB "clang version"` finds nothing: the clang tree's library has the string, the VSI C one has none (checked on x86). Run with each tree: VSI C refused (`%X2C`), clang passed to MMS |
+| C | (risk) the memset/bzero flags lost | nothing in this repo showed the miscompile; only vms-php's probe | `vms/tests/calloc_shape_test.c` (the vms-php probe's shape): build.com compiles it with `vms/build/<config>/vms_crtl_init.rsp` (the common flags) as C and as C++ and runs it before MMS, stopping on a wrong pointer. x86: passes for CLIENT and SERVER; with the two flags removed from the response file, both C and C++ give `bzero gave 0x2000 (want 0x2030)`, FAIL |
+| R | (risk) connect errors back to `(36)` | clienttest connected only to a server that answers | new test REFUSED in `TEST_CLIENT.COM`: `--host=127.0.0.1 --port=1` must report `'127.0.0.1' (61)`. `probes/conn_refused.c` on x86: a non-blocking connect to the closed port gives `EINPROGRESS` (36) and `SO_ERROR` 61, so the test goes through the path patch 0028 fixes |
+
+README gains a "Common problems" section: each reported symptom, its cause and the fix,
+pointing here for the root causes.
+
+Results on x86: `tools/build.sh x86 client` with the self-check: done. `tools/servertest.sh
+x86`: SERVERTEST 14/14, its client suite 16/16 (REFUSED included). `tools/clienttest.sh x86`
+against the remote 11.8.6 server: REFUSED and the failed-login tests pass, but every login
+fails with `Access denied for user 'vmstest'@'_gateway'`: that server now sees the node by
+another address (it passed 15/15 at 14:24 today), not a client change. Not rerun since.
