@@ -439,7 +439,7 @@ to it; it is a latent wrong-pointer bug in every clang build so far.
 
 | Code | Error | Root cause | Fix |
 |---|---|---|---|
-| C | (latent) a calloc-style helper returns a pointer to some other block | as above. vms-php `probes/r_calloc_shape.c` on x86: the bzero shape still returned the wrong block with `-fno-builtin-memset` alone; with both flags it returned its own block | `-fno-builtin-memset -fno-builtin-bzero` in `vms/config/clang_common.rsp`: the calls stay real C RTL calls. x86, from CLEAN: client and server build; `tools/servertest.sh x86` 12/12 (client suite 15/15). Not yet run: `clienttest.sh`, `loadcycle.sh` (no `tools/testdb.conf` on this host) |
+| C | (latent) a calloc-style helper returns a pointer to some other block | as above. vms-php `probes/r_calloc_shape.c` on x86: the bzero shape still returned the wrong block with `-fno-builtin-memset` alone; with both flags it returned its own block | `-fno-builtin-memset -fno-builtin-bzero` in `vms/config/clang_common.rsp`: the calls stay real C RTL calls. x86, from CLEAN: client and server build; `tools/servertest.sh x86` 12/12 (client suite 15/15). `tools/clienttest.sh x86` against the 11.8.6 server: 15/15 (with patch 0027 too). Not yet run: `loadcycle.sh` (the first try was stopped: its CHECKSUM connection was dropped and the host client waited with no timeout) |
 
 Checked at the same time: `vms_crtl_init.c` (D6) does run in our images. vms-php found its
 own `LIB$INITIALIZE` entry never called with clang, so a probe on x86 linked
