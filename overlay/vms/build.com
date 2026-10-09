@@ -48,6 +48,14 @@ $! <openssl/x.h> -> VSI SSL3's headers.
 $ define/process openssl ssl3$include:
 $! PCRE2$ROOT: the PCRE2 install tree (INCLUDE, LIB); build.sh passes it as P4.
 $ if p4 .nes. "" then define/process/translation_attributes=concealed pcre2$root 'p4'
+$! The server includes pcre2.h from there: say so now, not at item_cmpfunc.cc.
+$ if cfg .eqs. "SERVER" .and. f$search("pcre2$root:[include]pcre2.h") .eqs. ""
+$ then
+$   write sys$error "BUILD: no PCRE2$ROOT:[INCLUDE]PCRE2.H; PCRE2$ROOT must be the rooted"
+$   write sys$error "BUILD: clang install tree of vms-pcre2, dev:[dir.INSTALL_X86_64_CLANG.]"
+$   write sys$error "BUILD: (P4, or the 8th column of tools/nodes.conf for build.sh)"
+$   goto done
+$ endif
 
 $ @[.vms.build.'cfg']mkdirs.com
 $! clang finds a response file only by an absolute UNIX path, not by a

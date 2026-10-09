@@ -18,6 +18,11 @@ jobs=${JOBS:-1}
 name=$UPSTREAM_NAME-$UPSTREAM_VERSION
 remote=$(echo "$name" | tr . _ | tr a-z A-Z)
 read -r _ _ _ _ _ WORKDIR _ PCRE2ROOT < <(awk -v n="$node" '$1==n' "$top/tools/nodes.conf")
+if [ "$(echo "$cfg" | tr A-Z a-z)" = server ] && [ -z "${PCRE2ROOT:-}" ]; then
+    echo "build.sh: the server needs PCRE2: add vms-pcre2's clang install tree as the" >&2
+    echo "  8th column of $node in tools/nodes.conf: dev:[dir.INSTALL_X86_64_CLANG.]" >&2
+    exit 1
+fi
 
 "$top/tools/push.sh" "$node" "$cfg"
 mkdir -p "$top/out"
@@ -28,7 +33,7 @@ run_build() {
     local tag=$1 tgt=$2 out=$3
     local job=$top/cache/build-$node-$cfg-$tag.com
     # Optional 8th nodes.conf column: the PCRE2 install tree as a rooted device
-    # spec (dev:[dir.INSTALL_X86_64.]), defined as PCRE2$ROOT for the build.
+    # spec (dev:[dir.INSTALL_X86_64_CLANG.]), defined as PCRE2$ROOT for the build.
     printf '$ set noon\n$ @%s.%s.VMS]BUILD.COM %s "%s" "%s" "%s"\n' \
         "${WORKDIR%]}" "$remote" "$cfg" "$tgt" "$keep" "${PCRE2ROOT:-}" > "$job"
     # Under set -e a failing vms.sh would end this script with nothing said:

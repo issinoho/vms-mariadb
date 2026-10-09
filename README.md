@@ -252,7 +252,9 @@ from it, then configures the service with a **temporary account** (`MDBSVCT [361
 3309), starts and stops it, and removes the account and the kit: it changes the system's UAF
 and PCSI database while it runs (`SVC=0` skips the service part).
 Set up `tools/nodes.conf` as described in
-[vms-grep's README](https://github.com/issinoho/vms-grep#2b-build-on-vms-from-the-host-over-ssh).
+[vms-grep's README](https://github.com/issinoho/vms-grep#2b-build-on-vms-from-the-host-over-ssh),
+with an 8th column for the server: vms-pcre2's clang install tree as a rooted directory, e.g.
+`DKA0:[USERS.ME.PCRE2-10_49.INSTALL_X86_64_CLANG.]` (built there with `@[.VMS]BUILD ALL "" CLANG`).
 The original plan is in [MARIADB_OPENVMS_PLAN.md](MARIADB_OPENVMS_PLAN.md).
 
 ```

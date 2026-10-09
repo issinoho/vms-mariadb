@@ -480,3 +480,12 @@ over V11.4-13E2, STARTUP START (done by the user as SYSTEM). Afterwards: product
 installed; MARIADBD_3306 running as MARIADB from the new image; the start job logged a clean
 start; the board's pages answered HTTP 200. `servertest.sh` 14/14 and `clienttest.sh` 15/15 on
 the build tree; `loadcycle.sh` not rerun for this release.
+
+## Server build without PCRE2$ROOT (2026-10-09, a user's report)
+
+A user's `tools/build.sh` server build (after `git pull`, prepare) stopped at the first SQL
+source that includes PCRE2.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| T | `%CXX-F-FATAL, sql/item_cmpfunc.cc:37:10: fatal error: 'pcre2.h' file not found` | the server's response files include `/PCRE2$ROOT/INCLUDE`; build.com defines `PCRE2$ROOT` only from P4, which build.sh takes from the optional 8th column of `tools/nodes.conf`. Without it (or with a tree that has no `[INCLUDE]PCRE2.H`, e.g. not rooted) nothing complained until clang did, after mysys etc. had compiled | build.sh refuses a server build without the 8th column; build.com stops a SERVER build at once when `PCRE2$ROOT:[INCLUDE]PCRE2.H` is missing, naming the expected tree (vms-pcre2's `[.INSTALL_X86_64_CLANG.]`). DCL check tried on the node with a good tree and a bad one |
