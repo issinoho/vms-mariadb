@@ -365,9 +365,9 @@ them is our own drawing, not MariaDB's logo.
 
 ## Licence
 
-MariaDB Server is distributed under the GNU General Public License, version 2 (`COPYING`
-in the release tarball, and `[VMSMARIADB.DOC]COPYING.` in the kit); Connector/C under the
-LGPL 2.1. Our patches and VMS files are distributed under the same terms as the files they
+MariaDB Server is distributed under the GNU General Public License, version 2 (`COPYING`,
+a copy of the release tarball's, and `[VMSMARIADB.DOC]COPYING.` in the kit); Connector/C
+under the LGPL 2.1 (`libmariadb/COPYING.LIB` in the tarball). Our patches and VMS files are distributed under the same terms as the files they
 change or accompany. The kit is built from the signed MariaDB 11.4.13 release tarball and
 the patches and files in this repository, which together are its corresponding source.
 
