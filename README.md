@@ -222,6 +222,7 @@ means a Unix-domain socket, which VMS lacks. TLS works, through the SSL3 kit.
 | 0025 | `mysqld.cc`: a socket pair, not a pipe, wakes the listen loop (`poll()` reports a pipe readable early). |
 | 0026 | clients: `main()`'s status through `exit()`, so a failing mariadb-admin, -dump, -check, -import or my_print_defaults gives DCL an error status. |
 | 0027 | `my_readlink()`: a directory is not a symlink (VMS `readlink()` gives `ENOENT` for it, not `EINVAL`), so `DROP DATABASE` removes the directory. |
+| 0028 | Connector/C: a failed connect reports its real error (`ETIMEDOUT`, `ECONNREFUSED`), not the stale `EINPROGRESS` (36) left by the non-blocking `connect()`. |
 
 Each patch is guarded by `__VMS` and carries its reason; [docs/PORTING_LOG.md](docs/PORTING_LOG.md)
 records every failure and fix, and [docs/DECISIONS.md](docs/DECISIONS.md) every design

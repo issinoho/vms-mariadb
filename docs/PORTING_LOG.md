@@ -457,3 +457,13 @@ the tables, then failed. `servertest.sh` drops `vmsengines` at the end but did n
 | Code | Error | Root cause | Fix |
 |---|---|---|---|
 | R | `ERROR 24 (HY000): Can't read value for symlink './vmsefs' (Errcode: 2 "no such file or directory")`; tables gone, database still listed, directory left | `rm_dir_w_symlink()` (`sql/sql_db.cc`) calls `my_readlink()` on the database directory; `my_readlink()` takes only `EINVAL` as "not a symlink". A probe on x86 with the D6 features: `readlink()` gives `EINVAL` on a file but `ENOENT` on an existing directory (`dir`, `./dir`, `dir/`); symlinks to files and directories read correctly | patch 0027: under `__VMS`, `ENOENT` from `readlink()` on a path that `lstat()` finds and that is not a symlink counts as `EINVAL`. x86: `servertest.sh` 14/14 with two new checks (`drop_database`, `persist_done`); a database named `` `drop-me.x` `` with Aria, MyISAM and CSV tables, the leftover `vmsefs`, and `DROP DATABASE IF EXISTS` of a missing one: all dropped, directories gone |
+
+## Connect errors reported as (36) (2026-10-09)
+
+A clienttest run against an address the node could not reach failed every test with
+`Can't connect to server on '192.168.0.155' (36)`. The same `(36)` appears in a user's report
+("system error: 36").
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| R | `ERROR 2002 (HY000): Can't connect to server on '<host>' (36)` for an unreachable host without `--connect-timeout`; with it, `(60)` | Connector/C (`pvio_socket_internal_connect()`) connects a non-blocking socket: `connect()` sets `errno` to `EINPROGRESS` (36 on OpenVMS), `poll()` waits, `getsockopt(SO_ERROR)` gives the real error, which is returned; but `pvio_socket_connect()` reports `socket_errno`, still 36. With `--connect-timeout` the `poll()` timeout sets `ETIMEDOUT` itself. Upstream bug (Linux would show 115) | patch 0028: `errno` set to the `SO_ERROR` value before it is returned. x86: refused port `(61)`; unreachable `(60)` with and without `--connect-timeout` (75 s, one TCP timeout); `mariadb-dump` likewise, one attempt in 74.6 s (the apparent retry loop was clienttest's separate commands, each waiting out a TCP timeout); normal connections unchanged; `clienttest.sh x86` 15/15 |

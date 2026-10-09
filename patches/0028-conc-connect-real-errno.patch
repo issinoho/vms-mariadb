@@ -1,0 +1,26 @@
+Subject: Connector/C: report the real connect error, not EINPROGRESS
+
+pvio_socket_internal_connect() connects a non-blocking socket: connect()
+fails with EINPROGRESS, poll() waits, and getsockopt(SO_ERROR) gives the
+real result, which is returned. pvio_socket_connect() builds its message
+from socket_errno (errno), which still holds connect()'s EINPROGRESS. So a
+connection that timed out or was refused without --connect-timeout
+reported "Can't connect to server on ... (36)" on OpenVMS (115 on Linux).
+With --connect-timeout the poll() timeout set errno to ETIMEDOUT, so 60
+was shown. Set errno to the SO_ERROR value before returning it.
+
+--- a/libmariadb/plugins/pvio/pvio_socket.c	2026-10-09 14:48:52.673166541 +0100
++++ b/libmariadb/plugins/pvio/pvio_socket.c	2026-10-09 14:48:52.674738261 +0100
+@@ -547,7 +547,12 @@
+                            (char *)&error, &error_len)) < 0)
+         return errno;
+       else if (error) 
++      {
++        /* The caller reports socket_errno, which still holds connect()'s
++           EINPROGRESS: report the connection's real error instead. */
++        errno= error;
+         return error;
++      }
+     }
+   }
+ #ifdef __APPLE__
