@@ -65,7 +65,9 @@ tools/vms.sh <node> dcl '<cmd>' ...   # run DCL; also run/batch/put/get
 
 - **Wait on fresh output files only**: delete (or rename) a job's output file before
   starting it. A wait loop on `grep -q '^exit' x.out` returned at once on the previous
-  run's file, and its stale result looked like a new failure.
+  run's file, and its stale result looked like a new failure. A background job that runs
+  prepare.sh before `build.sh > x.out` truncates x.out only when build.sh starts: delete
+  it before starting the job, or wait for the job's completion notice.
 - **A `vms.sh` timeout does not stop the job on VMS**: it keeps running. Give long jobs a
   big `VMS_TIMEOUT`, and check `show system` before re-running a test that timed out.
   Leftover `FTA*_IAIN` sessions of ours can pile up and once stopped the SSH server
@@ -85,8 +87,42 @@ tools/vms.sh <node> dcl '<cmd>' ...   # run DCL; also run/batch/put/get
 - Waiting on background jobs: never `until ! pgrep -f '<pattern>'`; the waiting shell's own
   command line contains the pattern, so it never ends (and `pkill -f` kills itself). Wait on
   a marker in the job's output file, or on the job's completion notice.
+- **DCL in our procedures:** two `DEFINE/USER SYS$OUTPUT x.out` in one procedure make two
+  versions, and `OPEN/READ` reads only the newer: one file per run. Keep labels out of
+  IF-THEN blocks. A failing command under the default `ON ERROR` ends the procedure before
+  any message of ours: `SET NOON` around checks, then `SET ON`.
+- **The PCRE2 tree for the server is vms-pcre2's clang build** (`INSTALL_X86_64_CLANG`), the
+  8th column of `tools/nodes.conf`; its VSI C tree (`INSTALL_X86_64`) has the same layout.
 - CMake ships `Platform/OpenVMS.cmake` itself; it sets no `VMS` variable, so
   `cmake/os/OpenVMS.cmake` does.
+
+## Fixing reported problems
+
+A fix for a user's report is finished only when it leaves something behind that would
+catch the problem next time, not just the fix:
+
+- a `docs/PORTING_LOG.md` entry (as for every failure);
+- a **test or guard that fails if it regresses**: a case in `TEST_CLIENT.COM` or
+  `servertest.sh`, a check in `BUILD.COM` (it already stops on a missing or non-clang
+  PCRE2 and runs a compiler self-check, `vms/tests/calloc_shape_test.c`), or an early
+  stop in a host script, with a message naming the fix. Show on the node that the check
+  fails without the fix (e.g. the self-check with the flags removed);
+- a row in the README's **Common problems** when a user can meet the symptom, and any
+  example or doc that led the user astray corrected (`nodes.conf.example`).
+
+## Host scripts
+
+- **They must run on macOS too** (users build from it): bash 4+, BSD sed/xargs/awk. Every
+  script in `tools/` sources `tools/hostenv.sh` after `top=` (vms.sh: `here=`): it stops
+  under bash < 4, sets `$SHA256SUM` (`sha256sum`, else `shasum -a 256`) and gives
+  `need_tools`. No GNU-only options (`sed '{r f' -e 'd}'`, `xargs -r`, `sed -i` without a
+  suffix) or tools (`nproc`: `getconf _NPROCESSORS_ONLN`; `timeout`: python3). Test a
+  fallback with a `PATH` of symlinks that leaves the GNU tool out.
+- `vms.sh <node> dcl` runs one DCL command (no `;` separators): put several in a `.com`
+  and use `run`.
+- clienttest's remote test server (tools/testdb.conf) is outside our control; when it
+  refuses logins (2026-10-09: `'vmstest'@'_gateway'`), servertest.sh runs the same client
+  suite against our own server on 3307.
 
 ## Commits
 
