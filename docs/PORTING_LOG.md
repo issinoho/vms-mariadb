@@ -540,3 +540,20 @@ prompt: `noecho prompt next\r\x1b>`), fails; SECRET2 (a blank line first, as con
 since 448d90d: `prompt\r\n\r\x1b>`) passes. Not yet run against configure itself: that is
 `CONFIGURE_TTY=1 tools/installcheck.sh`, which is on hold (it removes the installed kit).
 README's Common problems gains the symptom for kits before V11.4-13E3.
+
+## printf-format attributes under vms_lp64.h; batch builds (2026-10-09)
+
+Reported by a user building on the node: `warning: 'format' attribute argument not supported:
+vms_lp64_printf [-Wignored-attributes]` from `m_ctype.h`. Our own server logs had about 1,900
+of them (`m_ctype.h`, `my_sys.h`, `maria_def.h`, `rpl_reporting.h`, `my_stacktrace.h`,
+`ha_partition.cc`). The user had also edited `DESCRIP.MMS` to add
+`-I PCRE2$ROOT:[INSTALL_X86_64.INCLUDE]`, and suggested building in batch for the logs.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| W | `%CXX-W-WARN ... m_ctype.h:659:27: warning: 'format' attribute argument not supported: vms_lp64_printf [-Wignored-attributes]` | `vms_lp64.h` (D12) defines `printf` as `vms_lp64_printf`; `ATTRIBUTE_FORMAT(printf, m, n)` and `ATTRIBUTE_FORMAT_FPTR` expand their argument before substituting it, so clang got `format(vms_lp64_printf, ...)` and dropped the attribute: no format checking for `my_snprintf` & co. Nothing miscompiled. All 22 uses go through these two macros (the direct `format(printf, ...)` uses in InnoDB, `ma_sys.h` and `tap.h` gave no warning in our logs) | patch 0029: under `__VMS` both macros paste the style into `__printf__` (`__ ## style ## __`), which is not expanded. Guard: `BUILD.COM` compiles `vms/tests/format_attr_test.c` with the build's flags and `-Werror=ignored-attributes -Werror=format` before MMS and stops with `BUILD: format-attribute check failed`. x86: with the patch it compiles; with upstream `my_attribute.h` first in the include path it fails (2 errors, `vms_lp64_printf`); with `-DFORMAT_ATTR_BAD` it fails on the bad `%d`/`%s` calls (checking is live); `sql/item_cmpfunc.cc` with `sql_0.rsp` compiles with no warnings. Not yet: a full server build from `CLEAN`, which may show `-Wformat` warnings hidden until now |
+| P | (user) `DESCRIP.MMS` edited to add `-I PCRE2$ROOT:[INSTALL_X86_64.INCLUDE]` | the user's `PCRE2$ROOT` named the top of the vms-pcre2 tree, and `INSTALL_X86_64` is its VSI C (ILP32) build; the generated `-I/PCRE2$ROOT/INCLUDE` expects the rooted clang install tree, which `BUILD.COM` defines from P4 (and refuses a non-clang library). With that `PCRE2$ROOT`, BUILD.COM's own check would stop first, so the build was probably run with MMS directly (asked) | README Common problems: don't edit `DESCRIP.MMS`; pass the clang tree as P4 and build through `@[.VMS]BUILD` |
+
+Batch: README "How to build" now shows `SUBMIT ... /PARAMETERS=(SERVER,ALL,"","<pcre2 tree>")
+[.VMS]BUILD.COM`. Run on x86 (queue X86VMS_BATCH) with target `LIB_DBUG`: both self-checks
+passed and the log ended in `BUILD: done`.

@@ -1,0 +1,34 @@
+Subject: my_attribute.h: keep printf-format checking under vms_lp64.h on OpenVMS
+
+On OpenVMS x86-64 every compile includes vms/include/vms_lp64.h first, which
+defines printf as vms_lp64_printf (64-bit long in the C RTL printf family,
+docs/DECISIONS.md D12). ATTRIBUTE_FORMAT(printf, m, n) and
+ATTRIBUTE_FORMAT_FPTR expand their argument before substituting it, so clang
+saw format(vms_lp64_printf, m, n): "'format' attribute argument not
+supported: vms_lp64_printf [-Wignored-attributes]", about 1,900 times in a
+server build, and no format checking for my_snprintf and friends. Under
+__VMS, paste the style into __printf__, which clang accepts and which the
+token paste keeps from being expanded.
+
+--- a/include/my_attribute.h
++++ b/include/my_attribute.h
+@@ -53,6 +53,19 @@
+   But that's already covered by the __attribute__ tests above, so this is
+   just a convenience macro.
+ */
++#ifdef __VMS
++/*
++  OpenVMS: vms_lp64.h (included first in every compile) defines printf as
++  vms_lp64_printf, and a macro argument is expanded before it is substituted,
++  so format(printf, ...) reached clang as format(vms_lp64_printf, ...), which
++  it ignores with a warning (no format checking).  Pasting the style into
++  __printf__ keeps it from being expanded (in both macros: one calling the
++  other would expand it).
++*/
++# define ATTRIBUTE_FORMAT(style, m, n) __attribute__((format(__ ## style ## __, m, n)))
++# define ATTRIBUTE_FORMAT_FPTR(style, m, n) __attribute__((format(__ ## style ## __, m, n)))
++#endif
++
+ #ifndef ATTRIBUTE_FORMAT
+ # define ATTRIBUTE_FORMAT(style, m, n) __attribute__((format(style, m, n)))
+ #endif

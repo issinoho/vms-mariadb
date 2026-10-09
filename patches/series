@@ -26,3 +26,4 @@
 0026-client-main-exit-status-vms.patch
 0027-my-readlink-directory-vms.patch
 0028-conc-connect-real-errno.patch
+0029-attribute-format-printf-vms.patch

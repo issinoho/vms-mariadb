@@ -133,6 +133,21 @@ $   write sys$error "BUILD: -fno-builtin-memset/-bzero in vms/config/clang_commo
 $   goto done
 $ endif
 $ write sys$output "BUILD: compiler self-check passed (memset/bzero calloc shape, C and C++)"
+$! Format-attribute check (vms/tests/format_attr_test.c): MariaDB's
+$! ATTRIBUTE_FORMAT(printf, ...) must survive vms_lp64.h's printf macro (patch
+$! 0029), or clang drops it with a warning on every file and checks no formats.
+$ set noon
+$ clang "@''rsp'" "-Werror=ignored-attributes" "-Werror=format" -I include -
+        -c vms/tests/format_attr_test.c -o 'objroot'/format_attr.obj
+$ fstatus = $status
+$ set on
+$ if .not. fstatus
+$ then
+$   write sys$error "BUILD: format-attribute check failed: ATTRIBUTE_FORMAT(printf, ...) reaches"
+$   write sys$error "BUILD: clang as format(vms_lp64_printf, ...) (patch 0029, include/my_attribute.h)"
+$   goto done
+$ endif
+$ write sys$output "BUILD: format-attribute check passed (printf formats are checked)"
 $ mms/description=[.vms.build.'cfg']descrip.mms/macro=("ROOT=''root'")'keep' 'target'
 $ status = $status
 $finish:

@@ -220,6 +220,7 @@ Problems users have reported, and what to do. Each has an entry in
 | `build.sh: the server needs PCRE2`, `BUILD: no PCRE2$ROOT:[INCLUDE]PCRE2.H`, or `'pcre2.h' file not found` | The server build needs vms-pcre2's clang install tree as the 8th column of `tools/nodes.conf` (see [How to build](#how-to-build)). |
 | `BUILD: PCRE2$ROOT:[LIB]PCRE2-8.OLB was not built by clang` | The 8th column names vms-pcre2's VSI C tree (`INSTALL_X86_64`); use `INSTALL_X86_64_CLANG` (`@[.VMS]BUILD ALL "" CLANG` in vms-pcre2). |
 | `BUILD: compiler self-check failed` | Before each build, `vms/tests/calloc_shape_test.c` is compiled with the build's flags; VSI clang's memset/bzero lowering returned the wrong pointer. Check that `overlay/vms/config/clang_common.rsp` still has `-fno-builtin-memset -fno-builtin-bzero`, or the compiler changed. |
+| `warning: 'format' attribute argument not supported: vms_lp64_printf [-Wignored-attributes]`, on most files | A tree prepared before patch 0029: harmless (format checking was off). `git pull`, `tools/prepare.sh`, then build from `CLEAN`. `BUILD: format-attribute check failed` means the patch is missing from the tree. |
 | `sed: 1: "d}": extra characters at the end of d command` (macOS) | An older checkout: `git pull`, then `tools/prepare.sh`. |
 | `'probes_mysql_dtrace.h' file not found` (macOS host) | An older checkout enabled DTrace because the host has `dtrace`: `git pull`, then `tools/prepare.sh`. |
 | `needs bash 4 or later` or `not found on this host: ...` | The host scripts check for these first: install the tools named (on macOS, `brew install bash` with Homebrew's `bin` first in `PATH`). |
@@ -254,6 +255,7 @@ Problems users have reported, and what to do. Each has an entry in
 | 0026 | clients: `main()`'s status through `exit()`, so a failing mariadb-admin, -dump, -check, -import or my_print_defaults gives DCL an error status. |
 | 0027 | `my_readlink()`: a directory is not a symlink (VMS `readlink()` gives `ENOENT` for it, not `EINVAL`), so `DROP DATABASE` removes the directory. |
 | 0028 | Connector/C: a failed connect reports its real error (`ETIMEDOUT`, `ECONNREFUSED`), not the stale `EINPROGRESS` (36) left by the non-blocking `connect()`. |
+| 0029 | `my_attribute.h`: `ATTRIBUTE_FORMAT(printf, ...)` reaches clang as `format(__printf__, ...)`, not `format(vms_lp64_printf, ...)` (vms_lp64.h's `printf` macro), so printf formats are checked. |
 
 Each patch is guarded by `__VMS` and carries its reason; [docs/PORTING_LOG.md](docs/PORTING_LOG.md)
 records every failure and fix, and [docs/DECISIONS.md](docs/DECISIONS.md) every design
@@ -288,8 +290,8 @@ Set up `tools/nodes.conf` as described in
 with an 8th column for the server: vms-pcre2's clang install tree as a rooted directory, e.g.
 `DKA0:[USERS.ME.PCRE2-10_49.INSTALL_X86_64_CLANG.]` (built there with `@[.VMS]BUILD ALL "" CLANG`);
 the server build refuses a PCRE2 library not compiled by clang. Before MMS runs, `BUILD.COM`
-also compiles and runs a compiler self-check with the build's flags (see
-[Common problems](#common-problems)).
+also compiles and runs a compiler self-check with the build's flags and checks that
+printf-format attributes survive `vms_lp64.h` (see [Common problems](#common-problems)).
 The original plan is in [MARIADB_OPENVMS_PLAN.md](MARIADB_OPENVMS_PLAN.md).
 
 ```
