@@ -5,5 +5,8 @@
 # name  arch    host          port  user      vms_workdir                         sftp_workdir
 ia64    IA64    <ia64-host>   22    username  DISK$USER:[USERNAME.VMS_MARIADB]    vms_mariadb
 x86     X86_64  <x86-host>    22    username  DISK$BUILD:[USERNAME.VMS_MARIADB]   /DISK$BUILD/username/vms_mariadb
-# Optional 8th column: a PCRE2 install tree as a rooted spec, for PCRE2$ROOT, e.g.
-#   DISK$USER:[USERNAME.VMS_GREP.PCRE2-10_49.INSTALL_X86_64.]
+# 8th column, needed for the server: vms-pcre2's *clang* install tree as a rooted
+# spec, for PCRE2$ROOT (built with @[.VMS]BUILD ALL "" CLANG), e.g.
+#   DISK$USER:[USERNAME.VMS_GREP.PCRE2-10_49.INSTALL_X86_64_CLANG.]
+# Not INSTALL_X86_64: that is the VSI C (ILP32) build, which clang (LP64) code
+# cannot use (docs/DECISIONS.md D11); the server build refuses it.
