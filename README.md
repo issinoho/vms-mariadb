@@ -210,6 +210,7 @@ Problems users have reported, and what to do. Each has an entry in
 | `Couldn't find table: ">"` (mariadb_dump) | DCL has no `>` redirection: use `"--result-file=file"` or `DEFINE/USER SYS$OUTPUT file` (see [Using the clients](#using-the-clients)). |
 | An option seems ignored, or `-P` asks for a password | DCL lowercased an unquoted option (`-P` became `-p`): quote options, or `SET PROCESS/PARSE_STYLE=EXTENDED`. |
 | `ERROR 24 ... Can't read value for symlink './<db>'` on `DROP DATABASE` | Kits before V11.4-13E3 (patch 0027): the tables are dropped but the directory stays. Upgrade, then drop it again. |
+| Configure asks for root's password again with no reason given | Kits before V11.4-13E3: the two passwords were empty or different, and on a terminal the next prompt overwrote the message saying so. Type the same password twice. |
 | `ERROR 1146 ... doesn't exist` for a table `SHOW TABLES` lists, after many tables were opened | The server's account ran out of `FILLM` (every open table holds channels): raise `FILLM` to 1000 or more, or lower `table_open_cache`. |
 
 **Building from source**

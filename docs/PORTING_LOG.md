@@ -525,3 +525,18 @@ Tested on Linux only: the bash check under dash (stops, rc 2); fetch.sh with a `
 `unzip`/`cpio` (`not found on this host: cpio unzip`); push.sh through shasum (0 changed of
 2091: the manifests agree); prepare.sh; `tools/servertest.sh x86` 14/14 (client suite 16/16)
 including the restart's port wait. Still not run on a Mac.
+
+## A test for the configure prompt fix (2026-10-09)
+
+`tools/configure_tty.py` waited for "Empty, or the two differ; again." in the session, which
+it finds in the byte stream whether or not the next prompt then overwrites it on screen, so
+it would not have caught the bug coming back. It now also checks that each root-password
+prompt starts a line of its own: a line feed after the last visible text, with only white
+space and escape sequences between it and the prompt (`on_new_line()`).
+
+Shown on x86 over an ssh terminal with `probes/service/prompt_lf.com`, driven the same way:
+PLAIN (`prompt next\r\n`) passes; SECRET1, the bug's shape (message, `SET TERMINAL/NOECHO`,
+prompt: `noecho prompt next\r\x1b>`), fails; SECRET2 (a blank line first, as configure does
+since 448d90d: `prompt\r\n\r\x1b>`) passes. Not yet run against configure itself: that is
+`CONFIGURE_TTY=1 tools/installcheck.sh`, which is on hold (it removes the installed kit).
+README's Common problems gains the symptom for kits before V11.4-13E3.

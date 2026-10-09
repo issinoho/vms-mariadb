@@ -5,7 +5,11 @@ terminal session (tools/installcheck.sh with CONFIGURE_TTY=1).
 
 Answers each prompt, gives two different root passwords once (configure must
 ask again), takes the default at "Go ahead", and checks that the password
-never appears in the session (it is read with the terminal's echo off).  The
+never appears in the session (it is read with the terminal's echo off) and
+that each password prompt starts a line of its own, so the message before it
+stays on screen (after SET TERMINAL/NOECHO, READ writes its prompt at column 0
+of the current line: "Empty, or the two differ; again." was overwritten,
+PORTING_LOG "Interactive configure in a terminal").  The
 site file is <workdir>SVCTEST_CONFIG.COM (logical name VMSMARIADB$CONFIG), as
 in the non-interactive phase.  The root password comes from TTY_ROOTPW.
 Prints the session; the last line is CONFIGURE_TTY: PASS or FAIL.
@@ -15,6 +19,7 @@ the site's prompt is unknown, so wait for the login output to settle and set
 our own.  Needs pexpect.
 """
 import os
+import re
 import sys
 
 import pexpect
@@ -28,6 +33,16 @@ host, sshport, user, workdir = row[2], row[3], row[4], row[5]
 key = os.environ.get("VMS_SSH_KEY", os.path.expanduser("~/.ssh/vms_ed25519"))
 
 log = []
+ESC = re.compile(r"\x1b(\[[0-9;?]*[A-Za-z]|.)")
+
+
+def on_new_line(before):
+    """True if a prompt written after the terminal output `before` starts a
+    line of its own: a line feed follows the last visible text (only white space and
+    escape sequences may come after it), so nothing shown is overwritten."""
+    if "\n" not in before:
+        return False
+    return ESC.sub("", before.rsplit("\n", 1)[1]).strip() == ""
 
 
 class Tee:
@@ -46,13 +61,17 @@ c.logfile_read = Tee()
 ok = True
 
 
-def step(pattern, reply=None, timeout=120):
+def step(pattern, reply=None, timeout=120, new_line=False):
     global ok
     i = c.expect([pattern, pexpect.TIMEOUT, pexpect.EOF], timeout=timeout)
     if i != 0:
         print(f"\nCONFIGURE_TTY: no {pattern!r}")
         ok = False
         raise SystemExit
+    if new_line and not on_new_line(c.before):
+        print(f"\nCONFIGURE_TTY: {pattern!r} does not start a new line; it overwrites"
+              f" {c.before[-60:]!r}")
+        ok = False
     if reply is not None:
         c.sendline(reply)
 
@@ -84,10 +103,10 @@ try:
     step(r"Account the server runs as \[MARIADB\]: ", account)
     step(r"UIC for the new account \S+ \[(\[\d+,\d+\])\]: ", uic)
     print(f"\n(offered UIC {c.match.group(1)})")
-    step(r"Password for the MariaDB root accounts: ", pw)
+    step(r"Password for the MariaDB root accounts: ", pw, new_line=True)
     step(r"Again: ", pw + "x")
     step(r"Empty, or the two differ; again\.")
-    step(r"Password for the MariaDB root accounts: ", pw)
+    step(r"Password for the MariaDB root accounts: ", pw, new_line=True)
     step(r"Again: ", pw)
     step(r"Go ahead \[YES\]: ", "")
     step(r"VMSMARIADB\$CONFIGURE: wrote ", None, timeout=900)
