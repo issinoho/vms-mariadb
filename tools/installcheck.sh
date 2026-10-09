@@ -11,6 +11,7 @@
 # Output: out/install-<node>.txt.
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 node=${1:-x86}
 . "$top/upstream.conf"
 REMOTE=$(echo "$UPSTREAM_NAME-$UPSTREAM_VERSION" | tr . _ | tr a-z A-Z)

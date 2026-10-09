@@ -10,6 +10,7 @@
 # EXTRA='--option=value' (start): one more mariadbd option.
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 node=${1:?usage: server.sh <node> start|stop|status|log [datadir-name] [port]}
 op=${2:?usage: server.sh <node> start|stop|status|log [datadir-name] [port]}
 dname=${3:-DATA}

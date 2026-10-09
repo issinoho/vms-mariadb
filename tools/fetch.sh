@@ -5,8 +5,10 @@
 set -euo pipefail
 
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 . "$top/upstream.conf"
 
+need_tools curl gpg ${SHA256SUM%% *}
 cache=$top/cache
 mkdir -p "$cache"
 tarball=$cache/$(basename "$UPSTREAM_URL")
@@ -15,7 +17,7 @@ tarball=$cache/$(basename "$UPSTREAM_URL")
                        curl -fsSL -o "$tarball.tmp" "$UPSTREAM_URL"; mv "$tarball.tmp" "$tarball"; }
 [ -f "$tarball.asc" ] || curl -fsSL -o "$tarball.asc" "$UPSTREAM_URL.asc"
 
-echo "$UPSTREAM_SHA256  $tarball" | sha256sum -c --quiet - ||
+echo "$UPSTREAM_SHA256  $tarball" | $SHA256SUM -c --quiet - ||
     { echo "fetch: SHA-256 mismatch for $tarball" >&2; exit 1; }
 
 # A throwaway keyring holding only the pinned key shipped in the repo.
@@ -34,6 +36,6 @@ echo "fetch: $tarball"
 fmtzip=$cache/$(basename "$LIBFMT_URL")
 [ -f "$fmtzip" ] || { echo "fetch: downloading $LIBFMT_URL"
                       curl -fsSL -o "$fmtzip.tmp" "$LIBFMT_URL"; mv "$fmtzip.tmp" "$fmtzip"; }
-echo "$LIBFMT_SHA256  $fmtzip" | sha256sum -c --quiet - ||
+echo "$LIBFMT_SHA256  $fmtzip" | $SHA256SUM -c --quiet - ||
     { echo "fetch: SHA-256 mismatch for $fmtzip" >&2; exit 1; }
 echo "fetch: $fmtzip"

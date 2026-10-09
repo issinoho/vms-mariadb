@@ -5,6 +5,7 @@
 # Log: out/install_db-<node>.log; exit 0 only on "INSTALL_DB: done".
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 node=${1:?usage: install_db.sh <node> [datadir-name]}
 dname=${2:-DATA}
 . "$top/upstream.conf"

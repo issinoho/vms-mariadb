@@ -7,6 +7,7 @@
 # the checks that were not answered from cmake/os/OpenVMSCache.cmake.
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 . "$top/upstream.conf"
 cfg=${1:?usage: host_configure.sh <config>}
 stage=$top/staging/$UPSTREAM_NAME-$UPSTREAM_VERSION
@@ -28,7 +29,7 @@ if [ ! -f "$native/import_executables.cmake" ]; then
     rm -rf "$native"; mkdir -p "$native"
     (cd "$native" && cmake "$stage" -DWITH_SSL=system -DWITH_UNIT_TESTS=OFF \
         -DWITH_WSREP=OFF -DPLUGIN_INNOBASE=NO -DWITH_EMBEDDED_SERVER=OFF \
-        > cmake.out 2>&1 && make -j"$(nproc)" import_executables > make.out 2>&1) || {
+        > cmake.out 2>&1 && make -j"$(getconf _NPROCESSORS_ONLN)" import_executables > make.out 2>&1) || {
         echo "host_configure: native generator build failed (see $native)" >&2
         rm -f "$native/import_executables.cmake"; exit 1; }
 fi

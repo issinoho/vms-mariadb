@@ -9,6 +9,7 @@
 # WAIT hangs in sessions started over ssh.  Logs: ...-part<k>.log.
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 node=${1:?usage: build.sh <node> <config> [target] [KEEP_GOING]}
 cfg=${2:?usage: build.sh <node> <config> [target] [KEEP_GOING]}
 target=${3:-ALL}

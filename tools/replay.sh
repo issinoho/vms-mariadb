@@ -11,6 +11,7 @@
 # until replay_gen.py finds nothing new.
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 node=${1:?usage: replay.sh <node> <config>}
 cfg=${2:?usage: replay.sh <node> <config>}
 bdir=$top/cache/cmake-$cfg

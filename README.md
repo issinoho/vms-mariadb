@@ -221,6 +221,7 @@ Problems users have reported, and what to do. Each has an entry in
 | `BUILD: compiler self-check failed` | Before each build, `vms/tests/calloc_shape_test.c` is compiled with the build's flags; VSI clang's memset/bzero lowering returned the wrong pointer. Check that `overlay/vms/config/clang_common.rsp` still has `-fno-builtin-memset -fno-builtin-bzero`, or the compiler changed. |
 | `sed: 1: "d}": extra characters at the end of d command` (macOS) | An older checkout: `git pull`, then `tools/prepare.sh`. |
 | `'probes_mysql_dtrace.h' file not found` (macOS host) | An older checkout enabled DTrace because the host has `dtrace`: `git pull`, then `tools/prepare.sh`. |
+| `needs bash 4 or later` or `not found on this host: ...` | The host scripts check for these first: install the tools named (on macOS, `brew install bash` with Homebrew's `bin` first in `PATH`). |
 | `kit: client build failed` | The build's own output is in `out/kit-build-<node>-<config>.txt`. |
 | A fix in a header, or a new clang flag, makes no difference | MMS tracks neither headers nor flags: `tools/build.sh <node> <config> CLEAN`, then build again. |
 
@@ -259,8 +260,9 @@ choice and the alternatives considered.
 
 ## How to build
 
-The build runs from a Linux host (macOS is untried: the scripts need bash 4 or later and
-`sha256sum`) that has CMake, a native C/C++ toolchain (for MariaDB's
+The build runs from a Linux or macOS host (macOS is not tested here, but a user's build from
+macOS 26 got to the node) with bash 4 or later (macOS's `/bin/bash` is 3.2: use Homebrew's;
+the scripts check) that has CMake, a native C/C++ toolchain (for MariaDB's
 generators) and ssh/sftp access to an OpenVMS x86-64 node with VSI C++ 10.1, MMS, the SSL3
 kit and a clang build of [vms-pcre2](https://github.com/issinoho/vms-pcre2) (`PCRE2$ROOT`,
 the 8th column of `tools/nodes.conf`). Work directories must be on ODS-5 volumes.

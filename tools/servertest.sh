@@ -9,6 +9,7 @@
 # Log: out/servertest-<node>.log; exit 0 only if everything passed.
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 node=${1:?usage: servertest.sh <node>}
 port=${PORT:-3307}
 . "$top/upstream.conf"
@@ -103,7 +104,12 @@ echo "== restart" | tee -a "$log"
 VMS_TIMEOUT=600 "$top/tools/server.sh" "$node" stop >> "$log" 2>&1 || true
 "$top/tools/server.sh" "$node" start >> "$log" 2>&1
 read -r _ _ HOST _ _ _ _ < <(awk -v n="$node" '$1==n' "$top/tools/nodes.conf")
-for _ in $(seq 1 60); do timeout 5 bash -c "exec 3<>/dev/tcp/$HOST/$port" 2>/dev/null && break; sleep 5; done
+# Wait for the port (python3, not "timeout": macOS has no timeout command).
+for _ in $(seq 1 60); do
+    python3 -c 'import socket, sys; socket.create_connection((sys.argv[1], int(sys.argv[2])), 5)' \
+        "$HOST" "$port" 2>/dev/null && break
+    sleep 5
+done
 out=$(run_sql persist); echo "$out" >> "$log"
 check persist 'persist aria=20000,myisam=19990,csv=1000,mem=0' "$out"
 check persist_check 'vmsengines.t_aria	check	status	OK' "$out"

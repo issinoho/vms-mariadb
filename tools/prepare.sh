@@ -14,6 +14,7 @@
 set -euo pipefail
 
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 . "$top/upstream.conf"
 name=$UPSTREAM_NAME-$UPSTREAM_VERSION
 tarball=$top/cache/$(basename "$UPSTREAM_URL")
@@ -22,6 +23,8 @@ stage=$top/staging/$name
 step() { echo "prepare: $*"; }
 die() { echo "prepare: error: $*" >&2; exit 1; }
 
+# Everything prepare and its helpers run on this host, named at once if missing.
+need_tools curl gpg tar patch cpio unzip awk sed cmake make cc c++ python3
 "$top/tools/fetch.sh" >/dev/null
 
 step "extracting $name"

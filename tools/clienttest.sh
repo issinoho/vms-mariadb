@@ -5,6 +5,7 @@
 # out/clienttest-<node>.log; exit status 0 only if every test passed.
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 node=${1:?usage: clienttest.sh <node>}
 . "$top/upstream.conf"
 . "$top/tools/testdb.conf"

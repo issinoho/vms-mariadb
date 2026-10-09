@@ -8,6 +8,7 @@
 # names and LF line ends.
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 node=${1:?usage: sysroot.sh <node>}
 read -r _ _ HOST PORT USER _ _ < <(awk -v n="$node" '$1==n' "$top/tools/nodes.conf")
 dst=$top/cache/vms-sysroot/include/openssl

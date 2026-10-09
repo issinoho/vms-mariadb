@@ -8,6 +8,7 @@
 # Log: out/loadcycle-<node>.log; exit 0 only if every cycle matched.
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 node=${1:?usage: loadcycle.sh <node> [rows] [cycles]}
 rows=${2:-1000000}
 cycles=${3:-5}

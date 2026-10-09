@@ -10,6 +10,7 @@
 #                                 patches/series, and copy b/ into staging/
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 . "$top/upstream.conf"
 stage=$top/staging/$UPSTREAM_NAME-$UPSTREAM_VERSION
 work=$top/cache/patchwork

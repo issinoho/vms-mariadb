@@ -3,6 +3,7 @@
 # output as docs/env-<node>.txt, with the node name and address left out.
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 node=${1:?usage: recon.sh <node>}
 read -r _ _ HOST _ _ _ _ < <(awk -v n="$node" '$1==n' "$top/tools/nodes.conf")
 out=$top/docs/env-$node.txt

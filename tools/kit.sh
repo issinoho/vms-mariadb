@@ -6,6 +6,7 @@
 # Logs: out/build-<node>-<config>.log, out/kit-<node>.log.
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 node=${1:-x86}
 . "$top/upstream.conf"
 remote=$(echo "$UPSTREAM_NAME-$UPSTREAM_VERSION" | tr . _)

@@ -10,6 +10,7 @@
 # run writes docs/probes-<node>-<compiler>-<sets>.txt.
 set -euo pipefail
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 node=${1:?usage: probe.sh <node> [CLANG|CC]}
 mode=${2:-CC}
 sets=${PROBE_SETS:-HFGRC}

@@ -13,6 +13,7 @@
 set -euo pipefail
 
 here=$(cd "$(dirname "$0")" && pwd)
+. "$here/hostenv.sh"
 conf=$here/nodes.conf
 key=${VMS_SSH_KEY:-$HOME/.ssh/vms_ed25519}
 

@@ -509,3 +509,19 @@ x86`: SERVERTEST 14/14, its client suite 16/16 (REFUSED included). `tools/client
 against the remote 11.8.6 server: REFUSED and the failed-login tests pass, but every login
 fails with `Access denied for user 'vmstest'@'_gateway'`: that server now sees the node by
 another address (it passed 15/15 at 14:24 today), not a client change. Not rerun since.
+
+## Host scripts: checked up front for macOS (2026-10-09)
+
+Left open by the macOS reports above: `mapfile` (bash 4+), `sha256sum`, and two more found
+in a sweep, `nproc` (host_configure.sh) and `timeout` (servertest.sh), none of them on a
+stock Mac.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| T | (risk) under macOS's `/bin/bash` 3.2, `mapfile: command not found` part-way through; `sha256sum`, `nproc`, `timeout`: command not found | GNU/bash-4 assumptions | `tools/hostenv.sh`, sourced by every host script: stops at once under bash < 4 saying how to get a newer one, sets `$SHA256SUM` (`shasum -a 256` without `sha256sum`), and `need_tools` names every missing tool (prepare.sh, fetch.sh, push.sh). `nproc` -> `getconf _NPROCESSORS_ONLN`; servertest waits for the port with python3. bash 4 is still required (no bash 3.2 here to test against) |
+
+Tested on Linux only: the bash check under dash (stops, rc 2); fetch.sh with a `PATH` lacking
+`sha256sum` (shasum verifies both files; a wrong hash fails, rc 1); prepare.sh without
+`unzip`/`cpio` (`not found on this host: cpio unzip`); push.sh through shasum (0 changed of
+2091: the manifests agree); prepare.sh; `tools/servertest.sh x86` 14/14 (client suite 16/16)
+including the restart's port wait. Still not run on a Mac.

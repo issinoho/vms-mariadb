@@ -11,6 +11,7 @@ set -euo pipefail
 export LC_ALL=C   # sort and comm must agree on collation
 
 top=$(cd "$(dirname "$0")/.." && pwd)
+. "$top/tools/hostenv.sh"
 node=${1:?usage: push.sh <node> <config>}
 cfg=${2:?usage: push.sh <node> <config>}
 . "$top/upstream.conf"
@@ -21,12 +22,13 @@ dirs=$stage/vms/build/$cfg/PUSHDIRS.TXT
 [ -f "$dirs" ] || { echo "push: run tools/prepare.sh first" >&2; exit 1; }
 
 read -r _ _ HOST PORT USER WORKDIR SFTPDIR < <(awk -v n="$node" '$1==n' "$top/tools/nodes.conf")
+need_tools sftp ${SHA256SUM%% *}
 manifest=$top/cache/pushed-$name-$node.sha
 [ "${PUSH_ALL:-}" = 1 ] && rm -f "$manifest"
 touch "$manifest"
 list=$top/cache/push-$name-$node.sha
 ( cd "$stage" && { find . -maxdepth 1 -type f; while read -r d; do find "./$d" -type f; done < "$dirs"; } |
-    sed 's|^\./||' | sort -u | tr '\n' '\0' | xargs -0 sha256sum ) > "$list"
+    sed 's|^\./||' | sort -u | tr '\n' '\0' | xargs -0 $SHA256SUM ) > "$list"
 changed=$(comm -23 <(awk '{print $2" "$1}' "$list" | sort) \
                    <(awk '{print $2" "$1}' "$manifest" | sort) | awk '{print $1}')
 echo "push: -> $node:[.$(echo "$remote" | tr a-z A-Z)]: $(echo "$changed" | grep -c . || true) changed of $(wc -l < "$list") files"
