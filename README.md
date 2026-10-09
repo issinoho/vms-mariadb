@@ -37,7 +37,7 @@ patches in `patches/`, adds our files from `overlay/`, configures with CMake on 
 | Stage | Deliverable | Status |
 |---|---|---|
 | A | Connector/C and the clients | done: 15/15 client tests against MariaDB 11.8, TLS 1.3, interactive use |
-| B | `mariadbd` with Aria, MyISAM, MEMORY, CSV, MRG_MyISAM, SEQUENCE | server tests 12/12; 1,000,000-row (150 MB) loads and 5/5 stop/start cycles with identical checksums; remote clients from Linux over TLS; a 24-hour soak still to run |
+| B | `mariadbd` with Aria, MyISAM, MEMORY, CSV, MRG_MyISAM, SEQUENCE | server tests 14/14; 1,000,000-row (150 MB) loads and 5/5 stop/start cycles with identical checksums; remote clients from Linux over TLS; a 24-hour soak still to run |
 | C | InnoDB, durability-tested | not started |
 | D | PCSI kit, docs, upstream patches | preview kit ([v11.4.13-vms2](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms2)) builds and passes an install check, including the server as a service |
 
@@ -45,7 +45,7 @@ patches in `patches/`, adds our files from `overlay/`, configures with CMake on 
 |---|---|
 | Server and clients build (MMS from CMake's file API) | yes (600 server objects) |
 | Client suite over TCP and TLS, against a remote server and against the VMS server | 15/15 |
-| Server tests: engines, joins, CHECK/REPAIR/OPTIMIZE, restart | 12/12 |
+| Server tests: engines, joins, CHECK/REPAIR/OPTIMIZE, restart, DROP DATABASE | 14/14 |
 | Load and restart: 1M rows into Aria and MyISAM, 5 clean stop/start cycles | pass |
 | Kit install, INSTALL_DB, START, clients from the kit, STOP, remove | clean |
 | Service: configure (account, data, passwords), boot start as the account, clean shutdown | pass |
@@ -221,6 +221,7 @@ means a Unix-domain socket, which VMS lacks. TLS works, through the SSL3 kit.
 | 0024 | Aria: no directory descriptor. |
 | 0025 | `mysqld.cc`: a socket pair, not a pipe, wakes the listen loop (`poll()` reports a pipe readable early). |
 | 0026 | clients: `main()`'s status through `exit()`, so a failing mariadb-admin, -dump, -check, -import or my_print_defaults gives DCL an error status. |
+| 0027 | `my_readlink()`: a directory is not a symlink (VMS `readlink()` gives `ENOENT` for it, not `EINVAL`), so `DROP DATABASE` removes the directory. |
 
 Each patch is guarded by `__VMS` and carries its reason; [docs/PORTING_LOG.md](docs/PORTING_LOG.md)
 records every failure and fix, and [docs/DECISIONS.md](docs/DECISIONS.md) every design

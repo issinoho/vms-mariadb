@@ -58,6 +58,7 @@ USE vmsengines;
 SELECT CONCAT('persist aria=', COUNT(*), ',myisam=', (SELECT COUNT(*) FROM t_myisam), ',csv=', (SELECT COUNT(*) FROM t_csv), ',mem=', (SELECT COUNT(*) FROM t_mem)) FROM t_aria;
 CHECK TABLE t_aria, t_myisam, t_csv;
 DROP DATABASE vmsengines;
+SELECT CONCAT('dropped_left=', COUNT(*)) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='vmsengines';
 SELECT 'persist-done' AS r;
 SQL
 "$top/tools/vms.sh" "$node" put "$tests"/*.sql -- "$(echo "$remote" | tr A-Z a-z)/vms/tests" >/dev/null
@@ -106,6 +107,10 @@ for _ in $(seq 1 60); do timeout 5 bash -c "exec 3<>/dev/tcp/$HOST/$port" 2>/dev
 out=$(run_sql persist); echo "$out" >> "$log"
 check persist 'persist aria=20000,myisam=19990,csv=1000,mem=0' "$out"
 check persist_check 'vmsengines.t_aria	check	status	OK' "$out"
+# DROP DATABASE: the client stops at an error, so persist-done only if it
+# worked (patch 0027); and the database must be gone.
+check drop_database 'dropped_left=0' "$out"
+check persist_done 'persist-done' "$out"
 
 echo "SERVERTEST: $pass passed, $fail failed" | tee -a "$log"
 [ "$fail" -eq 0 ]

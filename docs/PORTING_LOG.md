@@ -447,3 +447,13 @@ own `LIB$INITIALIZE` entry never called with clang, so a probe on x86 linked
 `PSECT_ATTR=LIB$INITIALIZE,CON,REL,GBL,NOSHR,NOEXE,RD,NOWRT`): all eleven D6 features read 1,
 `getcwd()` and `argv[0]` are UNIX-form; the same program without the object reads 0 and VMS
 form. So the D6 features have been in effect in every clang build; nothing to change.
+
+## DROP DATABASE left the database behind (2026-10-09)
+
+Found while checking the D6 features on the 3307 test server: `DROP DATABASE vmsefs` deleted
+the tables, then failed. `servertest.sh` drops `vmsengines` at the end but did not check it, so
+`vmsengines` had been left behind by every run since Stage B.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| R | `ERROR 24 (HY000): Can't read value for symlink './vmsefs' (Errcode: 2 "no such file or directory")`; tables gone, database still listed, directory left | `rm_dir_w_symlink()` (`sql/sql_db.cc`) calls `my_readlink()` on the database directory; `my_readlink()` takes only `EINVAL` as "not a symlink". A probe on x86 with the D6 features: `readlink()` gives `EINVAL` on a file but `ENOENT` on an existing directory (`dir`, `./dir`, `dir/`); symlinks to files and directories read correctly | patch 0027: under `__VMS`, `ENOENT` from `readlink()` on a path that `lstat()` finds and that is not a symlink counts as `EINVAL`. x86: `servertest.sh` 14/14 with two new checks (`drop_database`, `persist_done`); a database named `` `drop-me.x` `` with Aria, MyISAM and CSV tables, the leftover `vmsefs`, and `DROP DATABASE IF EXISTS` of a missing one: all dropped, directories gone |

@@ -24,3 +24,4 @@
 0024-aria-no-directory-fd-vms.patch
 0025-termination-socketpair-vms.patch
 0026-client-main-exit-status-vms.patch
+0027-my-readlink-directory-vms.patch

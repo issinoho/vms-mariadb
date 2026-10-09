@@ -1,0 +1,45 @@
+Subject: mysys: my_readlink treats a directory as not a symlink on OpenVMS
+
+OpenVMS readlink() fails with ENOENT on an existing directory, where POSIX
+and regular files give EINVAL (probe on x86 with the D6 features: file
+EINVAL, directory ENOENT with or without ./ or a trailing slash, symlinks
+to files and directories read correctly). my_readlink() takes only EINVAL
+as "not a symlink", so rm_dir_w_symlink() failed and DROP DATABASE stopped
+with "Can't read value for symlink './db' (Errcode: 2)" after deleting the
+tables, leaving the database directory. On ENOENT, an lstat() that finds a
+non-symlink now counts as EINVAL.
+
+--- a/mysys/my_symlink.c	2026-10-09 12:43:38.600188926 +0100
++++ b/mysys/my_symlink.c	2026-10-09 12:43:46.175549073 +0100
+@@ -23,6 +23,9 @@
+ #include <sys/param.h>
+ #include <sys/stat.h>
+ #endif
++#ifdef __VMS
++#include <sys/stat.h>
++#endif
+ 
+ static int always_valid(const char *filename __attribute__((unused)))
+ {
+@@ -55,7 +58,20 @@
+   if ((length=readlink(filename, to, FN_REFLEN-1)) < 0)
+   {
+     /* Don't give an error if this wasn't a symlink */
+-    if ((my_errno=errno) == EINVAL)
++    my_errno= errno;
++#ifdef __VMS
++    /*
++      OpenVMS's readlink() fails with ENOENT, not EINVAL, on an existing
++      directory (regular files give EINVAL): DROP DATABASE stopped with
++      "Can't read value for symlink './db'" after deleting the tables.
++    */
++    {
++      struct stat st;
++      if (my_errno == ENOENT && !lstat(filename, &st) && !S_ISLNK(st.st_mode))
++        my_errno= EINVAL;
++    }
++#endif
++    if (my_errno == EINVAL)
+     {
+       result= 1;
+       strnmov(to, filename, FN_REFLEN);
