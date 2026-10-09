@@ -425,3 +425,25 @@ here), which stopped at the first file that includes `probes_mysql.h`.
 The `'format' attribute argument not supported: vms_lp64_printf` warnings in the same log are
 expected: `vms_lp64.h` (D12) defines `printf` as an object-like macro, so `format(printf, ...)`
 attributes name `vms_lp64_printf` and clang ignores them.
+
+## clang memset/bzero miscompile (2026-10-09, found porting PHP)
+
+Porting PHP with the same VSI clang 10.0.1 (vms-php PORTING_LOG #17), `ecalloc()` returned
+blocks that were already in use. VSI clang lowers `memset()` and `bzero()` to `OTS$FILL`, but
+its optimiser still assumes the call returns its destination, as `memset` does: the shape
+`p = alloc(n); if (p) bzero(p, n); return p;` becomes a tail call to `OTS$FILL`, and the caller
+gets whatever `OTS$FILL` left in RAX. MariaDB has this shape in `THD::calloc`
+(`sql/sql_class.h`, bzero), `ma_calloc_root` (`libmariadb/mariadb_rpl.c`) and
+`new_ma_field_extension` (`libmariadb/mariadb_lib.c`). No failure seen here that could be traced
+to it; it is a latent wrong-pointer bug in every clang build so far.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| C | (latent) a calloc-style helper returns a pointer to some other block | as above. vms-php `probes/r_calloc_shape.c` on x86: the bzero shape still returned the wrong block with `-fno-builtin-memset` alone; with both flags it returned its own block | `-fno-builtin-memset -fno-builtin-bzero` in `vms/config/clang_common.rsp`: the calls stay real C RTL calls. x86, from CLEAN: client and server build; `tools/servertest.sh x86` 12/12 (client suite 15/15). Not yet run: `clienttest.sh`, `loadcycle.sh` (no `tools/testdb.conf` on this host) |
+
+Checked at the same time: `vms_crtl_init.c` (D6) does run in our images. vms-php found its
+own `LIB$INITIALIZE` entry never called with clang, so a probe on x86 linked
+`[.vmsobj]vms_crtl_init.obj` exactly as the client `.opt` files do (with
+`PSECT_ATTR=LIB$INITIALIZE,CON,REL,GBL,NOSHR,NOEXE,RD,NOWRT`): all eleven D6 features read 1,
+`getcwd()` and `argv[0]` are UNIX-form; the same program without the object reads 0 and VMS
+form. So the D6 features have been in effect in every clang build; nothing to change.

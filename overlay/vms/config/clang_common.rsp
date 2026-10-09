@@ -21,6 +21,16 @@
 # It applies to C names; C++ calls into libc++ link and run unchanged
 # (tested; docs/PORTING_LOG.md, Stage A round 4).
 -names2=shortened
+# VSI clang lowers memset() and bzero() to OTS$FILL but its optimiser still
+# assumes the call returns its destination (as memset does), so
+# "if ((p= alloc_root(...))) bzero(p, size); return p;" (THD::calloc,
+# ma_calloc_root, new_ma_field_extension) became a tail call returning whatever
+# OTS$FILL left in RAX: a pointer to some other block (found porting PHP,
+# vms-php PORTING_LOG #17; reproduced in vms-php probes/r_calloc_shape.c;
+# docs/PORTING_LOG.md here).  With these, explicit calls stay real C RTL
+# calls (decc$_memset64, which returns its destination).
+-fno-builtin-memset
+-fno-builtin-bzero
 # 64-bit 'long' in the C RTL interfaces (D12): strtol & co. and the printf and
 # scanf families; see the header.  Relative to the top of the tree, where the
 # build runs.
