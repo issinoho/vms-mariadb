@@ -557,3 +557,16 @@ of them (`m_ctype.h`, `my_sys.h`, `maria_def.h`, `rpl_reporting.h`, `my_stacktra
 Batch: README "How to build" now shows `SUBMIT ... /PARAMETERS=(SERVER,ALL,"","<pcre2 tree>")
 [.VMS]BUILD.COM`. Run on x86 (queue X86VMS_BATCH) with target `LIB_DBUG`: both self-checks
 passed and the log ended in `BUILD: done`.
+
+## PCRE2$ROOT is the install tree, not vms-pcre2's top (2026-10-10)
+
+Follow-up from the same user. They found the three quoted `#include "pcre2.h"` (`sql/item_cmpfunc.cc`,
+`sql/json_schema.cc`, `sql/sys_vars.cc`) and asked whether DESCRIP.MMS or a patch should fix them,
+and said the options file's `PCRE2$ROOT:[LIB]PCRE2-8.OLB/library` lacked the architecture directory
+(`[INSTALL_X86_64.LIB]`). They were rerunning `[.VMS]BUILD.COM` by hand; with P4
+`SCRATCH:[<user>.PCRE2.]` (a tree with a clang `[LIB]PCRE2-8.OLB`) the server built and linked
+`mariadbd.exe`.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| P | (user) `pcre2.h` not found from the quoted includes; options file "missing" `[INSTALL_X86_64...]` | none in the tree: the generated `-I/PCRE2$ROOT/INCLUDE` is searched for quoted includes too, and `PCRE2$ROOT` is the rooted install tree, so `[LIB]` needs no architecture directory. The include failed only while `PCRE2$ROOT` was undefined or named vms-pcre2's top (BUILD.COM run without P4). `[INSTALL_X86_64.LIB]` would be the VSI C (ILP32) library, and BUILD.COM's clang check looks only at `PCRE2$ROOT:[LIB]`, so an edited `.opt` would get past it | No patch. README Common problems: what `PCRE2$ROOT` names, pass P4 when rerunning BUILD.COM, don't edit the `.opt` files, and `SEARCH [.VMS.BUILD.SERVER]*.OPT PCRE2` to check. Not yet: a BUILD.COM check that the `.opt` files name only `PCRE2$ROOT:[LIB]` |
