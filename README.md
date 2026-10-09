@@ -221,6 +221,7 @@ Problems users have reported, and what to do. Each has an entry in
 | `BUILD: PCRE2$ROOT:[LIB]PCRE2-8.OLB was not built by clang` | The 8th column names vms-pcre2's VSI C tree (`INSTALL_X86_64`); use `INSTALL_X86_64_CLANG` (`@[.VMS]BUILD ALL "" CLANG` in vms-pcre2). |
 | `BUILD: compiler self-check failed` | Before each build, `vms/tests/calloc_shape_test.c` is compiled with the build's flags; VSI clang's memset/bzero lowering returned the wrong pointer. Check that `overlay/vms/config/clang_common.rsp` still has `-fno-builtin-memset -fno-builtin-bzero`, or the compiler changed. |
 | `warning: 'format' attribute argument not supported: vms_lp64_printf [-Wignored-attributes]`, on most files | A tree prepared before patch 0029: harmless (format checking was off). `git pull`, `tools/prepare.sh`, then build from `CLEAN`. `BUILD: format-attribute check failed` means the patch is missing from the tree. |
+| You edited `DESCRIP.MMS` to add `-I PCRE2$ROOT:[...INCLUDE]` | Don't: it already has `-I/PCRE2$ROOT/INCLUDE`, with `PCRE2$ROOT` defined by `BUILD.COM` from its 4th parameter, the rooted clang tree (`dev:[dir.INSTALL_X86_64_CLANG.]`). Run the build through `@[.VMS]BUILD`, not `MMS` directly: it makes that definition and runs the checks above. |
 | `sed: 1: "d}": extra characters at the end of d command` (macOS) | An older checkout: `git pull`, then `tools/prepare.sh`. |
 | `'probes_mysql_dtrace.h' file not found` (macOS host) | An older checkout enabled DTrace because the host has `dtrace`: `git pull`, then `tools/prepare.sh`. |
 | `needs bash 4 or later` or `not found on this host: ...` | The host scripts check for these first: install the tools named (on macOS, `brew install bash` with Homebrew's `bin` first in `PATH`). |
@@ -292,6 +293,24 @@ with an 8th column for the server: vms-pcre2's clang install tree as a rooted di
 the server build refuses a PCRE2 library not compiled by clang. Before MMS runs, `BUILD.COM`
 also compiles and runs a compiler self-check with the build's flags and checks that
 printf-format attributes survive `vms_lp64.h` (see [Common problems](#common-problems)).
+
+**Building on the node, in batch.** `build.sh` pushes the tree and runs `BUILD.COM` over ssh,
+waiting for the whole build. On the node, after `prepare.sh` and a push (`tools/push.sh x86
+server`, or copy `staging/mariadb-11.4.13` across), the same build can run as a batch job,
+with its log in one file:
+
+```
+$ SUBMIT/NOPRINT/NAME=MDBBUILD/LOG_FILE=dev:[dir]MDBBUILD.LOG -
+    /PARAMETERS=(SERVER,ALL,"","dev:[dir.PCRE2-10_49.INSTALL_X86_64_CLANG.]") -
+    dev:[dir.MARIADB-11_4_13.VMS]BUILD.COM
+```
+
+P1 is the configuration (`CLIENT` or `SERVER`), P2 the MMS target (`ALL`, `CLEAN`, or a
+`LIB_` name from `vms/build/<config>/TARGETS.TXT`), P3 `KEEP_GOING` or `""`, P4 the PCRE2
+tree (server only). `BUILD.COM` sets its own default directory, logicals and process
+settings, so it needs nothing from your login; the log ends in `BUILD: done` on success. A
+server build from `CLEAN` takes some hours. Run one build job at a time: the self-checks
+write their output to fixed names in `SYS$SCRATCH`.
 The original plan is in [MARIADB_OPENVMS_PLAN.md](MARIADB_OPENVMS_PLAN.md).
 
 ```
