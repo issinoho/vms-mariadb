@@ -56,6 +56,22 @@ $   write sys$error "BUILD: clang install tree of vms-pcre2, dev:[dir.INSTALL_X8
 $   write sys$error "BUILD: (P4, or the 8th column of tools/nodes.conf for build.sh)"
 $   goto done
 $ endif
+$! ...and it must be the clang (LP64) build: vms-pcre2's VSI C (ILP32) tree has
+$! the same layout and links, but its pointers and longs are half the size.
+$! Objects from clang carry "clang version" (in no VSI C object).
+$ if cfg .eqs. "SERVER"
+$ then
+$   define/user sys$output nla0:
+$   define/user sys$error nla0:
+$   search pcre2$root:[lib]pcre2-8.olb "clang version"
+$   if $severity .ne. 1
+$   then
+$     write sys$error "BUILD: PCRE2$ROOT:[LIB]PCRE2-8.OLB was not built by clang: PCRE2$ROOT must"
+$     write sys$error "BUILD: be vms-pcre2's clang tree, dev:[dir.INSTALL_X86_64_CLANG.], not"
+$     write sys$error "BUILD: INSTALL_X86_64 (VSI C, ILP32; docs/DECISIONS.md D11)"
+$     goto done
+$   endif
+$ endif
 
 $ @[.vms.build.'cfg']mkdirs.com
 $! clang finds a response file only by an absolute UNIX path, not by a
@@ -71,6 +87,52 @@ $ root = root + "/" + e
 $ i = i + 1
 $ goto dirloop
 $dirdone:
+$! Compiler self-check (vms/tests/calloc_shape_test.c): with the build's own
+$! flags, as C and as C++, a calloc-style helper must return its own block
+$! (VSI clang's memset/bzero miscompile; clang_common.rsp).
+$ rsp = root + "/vms/build/" + f$edit(cfg, "LOWERCASE") + "/vms_crtl_init.rsp"
+$! One output file per run: two DEFINE/USERs of one name make two versions,
+$! and only the newer would be read.
+$ set noon
+$ npass = 0
+$ chk = ""
+$ lang = "C"
+$ckrun:
+$ obj = objroot + "/calloc_shape_" + lang
+$ vobj = "[." + objroot + "]calloc_shape_" + lang
+$ out = "sys$scratch:calloc_shape_''lang'.out"
+$ if f$search(out) .nes. "" then delete/nolog 'out';*
+$ opts = ""
+$ if lang .eqs. "CXX" then opts = """-x"" ""c++"" ""-std=gnu++11"""
+$ clang "@''rsp'" 'opts' -c vms/tests/calloc_shape_test.c -o 'obj'.obj
+$ link/exe='vobj'.exe 'vobj'.obj
+$ define/user sys$output 'out'
+$ run 'vobj'.exe
+$ chk = chk + "," + out
+$ if f$search(out) .eqs. "" then goto cknext
+$ open/read ck 'out'
+$ckloop:
+$ read/end=ckend ck line
+$ if line .eqs. "CALLOC_SHAPE: PASS" then npass = npass + 1
+$ goto ckloop
+$ckend:
+$ close ck
+$cknext:
+$ if lang .eqs. "C"
+$ then
+$   lang = "CXX"
+$   goto ckrun
+$ endif
+$ set on
+$ if npass .ne. 2
+$ then
+$   type 'f$extract(1, 999, chk)'
+$   write sys$error "BUILD: compiler self-check failed: a memset/bzero calloc shape returned"
+$   write sys$error "BUILD: the wrong pointer (vms/tests/calloc_shape_test.c; see"
+$   write sys$error "BUILD: -fno-builtin-memset/-bzero in vms/config/clang_common.rsp)"
+$   goto done
+$ endif
+$ write sys$output "BUILD: compiler self-check passed (memset/bzero calloc shape, C and C++)"
 $ mms/description=[.vms.build.'cfg']descrip.mms/macro=("ROOT=''root'")'keep' 'target'
 $ status = $status
 $finish:
