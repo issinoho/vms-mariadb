@@ -72,6 +72,33 @@ $     write sys$error "BUILD: INSTALL_X86_64 (VSI C, ILP32; docs/DECISIONS.md D1
 $     goto done
 $   endif
 $ endif
+$! The images must take PCRE2 from that same library: an options file edited
+$! to name another (e.g. [INSTALL_X86_64.LIB], the VSI C build) would get past
+$! the check above, link, and fail at run time.
+$ if cfg .nes. "SERVER" then goto optdone
+$ nbad = 0
+$optfile:
+$ opt = f$search("[.vms.build.''cfg']*.opt")
+$ if opt .eqs. "" then goto optend
+$ open/read optf 'opt'
+$optline:
+$ read/end=optclose optf line
+$ u = f$edit(line, "UPCASE,TRIM")
+$ if f$locate("PCRE2", u) .eq. f$length(u) then goto optline
+$ if u .eqs. "PCRE2$ROOT:[LIB]PCRE2-8.OLB/LIBRARY" then goto optline
+$ write sys$error "BUILD: ''f$edit(f$parse(opt,,,"NAME"), "UPCASE")'.OPT: ''line'"
+$ nbad = nbad + 1
+$ goto optline
+$optclose:
+$ close optf
+$ goto optfile
+$optend:
+$ if nbad .eq. 0 then goto optdone
+$ write sys$error "BUILD: the options files above must name PCRE2 only as"
+$ write sys$error "BUILD: PCRE2$ROOT:[LIB]PCRE2-8.OLB/library (the clang tree in P4): don't edit"
+$ write sys$error "BUILD: [.VMS.BUILD.SERVER]*.OPT; regenerate them with tools/prepare.sh"
+$ goto done
+$optdone:
 
 $ @[.vms.build.'cfg']mkdirs.com
 $! clang finds a response file only by an absolute UNIX path, not by a
