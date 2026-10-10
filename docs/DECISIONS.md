@@ -446,3 +446,69 @@ Implemented and released in `v11.4.13-vms2` (2026-10-07); the departures from th
 - **A configure procedure**, `VMSMARIADB$CONFIGURE.COM`, run once by SYSTEM, in the manner of
   `TCPIP$CONFIG`: account, data directory, system tables, root password, shutdown account,
   configuration file.
+
+## D16. InnoDB's file I/O: through the D10 layer
+
+**Status:** approved by the user (2026-10-10): option (a).
+
+InnoDB's `os0file.cc` calls `open()`, `pread()`/`pwrite()`, `fsync()`, `ftruncate()`,
+`lseek(SEEK_END)` and `fcntl(F_SETLK)` itself, outside mysys, so every C RTL behaviour D10
+works around (per-descriptor buffers, stale sizes after `ftruncate`, reads past the end
+moving the end of file, stale end of file from a closing writable channel) would apply.
+- (a) **Chosen:** patch `os0file.cc` under `#ifdef __VMS` to call `my_vms_open()`,
+  `my_vms_pread()`/`pwrite()`, `my_vms_fsync()`, `my_vms_chsize()`, `my_vms_lseek()`,
+  `my_vms_fstat()`, `my_vms_close()`, and take `os_file_lock`'s lock on `my_vms_lock_fd()`;
+  the prototypes move to a public header. `vmsfile_test` covers InnoDB's patterns (35/35,
+  PLAN_STAGE_C C0). Costs the layer's `pread` overhead (PLAN_IO).
+- (b) RMS `FOP=UFO` + `$QIO` block I/O for InnoDB files (PLAN_IO Tier 3), with AST
+  completion as a tpool AIO backend: faster and asynchronous, but we would own end of file
+  and file headers before anything runs. Kept for Stage C's performance step (C6).
+- (c) Raw C RTL calls as upstream: rejected; the D10 problems return.
+
+## D17. InnoDB durability defaults: safe first
+
+**Status:** approved by the user (2026-10-10).
+
+`probes/r_fsync.c`: a `pwrite()` is in the file at once (a separate `$QIO` channel reads it
+before `fsync()`); a process deleted by `$DELPRC` (as `STOP/ID` does) without `fsync()` loses
+nothing, and the header's end of file is right; 16 KB write + `fsync` costs ~1.9 ms,
+`O_DSYNC` gives nothing for the log. Defaults: `innodb_flush_method=fsync` (upstream's
+fallback without `O_DIRECT`), `innodb_doublewrite=ON`, `innodb_checksum_algorithm=full_crc32`,
+`innodb_flush_log_at_trx_commit=1`, `innodb_log_file_mmap=OFF`, `innodb_use_native_aio=OFF`.
+Alternatives (relaxed flushing, `O_DSYNC`) wait for measurements. Power loss is untested.
+
+## D18. InnoDB in the kit: built in; CONFIGURE asks the default engine
+
+**Status:** approved by the user (2026-10-10).
+
+InnoDB is linked in statically like the other engines. With it, 11.4's default engine is
+InnoDB and the system tables `innodb_table_stats`, `innodb_index_stats`,
+`transaction_registry` and `gtid_slave_pos` are InnoDB. `VMSMARIADB$CONFIGURE.COM` asks which
+default engine a new data directory gets; README.VMS documents `mariadb-upgrade` for an
+existing Aria-only data directory. Alternatives: built in with `default_storage_engine=Aria`
+in the shipped `MY.CNF` (hides InnoDB from new users), or a separate kit option until
+Stage C ends (two kit variants to test). Existing installations are never changed by us.
+
+## D19. Crash testing: STOP/ID by the tools, VM resets only by the user
+
+**Status:** approved by the user (2026-10-10).
+
+`tools/crashcycle.sh` kills our own test server (port 3307) with `STOP/ID` under load and
+checks recovery. A VM hard reset, closer to power loss, also takes down everything else on
+the node (the user's 3306 server): the tools prepare the run and the checks, the user resets
+the VM when it suits them. Alternative: no resets, power loss documented as untested.
+
+## D20. InnoDB's buffer pool memory: reserve only the pool's size on VMS
+
+**Status:** follows from C0 (2026-10-10); implementation in C2.
+
+11.4 reserves `innodb_buffer_pool_size_max` (default 8 TB on 64-bit) with a `PROT_NONE`
+`mmap()` and commits the pool inside it. On VMS (`probes/r_vmem.c`) every `mmap()` of 4 GB
+or more fails, a `PROT_NONE` mapping is charged in full against the page file quota, and a
+failed one may still be charged (probing 4-6 GB hung the node; CLAUDE.md pitfalls).
+- **Chosen for now:** on VMS, `size_in_bytes_max_default{0}` as upstream has for 32-bit and
+  AIX: the reservation is the pool itself, so `innodb_buffer_pool_size` cannot grow online
+  past its start value, and pools stay under 4 GB. Commit, decommit and recommit inside a
+  1 GB reservation work.
+- Later (C6): a VMS allocator for 4 GB and more (64-bit `malloc`, which gave 16 x 256 MB
+  above 4 GB in Phase 0, or `$CREATE_REGION_64`/`$EXPREG_64`).

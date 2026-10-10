@@ -75,6 +75,10 @@ tools/vms.sh <node> dcl '<cmd>' ...   # run DCL; also run/batch/put/get
 - **ODS-5 has no sparse files**: seeking past the end and writing (or `fseek` on a stdio
   stream) allocates and zero-fills real blocks. A test that seeked to 5 GB nearly filled
   the work disk. Never probe large offsets on a new file.
+- **Never probe big memory mappings**: the C RTL charges a `PROT_NONE` `mmap()` in full
+  against the page file, even when it fails. 4-6 GB attempts exhausted the x86 node's
+  1.8 GB of page files (2026-10-10): `SHOW SYSTEM` hung over ssh and the node was
+  rebooted. `probes/r_vmem.c` caps its sizes at a quarter of the quota left.
 - **MMS tracks neither headers nor compile flags.** After a patch touches a header, or after
   changing `clang_common.rsp`, run `tools/build.sh x86 client CLEAN` before `ALL` (a header
   change once left the old objects in place and the test still failed).
