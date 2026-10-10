@@ -25,8 +25,10 @@ say() { echo "$*" | tee -a "$log"; }
 say "load: $rows rows into Aria and MyISAM"
 # While loading, time a fresh connection every 30 s: the server must keep
 # answering other clients (a busy thread once starved them for minutes).
-( while :; do t=$(date +%s.%N); q "SELECT 1" >/dev/null 2>&1
-    printf 'probe: connect+query %.1fs\n' "$(echo "$(date +%s.%N) - $t" | bc)" >> "$log"; sleep 30; done ) &
+# (python3 for the clock: BSD date on macOS has no %N.)
+now_s() { python3 -c 'import time; print(time.time())'; }
+( while :; do t=$(now_s); q "SELECT 1" >/dev/null 2>&1
+    printf 'probe: connect+query %.1fs\n' "$(python3 -c "print($(now_s) - $t)")" >> "$log"; sleep 30; done ) &
 probe=$!
 q "DROP TABLE IF EXISTS big_aria, big_myisam;
    CREATE TABLE big_aria (id INT PRIMARY KEY, k BIGINT, s VARCHAR(100), KEY(k)) ENGINE=Aria;
