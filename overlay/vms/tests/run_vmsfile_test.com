@@ -25,3 +25,4 @@ $ deassign/process decc$file_sharing
 $ deassign/process decc$fd_locking
 $ deassign/process decc$efs_charset
 $ if f$search("vmsfile_test.dat") .nes. "" then delete/nolog vmsfile_test.dat;*
+$ if f$search("vmsfile_test*.ibd") .nes. "" then delete/nolog vmsfile_test*.ibd;*
