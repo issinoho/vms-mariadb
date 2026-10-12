@@ -21,7 +21,8 @@ usage() { sed -n '2,12p' "$0" >&2; exit 2; }
 [ $# -ge 2 ] || usage
 node=$1 op=$2; shift 2
 
-read -r _ ARCH HOST PORT USER WORKDIR SFTPDIR < <(awk -v n="$node" '$1==n' "$conf") || true
+# (the trailing _ takes the optional 8th column, the PCRE2 tree)
+read -r _ ARCH HOST PORT USER WORKDIR SFTPDIR _ < <(awk -v n="$node" '$1==n' "$conf") || true
 [ -n "${HOST:-}" ] || { echo "vms.sh: unknown node '$node' (see $conf)" >&2; exit 2; }
 
 ssh_opts=(-i "$key" -o BatchMode=yes -o ConnectTimeout=15 -o ServerAliveInterval=30)

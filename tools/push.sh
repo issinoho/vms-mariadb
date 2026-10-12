@@ -21,7 +21,8 @@ remote=$(echo "$name" | tr . _)
 dirs=$stage/vms/build/$cfg/PUSHDIRS.TXT
 [ -f "$dirs" ] || { echo "push: run tools/prepare.sh first" >&2; exit 1; }
 
-read -r _ _ HOST PORT USER WORKDIR SFTPDIR < <(awk -v n="$node" '$1==n' "$top/tools/nodes.conf")
+# (the trailing _ takes the optional 8th column, the PCRE2 tree)
+read -r _ _ HOST PORT USER WORKDIR SFTPDIR _ < <(awk -v n="$node" '$1==n' "$top/tools/nodes.conf")
 need_tools sftp ${SHA256SUM%% *}
 manifest=$top/cache/pushed-$name-$node.sha
 [ "${PUSH_ALL:-}" = 1 ] && rm -f "$manifest"
@@ -43,8 +44,15 @@ batch=$top/cache/push-$name-$node.sftp
         sort -u | sed "s|^|-mkdir $remote/|"
     { echo "$changed" | grep . || true; } | while read -r f; do echo "put $stage/$f $remote/$f"; done
 } > "$batch"
+rc=0
 sftp -P "$PORT" -i "${VMS_SSH_KEY:-$HOME/.ssh/vms_ed25519}" -o BatchMode=yes -b "$batch" "$USER@$HOST" \
-    2>&1 >/dev/null | grep -vE '^ *Welcome to|^ *$|^remote mkdir .*Failure' >&2 || true
+    2>&1 >/dev/null | { grep -vE '^ *Welcome to|^ *$|^remote mkdir .*Failure' >&2 || true; } || rc=$?
+# A failed batch (no work directory, a put refused) must not reach the manifest:
+# the files would count as pushed, and later pushes would never send them.
+if [ "$rc" -ne 0 ]; then
+    echo "push: sftp to $node failed (status $rc; is $SFTPDIR there?); nothing recorded as pushed" >&2
+    exit 1
+fi
 # Merge, not replace: the manifest covers every configuration pushed to this
 # node.  Replacing it with the client's list once made the next server push
 # resend ~3,000 server-only files, and MMS then rebuilt the whole server.
