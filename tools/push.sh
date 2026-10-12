@@ -32,6 +32,30 @@ list=$top/cache/push-$name-$node.sha
     sed 's|^\./||' | sort -u | tr '\n' '\0' | xargs -0 $SHA256SUM ) > "$list"
 changed=$(comm -23 <(awk '{print $2" "$1}' "$list" | sort) \
                    <(awk '{print $2" "$1}' "$manifest" | sort) | awk '{print $1}')
+# The build's own files on the node (vms/, its procedures, options and response
+# files) must still be what was pushed: a user's hand-edited linker options once
+# stayed through every push, since only files changed in staging/ are sent.  Fetch
+# the ones not being sent anyway; any that differ (or are gone) are sent again.
+edited=
+check=$(comm -12 <(awk '{print $2" "$1}' "$list" | sort) <(awk '{print $2" "$1}' "$manifest" | sort) |
+    awk '{print $1}' | grep -E "^vms/([^/]*|kit/.*|config/.*|build/$cfg/[^/]*)\$" || true)
+if [ -n "$check" ]; then
+    fetched=$top/cache/push-check-$node
+    rm -rf "$fetched"; mkdir -p "$fetched"
+    { echo "cd $SFTPDIR/$remote"
+      echo "$check" | while read -r f; do
+          mkdir -p "$fetched/$(dirname "$f")"; echo "-get $f $fetched/$f"; done
+    } | sftp -P "$PORT" -i "${VMS_SSH_KEY:-$HOME/.ssh/vms_ed25519}" -o BatchMode=yes -b - "$USER@$HOST" \
+        >/dev/null 2>&1 || true
+    edited=$(echo "$check" | while read -r f; do
+        cmp -s "$fetched/$f" "$stage/$f" || echo "$f"; done)
+    if [ -n "$edited" ]; then
+        echo "push: on $node, not as pushed (edited there?); sending staging/'s copy again" >&2
+        echo "  (the node keeps the old one as the previous version):" >&2
+        echo "$edited" | sed 's/^/    /' >&2
+        changed=$(printf '%s\n%s\n' "$changed" "$edited" | grep . | sort -u)
+    fi
+fi
 echo "push: -> $node:[.$(echo "$remote" | tr a-z A-Z)]: $(echo "$changed" | grep -c . || true) changed of $(wc -l < "$list") files"
 batch=$top/cache/push-$name-$node.sftp
 {
