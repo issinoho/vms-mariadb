@@ -2,7 +2,7 @@ $! TEST_CLIENT.COM - Stage A tests: the native clients against a remote server.
 $!
 $! Usage: @[.VMS]TEST_CLIENT host port user password database
 $! (tools/clienttest.sh passes these from tools/testdb.conf).  The SQL for
-$! each test is in [.VMS.TESTS]*.SQL, which clienttest.sh writes, so no SQL
+$! each test is in [.VMS.TESTS]*.SQL, which clienttest_sql.sh writes, so no SQL
 $! goes through DCL quoting.  Uses tables VMS_T and VMS_BIG and drops them.
 $! Prints "TEST <name>: PASS|FAIL <detail>" per test and a summary line
 $! "CLIENTTEST: <n> passed, <m> failed".
@@ -28,6 +28,14 @@ $! stdout and stderr go to separate files: two redirections to one file name
 $! create two versions of it, and only the newer one would be searched.
 $ out == "sys$scratch:test_client.out"
 $ err == "sys$scratch:test_client.err"
+$! Without the SQL every test fails on "Failed to open file": say why once.
+$ if f$search("[.vms.tests]version.sql") .eqs. ""
+$ then
+$   say "CLIENTTEST: no [.VMS.TESTS]*.SQL: run tools/clienttest.sh or tools/servertest.sh,"
+$   say "CLIENTTEST: which put them there (tools/clienttest_sql.sh)"
+$   say "CLIENTTEST: 0 passed, 1 failed"
+$   exit 44
+$ endif
 $!
 $ call sql VERSION version          ! SELECT VERSION()
 $ call expect VERSION "MariaDB"

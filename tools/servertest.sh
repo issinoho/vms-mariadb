@@ -82,6 +82,7 @@ printf '$ set noon\n$ set process/parse_style=extended\n$ define sys$error sys$o
     "${WORKDIR%]}" "$remote" "$mclient" "$port" > "$top/cache/servertest-mkdb.com"
 "$top/tools/vms.sh" "$node" run "$top/cache/servertest-mkdb.com" >/dev/null
 TESTDB_CONF=/dev/null
+"$top/tools/clienttest_sql.sh" "$node"
 cfgjob=$top/cache/servertest-client.com
 printf '$ set noon\n$ @%s.%s.VMS]TEST_CLIENT.COM "127.0.0.1" "%s" "root" "" "vmstest"\n' "${WORKDIR%]}" "$remote" "$port" > "$cfgjob"
 out=$(VMS_TIMEOUT=3600 "$top/tools/vms.sh" "$node" run "$cfgjob")
