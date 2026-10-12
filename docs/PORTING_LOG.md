@@ -570,3 +570,19 @@ and said the options file's `PCRE2$ROOT:[LIB]PCRE2-8.OLB/library` lacked the arc
 | Code | Error | Root cause | Fix |
 |---|---|---|---|
 | P | (user) `pcre2.h` not found from the quoted includes; options file "missing" `[INSTALL_X86_64...]` | none in the tree: the generated `-I/PCRE2$ROOT/INCLUDE` is searched for quoted includes too, and `PCRE2$ROOT` is the rooted install tree, so `[LIB]` needs no architecture directory. The include failed only while `PCRE2$ROOT` was undefined or named vms-pcre2's top (BUILD.COM run without P4). `[INSTALL_X86_64.LIB]` would be the VSI C (ILP32) library, and BUILD.COM's clang check looks only at `PCRE2$ROOT:[LIB]`, so an edited `.opt` would get past it | No patch. README Common problems: what `PCRE2$ROOT` names, pass P4 when rerunning BUILD.COM, don't edit the `.opt` files, and `SEARCH [.VMS.BUILD.SERVER]*.OPT PCRE2` to check. Guard: for the server, `BUILD.COM` reads every `[.VMS.BUILD.SERVER]*.OPT` before MMS and stops if a line naming PCRE2 is not `PCRE2$ROOT:[LIB]PCRE2-8.OLB/library`, printing the file and line. x86, target `LIB_DBUG`: the generated tree passes (`BUILD: done`); with `mariadbd.opt` edited to `PCRE2$ROOT:[INSTALL_X86_64.LIB]PCRE2-8.OLB/library` it stops before MMS naming that line (file restored after) |
+
+## Stale staging/ after a pull; push failures recorded as pushed (2026-10-12)
+
+Follow-up from the same user: `tools/kit.sh x86` did not finish and left an MMS process on the
+node. Rerun as a batch job, `@[.VMS]BUILD` failed at the server link:
+`Error opening PCRE2$ROOT:[INSTALL_X86_64.LIB]PCRE2-8.OLB; as input` / `Error in device name or
+inappropriate device type`. They had edited the linker options, and `PCRE2$ROOT` was not defined in
+the batch job.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| P | (user) server link: `%X1789109C`, `PCRE2$ROOT:[INSTALL_X86_64.LIB]PCRE2-8.OLB` not found | the current `BUILD.COM` stops before MMS on both an undefined `PCRE2$ROOT` (no `[INCLUDE]PCRE2.H`) and an edited `.opt` (f214572), so the node had an older `BUILD.COM`. Most likely cause: the checkout was pulled but `tools/prepare.sh` was not rerun. `build.sh` (and `kit.sh` through it) pushes `staging/` as it is, and nothing compared it with the checkout (cause not yet confirmed; asked for `git log -1`). The hand-edited `.opt` also stays on the node: `push.sh` sends only files whose staged copy changed | Guard: `prepare.sh` saves the checksums of everything it stages from (`upstream.conf`, `patches/`, `overlay/`, `prepare.sh`, `host_configure.sh`, `gen_mms.py`; `inputs_sums` in `hostenv.sh`) as `cache/staged-<name>.sha`, removed when it starts and written only when it finishes. `build.sh` stops before pushing when the file is missing ("not made by this checkout's tools/prepare.sh") or differs ("older than this checkout", naming the changed files). Host: no stamp → stops; after `prepare.sh` → passes to the push; with `overlay/vms/build.com` changed → stops naming it. The same stamp with the `shasum -a 256` fallback (PATH without `sha256sum`) |
+| T | (found while testing) `push.sh` printed `stat remote: No such file or directory`, then `push: done` | its sftp output went through `grep ... \|\| true`, so a failed batch (here: the work directory missing on the node) still merged the files into the manifest, and later pushes skip them as already sent | `push.sh` exits 1 on an sftp failure ("nothing recorded as pushed") and leaves the manifest unchanged; `build.sh` stops there. Tested against the missing directory: status 1, manifest byte-identical |
+| T | (found while testing) `vms.sh` and `push.sh` read `SFTPDIR` as the 7th and last field, so with the 8th column (the PCRE2 tree) it held both | harmless so far (OpenVMS's sftp `cd` ignored the extra word) | a trailing `_` takes the 8th column |
+
+README Common problems: "`build.sh: staging/ is older than this checkout`" and the push failure.
