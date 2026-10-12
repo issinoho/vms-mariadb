@@ -26,3 +26,13 @@ need_tools() {
     echo "$(basename "$0"): not found on this host:$missing" >&2
     exit 2
 }
+
+# inputs_sums: "<sha256>  <path>" for every file of this checkout that goes into
+# staging/ (patches, overlay, upstream.conf, the scripts that generate the MMS
+# build), sorted.  prepare.sh saves it with the tree it stages; build.sh compares,
+# so a tree staged before a "git pull" is not pushed as if it were current.
+inputs_sums() {
+    (cd "$top" && find upstream.conf patches overlay tools/prepare.sh \
+        tools/host_configure.sh tools/gen_mms.py -type f | LC_ALL=C sort |
+        tr '\n' '\0' | xargs -0 $SHA256SUM)
+}

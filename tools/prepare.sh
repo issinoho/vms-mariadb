@@ -19,6 +19,9 @@ top=$(cd "$(dirname "$0")/.." && pwd)
 name=$UPSTREAM_NAME-$UPSTREAM_VERSION
 tarball=$top/cache/$(basename "$UPSTREAM_URL")
 stage=$top/staging/$name
+# What staging/ was made from (inputs_sums, hostenv.sh): written last, so a run
+# that fails part-way leaves none and build.sh refuses the half-made tree.
+stamp=$top/cache/staged-$name.sha
 
 step() { echo "prepare: $*"; }
 die() { echo "prepare: error: $*" >&2; exit 1; }
@@ -28,6 +31,7 @@ need_tools curl gpg tar patch cpio unzip awk sed cmake make cc c++ python3
 "$top/tools/fetch.sh" >/dev/null
 
 step "extracting $name"
+rm -f "$stamp"
 rm -rf "$stage"; mkdir -p "$top/staging"
 excludes=()
 for d in $PRUNE; do excludes+=(--exclude="$name/$d"); done
@@ -127,4 +131,5 @@ if [ -d "$stage/vmsgen/sql/share" ] && [ -d "$stage/vmsgen/scripts" ]; then
     printf 'KIT_PRODUCER=%s\nKIT_PRODUCT=%s\nPCSI_VERSION=%s\nKIT_VERSION=%s\n' "$KIT_PRODUCER" \
         "$KIT_PRODUCT" "$pcsiversion" "$kitversion" > "$kit/kit.env"
 fi
+inputs_sums > "$stamp"
 step "staged $stage ($(du -sh "$stage" | cut -f1))"

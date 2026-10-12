@@ -25,6 +25,21 @@ if [ "$(echo "$cfg" | tr A-Z a-z)" = server ] && [ -z "${PCRE2ROOT:-}" ]; then
     exit 1
 fi
 
+# staging/ must be what prepare.sh makes from this checkout: after a "git pull"
+# without prepare.sh, the node got the old BUILD.COM, without the checks the
+# pull brought (docs/PORTING_LOG.md, "Stale staging/").
+stamp=$top/cache/staged-$name.sha
+if [ ! -f "$stamp" ]; then
+    echo "build.sh: staging/ was not made by this checkout's tools/prepare.sh; run it first" >&2
+    exit 1
+fi
+if ! stale=$(diff "$stamp" <(inputs_sums)); then
+    echo "build.sh: staging/ is older than this checkout (git pull, or an edit since" >&2
+    echo "  tools/prepare.sh); run tools/prepare.sh first.  Changed:" >&2
+    echo "$stale" | sed -n 's/^[<>] [0-9a-f]*  /    /p' | sort -u | head -10 >&2
+    exit 1
+fi
+
 "$top/tools/push.sh" "$node" "$cfg"
 mkdir -p "$top/out"
 log=$top/out/build-$node-$cfg.log
