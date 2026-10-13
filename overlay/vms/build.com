@@ -127,7 +127,9 @@ $ lang = "C"
 $ckrun:
 $ obj = objroot + "/calloc_shape_" + lang
 $ vobj = "[." + objroot + "]calloc_shape_" + lang
-$ out = "sys$scratch:calloc_shape_''lang'.out"
+$! One per process too: JOBS=2 (build.sh) runs two BUILDs at once, with
+$! the same SYS$SCRATCH.
+$ out = "sys$scratch:calloc_shape_''lang'_''f$getjpi("","PID")'.out"
 $ if f$search(out) .nes. "" then delete/nolog 'out';*
 $ opts = ""
 $ if lang .eqs. "CXX" then opts = """-x"" ""c++"" ""-std=gnu++11"""
@@ -137,7 +139,8 @@ $ define/user sys$output 'out'
 $ run 'vobj'.exe
 $ chk = chk + "," + out
 $ if f$search(out) .eqs. "" then goto cknext
-$ open/read ck 'out'
+$! A failed OPEN must not reach the READ loop: under SET NOON it never ends.
+$ open/read/error=cknext ck 'out'
 $ckloop:
 $ read/end=ckend ck line
 $ if line .eqs. "CALLOC_SHAPE: PASS" then npass = npass + 1
@@ -160,6 +163,7 @@ $   write sys$error "BUILD: -fno-builtin-memset/-bzero in vms/config/clang_commo
 $   goto done
 $ endif
 $ write sys$output "BUILD: compiler self-check passed (memset/bzero calloc shape, C and C++)"
+$ delete/nolog sys$scratch:calloc_shape_*_'f$getjpi("","PID")'.out;*
 $! Format-attribute check (vms/tests/format_attr_test.c): MariaDB's
 $! ATTRIBUTE_FORMAT(printf, ...) must survive vms_lp64.h's printf macro (patch
 $! 0029), or clang drops it with a warning on every file and checks no formats.
