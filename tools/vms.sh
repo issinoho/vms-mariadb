@@ -27,10 +27,14 @@ read -r _ ARCH HOST PORT USER WORKDIR SFTPDIR _ < <(awk -v n="$node" '$1==n' "$c
 
 ssh_opts=(-i "$key" -o BatchMode=yes -o ConnectTimeout=15 -o ServerAliveInterval=30)
 
+# A failure is reported, never silent: under set -e and pipefail a bare call
+# used to end vms.sh with status 1 and no message (a user's builds, 2026-10-13).
 sftp_batch() {  # sftp_batch <commands...>
+    local rc=0
     printf '%s\n' "$@" | sftp -P "$PORT" "${ssh_opts[@]}" -b - "$USER@$HOST" 2>&1 >/dev/null |
-        { grep -vE '^ *Welcome to|^ *$' >&2 || true; }
-    return "${PIPESTATUS[1]}"
+        { grep -vE '^ *Welcome to|^ *$' >&2 || true; } || rc=$?
+    [ "$rc" -eq 0 ] || echo "vms.sh: sftp to $node failed (status $rc): $(printf '%s; ' "$@")" >&2
+    return "$rc"
 }
 
 # DISK$USER:[USERNAME.VMS_GREP] + sub/dir -> DISK$USER:[USERNAME.VMS_GREP.SUB.DIR]
@@ -59,7 +63,9 @@ dcl_logged() {
         sleep 2; waited=$((waited + 2))
         if ! kill -0 "$pid" 2>/dev/null || [ $((waited % 10)) -eq 0 ]; then
             sftp_batch "cd $SFTPDIR" "get $tag.DONE $done_f" 2>/dev/null && break
-            kill -0 "$pid" 2>/dev/null || { sleep 3; sftp_batch "cd $SFTPDIR" "get $tag.DONE $done_f" 2>/dev/null; break; }
+            # ssh has ended: one last look for the marker, then on to the log
+            # (no log: "no session started", below).
+            kill -0 "$pid" 2>/dev/null || { sleep 3; sftp_batch "cd $SFTPDIR" "get $tag.DONE $done_f" 2>/dev/null || true; break; }
         fi
         [ "$waited" -ge "$limit" ] && { echo "vms.sh: timed out after ${limit}s" >&2; break; }
     done
