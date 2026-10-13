@@ -72,6 +72,10 @@ tools/vms.sh <node> dcl '<cmd>' ...   # run DCL; also run/batch/put/get
   big `VMS_TIMEOUT`, and check `show system` before re-running a test that timed out.
   Leftover `FTA*_IAIN` sessions of ours can pile up and once stopped the SSH server
   answering; check `show system/process=*IAIN*` and stop only the ones this work started.
+- **Never delete a running procedure's files from the host**: a running `/OUTPUT` log is
+  invisible to sftp (not listed, "not a regular file"), and deleting the procedure stops
+  it at its next return from a nested `@` (`%RMS-E-FNF`, `%RMS-F-ISI`). vms.sh tells
+  "running" from "never started" by its `.STARTED` marker; `tools/vmssh_test.sh` tests it.
 - **ODS-5 has no sparse files**: seeking past the end and writing (or `fseek` on a stdio
   stream) allocates and zero-fills real blocks. A test that seeked to 5 GB nearly filled
   the work disk. Never probe large offsets on a new file.

@@ -608,3 +608,16 @@ sessions per `vms.sh run` (the uploads) and no third (the cleanup), so `vms.sh` 
 | T | (risk, seen in the probe) a `JOBS=2` build can hang in BUILD.COM's self-check | both parallel BUILDs wrote and read `SYS$SCRATCH:CALLOC_SHAPE_<lang>.OUT`: one deletes or holds the file the other opens, and a failed `OPEN/READ` under `SET NOON` sends the `READ/END=` loop round forever (`%DCL-W-UNDFIL` each time; probe on x86) | per-process names (`..._<pid>.OUT`, deleted after a pass) and `OPEN/READ/ERROR=` straight to the next language (counts as not passed). x86: the probe with `/ERROR` skips the loop; `JOBS=2 tools/build.sh x86 client`: both parallel runs and the link run passed both checks and ended `BUILD: done` |
 
 README Common problems: "`vms.sh: no session started on <node>`".
+
+## vms.sh retried a running build and deleted its procedure (2026-10-13)
+
+Second follow-up from the same user, after pulling `f02b4e5`: on their node the build did run
+(its `VMSRUN_*.LOG` was there and locked), but `vms.sh` treated it as not running. The build
+finished after 1 h 23 min with `BUILD: done`, then `File not found` and `Invalid internal
+stream identifier (ISI) value`. Their `ssh ... show time` works (OpenSSH 10.3p1, LibreSSL).
+Earlier successful builds on their node were run as batch jobs on the node, not through
+`vms.sh`.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| T | (user) build runs on the node while `vms.sh` reports it as not started; log ends `%RMS-E-FNF` / `%RMS-F-ISI` after `BUILD: done` | on their node the ssh session ends while the procedure still runs (the VMS process carries on; why ssh ends there is not known yet). `dcl_logged` then fetched the log, but while a procedure runs its `/OUTPUT` log is invisible to sftp (`ls` does not list it, `get` says "not a regular file"), so it concluded "no session started", retried (a **second build on the same tree**) and deleted the wrapper `.com`. DCL reopens the wrapper when a nested procedure returns; with it gone it stops with `%RMS-E-FNF` and `%RMS-F-ISI`, before the end line and `.DONE`. A `VMS_TIMEOUT` on our own node took the same retry path. `probes/ssh_drop/ssh_drop.sh x86` (ssh killed after 8 s): reproduced all of it, the two RMS errors exactly | the wrapper writes `<tag>.STARTED` first; when ssh ends without `.DONE`, `vms.sh` retries only if `.STARTED` is missing, else says `the ssh session to <node> ended after Ns; the procedure still runs there`, shows ssh's last messages and polls `.DONE` every 20 s up to `VMS_TIMEOUT`. A timeout leaves the procedure's files and names its log; files are removed only after the log is read. Test: `tools/vmssh_test.sh <node>` (stand-in ssh commands: cut off at 8 s, never connects; a timeout): 8/8 with the fix, 3 failed with the previous `vms.sh` |
