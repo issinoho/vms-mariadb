@@ -593,3 +593,18 @@ Rebuild (2026-10-12/13): the x86 work directory had gone, so it was made again a
 pushed (`PUSH_ALL=1`). Client: `BUILD: done`. Server (`JOBS=2`, 1 h 45 min): `BUILD: done`,
 4 warnings as before, no errors. New data directory (`install_db.sh`), test server on 3307
 started from the new image: `servertest.sh x86` 14/14, client suite 16/16.
+
+## vms.sh ended silently; parallel self-checks shared one file (2026-10-13)
+
+Follow-up from the same user (checkout at 33414b7, from before the 2026-10-12 fixes): `JOBS=2
+tools/build.sh <node> client` printed `build: vms.sh run on <node> ended with status 1` for the
+purge, both parallel runs and the link run, with no other message and empty logs. In the tree,
+only `[.VMSOBJ]CALLOC_SHAPE_C.EXE;1,;2` and `CALLOC_SHAPE_CXX.EXE;1`. The trace shows two sftp
+sessions per `vms.sh run` (the uploads) and no third (the cleanup), so `vms.sh` ended in its wait.
+
+| Code | Error | Root cause | Fix |
+|---|---|---|---|
+| T | (user) `vms.sh run` exits 1 with no message | in `dcl_logged`'s wait, when the ssh process has already ended, the last look for the `.DONE` marker was a bare `sftp_batch` call: under `set -e` and `pipefail` its failure ended `vms.sh` at once, before the "no session started; retrying once" path. So an ssh session that ends without running the procedure (why it does on the user's node is not known yet: asked for `ssh -p <port> <user>@<node> show time` and `ssh -V`; their ssh warns about a non-post-quantum key exchange, so OpenSSH 10.x on macOS) looked like a silent failure | `\|\| true` on that call, so the log check below reports it; `sftp_batch` reports any failure itself ("vms.sh: sftp to <node> failed (status n): <commands>"). Host: with a stand-in `ssh` that exits at once, `vms.sh x86 dcl 'show time'` ended `rc=1` with no output before, and with `no session started on x86; retrying once` / `no session started on x86` after; real ssh unchanged; a `get` of a missing file names the commands |
+| T | (risk, seen in the probe) a `JOBS=2` build can hang in BUILD.COM's self-check | both parallel BUILDs wrote and read `SYS$SCRATCH:CALLOC_SHAPE_<lang>.OUT`: one deletes or holds the file the other opens, and a failed `OPEN/READ` under `SET NOON` sends the `READ/END=` loop round forever (`%DCL-W-UNDFIL` each time; probe on x86) | per-process names (`..._<pid>.OUT`, deleted after a pass) and `OPEN/READ/ERROR=` straight to the next language (counts as not passed). x86: the probe with `/ERROR` skips the loop; `JOBS=2 tools/build.sh x86 client`: both parallel runs and the link run passed both checks and ended `BUILD: done` |
+
+README Common problems: "`vms.sh: no session started on <node>`".
