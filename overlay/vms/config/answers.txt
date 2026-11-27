@@ -259,6 +259,7 @@ HAVE_SYS_PRCTL_H ""  # replay CheckIncludeFiles C
 HAVE_SYS_PTEM_H ""  # replay CheckIncludeFiles C
 HAVE_SYS_PTE_H ""  # replay CheckIncludeFiles C
 HAVE_SYS_RESOURCE_H 1  # replay CheckIncludeFiles C
+HAVE_SYS_SDT_H ""  # replay CheckIncludeFile C
 HAVE_SYS_SELECT_H ""  # replay CheckIncludeFiles C
 HAVE_SYS_SOCKET_H 1  # replay CheckIncludeFiles C
 HAVE_SYS_SOCKIO_H ""  # replay CheckIncludeFiles C

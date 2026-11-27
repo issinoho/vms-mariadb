@@ -621,3 +621,28 @@ Earlier successful builds on their node were run as batch jobs on the node, not 
 | Code | Error | Root cause | Fix |
 |---|---|---|---|
 | T | (user) build runs on the node while `vms.sh` reports it as not started; log ends `%RMS-E-FNF` / `%RMS-F-ISI` after `BUILD: done` | on their node the ssh session ends while the procedure still runs (the VMS process carries on; why ssh ends there is not known yet). `dcl_logged` then fetched the log, but while a procedure runs its `/OUTPUT` log is invisible to sftp (`ls` does not list it, `get` says "not a regular file"), so it concluded "no session started", retried (a **second build on the same tree**) and deleted the wrapper `.com`. DCL reopens the wrapper when a nested procedure returns; with it gone it stops with `%RMS-E-FNF` and `%RMS-F-ISI`, before the end line and `.DONE`. A `VMS_TIMEOUT` on our own node took the same retry path. `probes/ssh_drop/ssh_drop.sh x86` (ssh killed after 8 s): reproduced all of it, the two RMS errors exactly | the wrapper writes `<tag>.STARTED` first; when ssh ends without `.DONE`, `vms.sh` retries only if `.STARTED` is missing, else says `the ssh session to <node> ended after Ns; the procedure still runs there`, shows ssh's last messages and polls `.DONE` every 20 s up to `VMS_TIMEOUT`. A timeout leaves the procedure's files and names its log; files are removed only after the log is read. Test: `tools/vmssh_test.sh <node>` (stand-in ssh commands: cut off at 8 s, never connects; a timeout): 8/8 with the fix, 3 failed with the previous `vms.sh` |
+
+## Release v11.4.14-vms1 (2026-11-27)
+
+MariaDB 11.4.14 at patch level 1. All 29 patches applied unchanged. `upstream.conf` now
+names vms-zlib 1.4 like the other ports, but the build uses MariaDB's bundled zlib
+(`-DWITH_ZLIB=bundled`). One new CMake check, `HAVE_SYS_SDT_H`, was replayed on x86 for client and server
+(answer: none). No build failures: a `JOBS=2` server build again hit the parallel self-check
+race (`RMS-E-FLK` on `CALLOC_SHAPE_*`, see 2026-10-13) in an earlier pass, and the final
+pass ended `BUILD: done`. Kit `ISSINOHO-X86VMS-VMSMARIADB-V1104-14E1-1.PCSI` from
+`tools/kit.sh x86`. IA64 is not a target (and its node was unavailable).
+
+Tests on x86 against our own server on 3307: `servertest.sh` 14/14, the client suite 16/16,
+`loadcycle.sh` PASS (1M rows into Aria and MyISAM, 5/5 stop/start cycles, identical
+checksums). `clienttest.sh` against the remote test server: 5/16, `Access denied for user
+'vmstest'`, as since 2026-10-09. The 3307 data directory lacked the `vmsremote` account and
+database that loadcycle needs; they were created there from `tools/testdb.conf`.
+
+As for vms3, the full install check was not run (it would remove the product the board's
+server runs from). The kit was tested as an upgrade of the running service instead:
+`VMSMARIADB$SHUTDOWN` (normal shutdown in the error log), `PRODUCT INSTALL` over
+V11.4-13E3, `VMSMARIADB$STARTUP START`. Afterwards V11.4-14E1 is installed,
+`MARIADBD_3306` runs as MARIADB, `SELECT VERSION()` gives `11.4.14-MariaDB`, and the
+board's index, forum and search pages answer HTTP 200 with no SQL errors. `mariadb-upgrade`
+was not run: 11.4.13 to 11.4.14 is a patch release within one series, with no system-table
+changes.

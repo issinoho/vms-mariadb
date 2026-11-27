@@ -9,7 +9,7 @@
 ![OpenVMS](https://img.shields.io/badge/OpenVMS-x86--64-blue)
 [![License](https://img.shields.io/github/license/issinoho/vms-mariadb)](COPYING)
 
-[MariaDB](https://mariadb.org) (**11.4.13**, the 11.4 LTS series) built natively for OpenVMS
+[MariaDB](https://mariadb.org) (**11.4.14**, the 11.4 LTS series) built natively for OpenVMS
 **x86-64**, server and command-line clients, with VSI's clang-based C/C++ compiler. This is a
 **preview**: the server runs the Aria, MyISAM, MEMORY, CSV, MRG_MyISAM and SEQUENCE engines,
 but not yet InnoDB. It belongs to the same family as
@@ -44,29 +44,29 @@ patches in `patches/`, adds our files from `overlay/`, configures with CMake on 
 | A | Connector/C and the clients | done: 15/15 client tests against MariaDB 11.8, TLS 1.3, interactive use |
 | B | `mariadbd` with Aria, MyISAM, MEMORY, CSV, MRG_MyISAM, SEQUENCE | server tests 14/14; 1,000,000-row (150 MB) loads and 5/5 stop/start cycles with identical checksums; remote clients from Linux over TLS; a 24-hour soak still to run |
 | C | InnoDB, durability-tested | not started |
-| D | PCSI kit, docs, upstream patches | preview kit ([v11.4.13-vms3](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms3)) builds; vms2 passed the full install check, including the server as a service; vms3 was tested as an upgrade of a running service (vms2 to vms3) |
+| D | PCSI kit, docs, upstream patches | preview kit ([v11.4.14-vms1](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.14-vms1)) builds; 11.4.13-vms2 passed the full install check, including the server as a service; 11.4.13-vms3 and 11.4.14-vms1 were each tested as an upgrade of a running service |
 
 | | x86-64 (OpenVMS E9.2-4, VSI C++ 10.1) |
 |---|---|
 | Server and clients build (MMS from CMake's file API) | yes (600 server objects) |
-| Client suite over TCP and TLS, against a remote server and against the VMS server | 15/15 |
+| Client suite over TCP and TLS, against a remote server and against the VMS server | 16/16 |
 | Server tests: engines, joins, CHECK/REPAIR/OPTIMIZE, restart, DROP DATABASE | 14/14 |
 | Load and restart: 1M rows into Aria and MyISAM, 5 clean stop/start cycles | pass |
 | Kit install, INSTALL_DB, START, clients from the kit, STOP, remove | clean |
 | Service: configure (account, data, passwords), boot start as the account, clean shutdown | pass |
-| PCSI kit | `ISSINOHO-X86VMS-VMSMARIADB-V1104-13E3-1.PCSI` |
+| PCSI kit | `ISSINOHO-X86VMS-VMSMARIADB-V1104-14E1-1.PCSI` |
 
 IA64 is not a target: its C++ compiler (VSI C++ 7.4) predates C++11, which MariaDB requires.
 
 ## Installing the kit
 
 The kit needs OpenVMS x86-64 and VSI's **SSL3** kit (OpenSSL 3.0). Download it from the
-[release](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.13-vms3) and check it
+[release](https://github.com/issinoho/vms-mariadb/releases/tag/v11.4.14-vms1) and check it
 against the release's `SHA256SUMS`. A kit downloaded through a non-VMS system loses its
 record format, so restore that first, then install it:
 
 ```
-$ SET FILE/ATTRIBUTE=(RFM:FIX,LRL:8192,MRS:8192,RAT:NONE) ISSINOHO-X86VMS-VMSMARIADB-V1104-13E3-1.PCSI
+$ SET FILE/ATTRIBUTE=(RFM:FIX,LRL:8192,MRS:8192,RAT:NONE) ISSINOHO-X86VMS-VMSMARIADB-V1104-14E1-1.PCSI
 $ PRODUCT INSTALL VMSMARIADB /PRODUCER=ISSINOHO /SOURCE=dev:[dir]
 $ @VMSMARIADB$ROOT:[000000]VMSMARIADB$SETUP.COM
 ```
@@ -92,7 +92,7 @@ service](#running-as-a-service)); otherwise, to define `VMSMARIADB$ROOT` at ever
 `$ @SYS$STARTUP:VMSMARIADB$STARTUP.COM` to `SYS$MANAGER:SYSTARTUP_VMS.COM`.
 `PRODUCT REMOVE VMSMARIADB` removes the product and deassigns `VMSMARIADB$ROOT`; it does not
 touch data directories, the service account or the site file
-`SYS$MANAGER:VMSMARIADB$CONFIG.COM`. The version `V11.4-13E3` is MariaDB 11.4.13 with our
+`SYS$MANAGER:VMSMARIADB$CONFIG.COM`. The version `V11.4-14E1` is MariaDB 11.4.14 with our
 patch level as the ECO.
 
 **Alongside VSI's MariaDB kit:** this kit uses `VMSMARIADB` names throughout, so both can be
@@ -307,7 +307,7 @@ printf-format attributes survive `vms_lp64.h` (see [Common problems](#common-pro
 
 **Building on the node, in batch.** `build.sh` pushes the tree and runs `BUILD.COM` over ssh,
 waiting for the whole build. On the node, after `prepare.sh` and a push (`tools/push.sh x86
-server`, or copy `staging/mariadb-11.4.13` across), the same build can run as a batch job,
+server`, or copy `staging/mariadb-11.4.14` across), the same build can run as a batch job,
 with its log in one file:
 
 ```
@@ -359,7 +359,7 @@ them is our own drawing, not MariaDB's logo.
 MariaDB Server is distributed under the GNU General Public License, version 2 (`COPYING`,
 a copy of the release tarball's, and `[VMSMARIADB.DOC]COPYING.` in the kit); Connector/C
 under the LGPL 2.1 (`libmariadb/COPYING.LIB` in the tarball). Our patches and VMS files are distributed under the same terms as the files they
-change or accompany. The kit is built from the signed MariaDB 11.4.13 release tarball and
+change or accompany. The kit is built from the signed MariaDB 11.4.14 release tarball and
 the patches and files in this repository, which together are its corresponding source.
 
 MariaDB is a trademark of the MariaDB Foundation. OpenVMS is a trademark of VMS Software,
